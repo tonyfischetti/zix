@@ -1,0 +1,248 @@
+#!/usr/local/bin/lispscript
+; vi: ft=lisp
+
+
+; ------------------------------------ ;
+
+; ------------------------------------ ;
+
+
+(declaim (inline regular-show))
+(defun regular-show (index theprog theuname thehostname thecwd thecontext
+                           prettytime theactualcmd thetags line)
+  #?(format t "~4A | ~A | ~A | ~A | ~A | ~A | ~A : ~A ~%"
+          index theprog theuname thehostname thecwd thecontext
+          prettytime theactualcmd))
+
+(declaim (inline pretty-show))
+(defun pretty-show (index theprog theuname thehostname thecwd thecontext
+                          prettytime theactualcmd thetags line)
+  #?(format t "[ <~A> | ~A | ~A | ~A ]~%~A~A~A~%~%"
+            theprog thecontext thecwd prettytime +cyan-bold+ theactualcmd
+            +reset-terminal-color+))
+
+(declaim (inline bare-min-show))
+(defun bare-min-show (index theprog theuname thehostname thecwd thecontext
+                            prettytime theactualcmd thetags line)
+  #?(format t "~A~%" theactualcmd))
+
+(declaim (inline raw-show))
+(defun raw-show (index theprog theuname thehostname thecwd thecontext
+                       prettytime theactualcmd thetags line)
+  #?(format t "~A~%" line))
+
+(declaim (inline firefox-show))
+(defun firefox-show (index theprog theuname thehostname thecwd thecontext
+                           prettytime theactualcmd thetags line)
+  #?(format t "~A~C~A~%" prettytime #\Tab theactualcmd))
+
+
+(defun get-current-date-regex ()
+  (format nil "^~A" (make-pretty-time (universal->unix-time (get-universal-time)) :include-time nil)))
+
+(declaim (inline make-pretty-time))
+(defun make-pretty-time (a-unix-time &key (include-time t))
+  (let ((thisuniversaltime (unix->universal-time a-unix-time)))
+    (multiple-value-bind (second minute hour date month year)
+      (decode-universal-time thisuniversaltime)
+      (if include-time
+        (format nil "~d-~2,'0d-~2,'0d ~2,'0d:~2,'0d:~2,'0d" year month date hour minute second)
+        (format nil "~d-~2,'0d-~2,'0d" year month date)))))
+
+(defun lookup (table key)
+  (cdr (assoc key table :test #'string=)))
+
+(defun push-all (anassoc alist)
+  (let ((retlist alist)
+        (allkeys (mapcar (lambda (x) (car x)) anassoc)))
+    (mapcar (lambda (x) (push (lookup anassoc x) retlist)) allkeys)
+    retlist))
+
+
+(defparameter *local*           (zsh "echo $ZHOSTNAME"))
+(defparameter *fn-zsh-lookup*   (list '("cardassia" . "~/Dropbox/histories/zsh_history-cardassia")
+                                      '("tony-macbook" . "~/Dropbox/histories/zsh_history-tony-macbook")
+                                      '("betazed" . "~/Dropbox/histories/zsh_history-betazed")
+                                      '("qonos" . "~/Dropbox/histories/zsh_history-qonos")))
+(defparameter *fn-R-lookup*     (list '("cardassia" . "~/Dropbox/histories/r_extended_history-cardassia")
+                                      '("tony-macbook" . "~/Dropbox/histories/r_extended_history-tony-macbook")
+                                      '("betazed" . "~/Dropbox/histories/r_extended_history-betazed")
+                                      '("qonos" . "~/Dropbox/histories/r_extended_history-qonos")))
+(defparameter *fn-lisp-lookup*  (list '("cardassia" . "~/Dropbox/histories/sbcl_history-cardassia")
+                                      '("tony-macbook" . "~/Dropbox/histories/sbcl_history-tony-macbook")
+                                      '("betazed" . "~/Dropbox/histories/sbcl_history-betazed")
+                                      '("qonos" . "~/Dropbox/histories/sbcl_history-qonos")))
+(defparameter *fn-firefox*      "~/Dropbox/histories/firefox")
+(defparameter *fn-lastfm*       "~/Dropbox/histories/lastfm-history")
+
+(defparameter *fallbacks* (list '("zsh"   . "~/.zsh_history")
+                                '("r"     . "~/.r_extended_history")
+                                '("lisp"  . "~/.sbcl_history")))
+
+(defparams *histfiletoread*   *modern-mode*     *search-text*
+           *streamingp*       *searchcmdonly*   *searchcontext*
+           *searchtags*       *searchdate*      *linexform*
+           *external-format*  *sortcommand*     *printfun*
+           *line-limit*       *how-many-printed*)
+
+(setq *searchcmdonly*   t
+      *linexform*       t
+      *external-format* :UTF-8
+      *sortcommand*     "LC_ALL=\"C\" sort -s -k7,7 -t':' "
+      *printfun*        #'bare-min-show) ; #'regular-show #'raw-show
+
+
+; --------------------------------------------------------------- ;
+
+(def-cli-args "fmthist" "-[fzZrRlLFnNpPmT] [-s REGEX] [-i INSENSITIVE-REGEX] [-c CONTEXT] [-d DATE] [-f FILE]"
+  "search personal history files"
+  (option "-h" "--help" "print usage"
+          (print-usage!))
+  (option "-f" "--file" "history file"
+          (push (cadr args!) *histfiletoread*)
+          (process-args! (cddr args!)))
+  (option "-z" "--zsh" "use local zsh history file"
+          (setq *external-format* :LATIN-1)
+          (push (lookup *fn-zsh-lookup* *local*) *histfiletoread*)
+          (when (null *histfiletoread*) (push (lookup *fallbacks* "zsh") *histfiletoread*))
+          (process-args! (cdr args!)))
+  (option "-Z" "--all-zsh" "use all zsh history files"
+          (setq *external-format* :LATIN-1)
+          (setq *histfiletoread* (push-all *fn-zsh-lookup* *histfiletoread*))
+          (when (null *histfiletoread*) (push (lookup *fallbacks* "zsh") *histfiletoread*))
+          (process-args! (cdr args!)))
+  (option "-r" "--r" "use local R history file"
+          (if (null (lookup *fn-R-lookup* *local*))
+            (push (lookup *fallbacks* "r") *histfiletoread*)
+            (push (lookup *fn-R-lookup* *local*) *histfiletoread*))
+          (process-args! (cdr args!)))
+  (option "-R" "--all-r" "use all R history files"
+          (setq *histfiletoread* (push-all *fn-R-lookup* *histfiletoread*))
+          (when (null *histfiletoread*) (push (lookup *fallbacks* "r") *histfiletoread*))
+          (process-args! (cdr args!)))
+  (option "-l" "--lisp" "use local lisp history file"
+          (if (null (lookup *fn-lisp-lookup* *local*))
+            (push (lookup *fallbacks* "lisp") *histfiletoread*)
+            (push (lookup *fn-lisp-lookup* *local*) *histfiletoread*))
+          (process-args! (cdr args!)))
+  (option "-L" "--all-lisp" "use all lisp history files"
+          (setq *histfiletoread* (push-all *fn-lisp-lookup* *histfiletoread*))
+          (when (null *histfiletoread*) (push (lookup *fallbacks* "lisp") *histfiletoread*))
+          (process-args! (cdr args!)))
+  (option "-F" "--firefox" "use firefox history file"
+          (setq *printfun* #'firefox-show)
+          (push *fn-firefox* *histfiletoread*)
+          (process-args! (cdr args!)))
+  (option "-n" "--num" "limit to 'n' lines"
+          (setq *line-limit* (parse-integer (cadr args!)))
+          (process-args! (cdr args!)))
+  (option "" "--lastfm" "use lastfm history file"
+          (setq *printfun* #'firefox-show)
+          (push *fn-lastfm* *histfiletoread*)
+          (process-args! (cdr args!)))
+  (option "-p" "--pretty" "pretty print!"
+          (setq *printfun* #'pretty-show)
+          (process-args! (cdr args!)))
+  (option "-m" "--modern" "[modern] show only since implementation of extended history"
+          (setq *modern-mode* t)
+          (process-args! (cdr args!)))
+  (option "-s" "--search" "search with regex"
+          (setq *search-text* (~c (cadr args!)))
+          (process-args! (cddr args!)))
+  (option "-i" "--insensitive-search" "search with case-insensitive regex"
+          (setq *search-text* (~c (cadr args!) :case-insensitive-mode t))
+          (process-args! (cddr args!)))
+  (option "-c" "--context" "only display context specifies (takes regex)"
+          (setq *searchcontext* (re-compile (cadr args!)))
+          (process-args! (cddr args!)))
+  (option "-d" "--date" "only display (pretty) date specified (takes regex)"
+          (setq *searchdate* (re-compile (cadr args!)))
+          (process-args! (cddr args!)))
+  (option "-w" "--whole" "perform search on whole line (not just command)"
+          (setq *searchcmdonly* nil)
+          (process-args! (cdr args!)))
+  (option "-P" "--plain" "just print the command"
+          (setq *printfun* #'bare-min-show)
+          (process-args! (cdr args!)))
+  (option "-T" "--today" "only search history from today"
+          (setq *searchdate* (re-compile (get-current-date-regex)))
+          (process-args! (cdr args!)))
+  (option "-t" "--tag" "search by tag"
+          (setq *searchtags* (cons (cadr args!) *searchtags*))
+          (process-args! (cddr args!)))
+  (option "-" "--stdin" "read from STDIN instead"
+          (setq *streamingp* t)
+          (process-args! (cdr args!))))
+
+
+(process-args! (cdr (cmdargs)))
+
+; --------------------------------------------------------------- ;
+
+(when (some (lambda (x) (~m x "zsh_")) *histfiletoread*)
+  (setq *external-format* :LATIN-1))
+
+(if->then
+  (null *histfiletoread*)           -> (progn
+                                         (setq *external-format* :LATIN-1)
+                                         (setq *histfiletoread* (lookup *fn-zsh-lookup* *local*)))
+  (eq (length *histfiletoread*) 1)  -> (setq *histfiletoread* (car *histfiletoread*)))
+
+(when (null *histfiletoread*) (setq *histfiletoread* "~/.zsh_history"))
+
+
+(defparameter *our-stream* nil)
+(if (and (listp *histfiletoread*) (> (length *histfiletoread*) 1))
+  (progn
+    (for-each *histfiletoread*
+      (setq *sortcommand* (format nil "~A ~A" *sortcommand* value!)))
+    (setq *our-stream* (make-string-input-stream (zsh *sortcommand*
+                                                      :enc *external-format*))))
+  (setq *our-stream* (if *streamingp* *standard-input*
+                                      (open *histfiletoread*
+                                            :external-format *external-format*))))
+(setq *how-many-printed* 0)
+
+(for-each/stream *our-stream*
+  (when (not (string= "" value!))
+    « (let* ((itssplit            (~s value! ";" :limit 2))
+           (thecar                (car itssplit))
+           (theactualcmd          (cadr itssplit))
+           (moresplit             (~s thecar ":"))
+           (theprog               (cadr moresplit))
+           (theuname              (caddr moresplit))
+           (thehostname           (cadddr moresplit))
+           (thecwd                (cadr (cdddr moresplit)))
+           (thecontext            (caddr (cdddr moresplit)))
+           (therawtime            (cadddr (cdddr moresplit)))
+           (thetags               (~s (cadr (cdddr (cdddr moresplit))) "<br>"))
+           (lenthetime            (length therawtime))
+           (theunitime            (read-from-string (subseq therawtime 1 (- lenthetime 0))))
+           (prettytime            (make-pretty-time theunitime)))
+      (when *line-limit*
+        (when (>= *how-many-printed* *line-limit*)
+          (break!)))
+      (when (and *modern-mode* (string= thecontext "UNKNOWN"))
+        (continue!))
+      (when *search-text*
+        (unless (~m (if *searchcmdonly* theactualcmd value!) *search-text*)
+          (continue!)))
+      (when *searchcontext*
+        (unless (~m thecontext  *searchcontext*)
+          (continue!)))
+      (when *searchdate*
+        (unless (~m prettytime *searchdate*)
+          (continue!)))
+      (when *searchtags*
+        (unless (some (lambda (x) (not (null x)))
+                      (mapcar (lambda (x) (member x thetags :test #'string=))
+                              *searchtags*))
+          (continue!)))
+      (incf *how-many-printed*)
+      (funcall *printfun* (+ 1 index!) theprog theuname thehostname
+               thecwd thecontext prettytime theactualcmd thetags value!)
+      )
+      or WARN (fn "FAILED TO PARSE LINE ~A (~A)" index! error!) » ))
+
+
+; vi: ft=lisp

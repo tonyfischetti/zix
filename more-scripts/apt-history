@@ -1,0 +1,16 @@
+#!/usr/local/bin/lispscript
+; vi: ft=lisp
+
+
+(defparameter /thefiles/ (zsh •ls /var/log/apt | ack history | sort -nr• :split t))
+
+(ft "history files: ~S~%" /thefiles/)
+
+(for-each/list /thefiles/
+  (ft "~A~%"
+      (zsh (fn •~Acat /var/log/apt/~A | ack '^Commandline' | ack -v 'unattended-upgrade$'•
+               (if (~m value! •gz$•) "z" "") value!))))
+
+
+
+; vi: ft=lisp

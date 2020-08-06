@@ -1,0 +1,77 @@
+#!/usr/local/bin/lispscript
+; vi: ft=lisp
+
+(defparameter *parsed* nil)
+(defconstant +DIR+ (format nil "~A/bookmarkbackups" (zsh "echo $FIREFOXPROFILE")))
+
+(defconstant +PARTFN+  (zsh (format nil "ls ~A | sort -nr | head -n1" +DIR+)))
+(defconstant +FULLFN+ (format nil "~A/~A" +DIR+ +PARTFN+))
+
+(defconstant +TMPFILE+ (format nil "tmp~A" (get-unix-time)))
+
+
+(zsh (format nil "dejsonlz4 ~A > ~A" +FULLFN+ +TMPFILE+))
+; (defparameter *raw* (zsh (format nil "dejsonlz4 ~A" +FULLFN+)))
+
+; (format t "~S~%" *raw*)
+; (die "")
+
+(with-a-file +TMPFILE+ :r
+  (setq *parsed* {(cl-json:decode-json stream!) :CHILDREN}))
+
+(zsh (format nil "rm ~A" +TMPFILE+))
+
+(setq *parsed* {(car *parsed*) :CHILDREN})
+
+
+; (defun handle-folder (alist thetitle astream)
+;   (format astream "~%!! ~S !!~%" thetitle)
+;   (for-each alist
+;     (when (string= {value! :TYPE} "text/x-moz-place-separator")
+;       (handle-folder {value! :CHILDREN} {value! :TITLE} astream))
+;     (let ((url            {value! :URI})
+;           (title          {value! :TITLE}))
+;       (format astream "~S         ~S~%" title url))))
+
+
+(defparameter *indent* "")
+
+
+
+(defun print-aref (title url astream)
+  (print-html-indent astream)
+  (format astream •~A<a href="~A">~A</a><br>~%• *indent* url title))
+
+(defun print-html-indent (astream)
+  (loop for i from 1 to (length *indent*) do (format astream "&nbsp;")))
+
+
+(defun handle-folder (alist thetitle astream)
+  (let ((*indent* *indent*))
+    (print-html-indent astream)
+    (format astream "~A<b>~A</b><br>~%" *indent* thetitle)
+    (for-each alist
+      (if (string= {value! :TYPE} "text/x-moz-place-container")
+        (progn
+          (let ((*indent* (format nil "~A  " *indent*)))
+            (handle-folder {value! :CHILDREN} {value! :TITLE} astream)))
+        (progn
+          (let ((url            {value! :URI})
+                (title          {value! :TITLE})
+                (*indent*       (format nil "~A    " *indent*)))
+            (print-aref title url astream)))))
+    (format astream "<br>~%")))
+
+(with-a-file "bookmarks.html" :w
+  (format stream! "<html>~%<title>Tony's Bookmarks</title>~%<body>~%<h1>Tony Fischetti's Bookmarks</h1>~%")
+  (format stream! "generated on: ~A<br><br><br>~%~%" (make-pretty-time (get-unix-time)))
+  (for-each *parsed*
+    (let ((thettype       {value! :TYPE}))
+      (when (string= thettype  "text/x-moz-place-separator")
+        (continue!))
+      (when (string= thettype "text/x-moz-place-container")
+        (handle-folder {value! :CHILDREN} {value! :TITLE} stream!))))
+  (format stream! "~%</body>~%</html>~%"))
+
+
+; vi: ft=lisp

@@ -1,0 +1,120 @@
+#!/usr/local/bin/lispscript
+; vi: ft=lisp
+
+
+(declaim (optimize (speed 3) (safety 0)))
+
+
+
+(defconstant +buffsize+ 10000)
+
+(defparams *THEFILE* *LOOKFOR* *no-leading* *no-trailing*
+           *no-first* *remove-after* *debug-p*)
+
+(defparameter *nl-replacement* "")
+(defparameter *before-p* t)
+
+
+(def-cli-args "resplit" "resplit -haNLTd [-R REMSTRING] [-c CHARACTER] [-s STRING] FILE SEPARATOR"
+  "STUB"
+
+  (option "-h" "--help" "print usage"
+          (print-usage!))
+  (option "-d" "--debug" "outputs parameters before starting"
+          (setq *debug-p* t)
+          (process-args! (cdr args!)))
+  (option "-a" "--after" "split AFTER the separator instead of before (default NIL)"
+          (setq *before-p* nil)
+          (process-args! (cdr args!)))
+  (option "-c" "--character" "replace newlines with this character (uses lisp reader, so #\Newline is valid [surround with quotes]"
+          (setq *nl-replacement* (fn "~C" (read-from-string (~ra  (cadr args!) •\\• •\•))))
+          (process-args! (cddr args!)))
+  (option "-N" "--no-first" "removes the first output line (implies '--before') (useful for xml)"
+          (setq *before-p* t)
+          (setq *no-first* t)
+          (process-args! (cdr args!)))
+  (option "-L" "--no-leading-whitespace" "remove leading whitespace"
+          (setq *no-leading* t)
+          (process-args! (cdr args!)))
+  (option "-T" "--no-trailing-whitespace" "remove trailing whitespace"
+          (setq *no-trailing* t)
+          (process-args! (cdr args!)))
+  (option "-R" "--remove-after" "for each output line, remove everything after this string (useful for xml)"
+          (setq *remove-after* (cadr args!))
+          (process-args! (cddr args!)))
+  (option "-s" "--string" "replace newlines with this string"
+          (setq *nl-replacement* (cadr args!))
+          (process-args! (cddr args!))))
+
+
+(process-args! (cdr (cmdargs)))
+
+
+« (setq *THEFILE* Ø (car bare-args!))
+    or die "An input source was not specified" »
+
+« (setq *LOOKFOR* Ø (cadr bare-args!))
+    or die "A string to separate on was not specified" »
+
+
+(when *debug-p*
+  (debug-these *THEFILE* *LOOKFOR* *nl-replacement* *remove-after*
+               *no-first* *no-leading* *no-trailing* *before-p*))
+
+
+
+(defun make-read-until (astream stop)
+  (let* ((accumulator         (make-octet-vector 0))
+         (buffer              (make-octet-vector +buffsize+))
+         (to-find             (string->octets stop))
+         (protect             (length to-find))
+         (pos                 nil)
+         (got                 0)
+         (done-p              nil))
+    (lambda ()
+      (forever
+        (setq got (read-sequence buffer astream))
+        (setq pos (file-position astream))
+        (when (= got 0)
+          (when (= (length accumulator) 0) (return nil))
+          (let ((tmp accumulator))
+            (setq accumulator (make-octet-vector 0))
+            (return tmp)))
+        (when (< got +buffsize+) (setq done-p t) (setq buffer (subseq buffer 0 got)))
+        (aif (search to-find buffer)
+          (progn
+            (let ((uptoandincluding   (subseq buffer 0 (+ it! protect)))
+                  (goback             (+ (- pos got) (+ it! protect))))
+              (file-position astream goback)
+              (let ((tmp (concat-octet-vector accumulator uptoandincluding)))
+                (setq accumulator (make-octet-vector 0))
+                (return (if *before-p* (subseq tmp 0 (- (length tmp) protect)) tmp)))))
+          (progn
+            (let ((toadd    (if done-p (subseq buffer 0 got) (subseq buffer 0 (- got protect))))
+                  (goback   (- pos protect)))
+              (setq accumulator (concat-octet-vector accumulator toadd))
+              (unless done-p (file-position astream goback)))))))))
+
+
+
+(with-a-file *THEFILE* :b
+  (let ((thefn              (make-read-until stream! *LOOKFOR*))
+        (reg-newline-match  (~c •\r?\n•))
+        (reg-leading        (~c •^\s+•))
+        (reg-trailing       (~c •\s+$•))
+        (reg-rem-after      (if *remove-after* (fn •(~A).+?$• *remove-after*) nil)))
+    (for-each/call thefn
+      (let ((ret-string (~ra (octets->string value!) reg-newline-match *nl-replacement*)))
+        (when *no-leading*      (setq ret-string (~r ret-string reg-leading "")))
+        (when *no-trailing*     (setq ret-string (~r ret-string reg-trailing "")))
+        (when *remove-after*    (setq ret-string (~r ret-string reg-rem-after •\1•)))
+        (if *before-p*
+          (if (= index! 1)
+            (unless *no-first* (ft "~A~%" ret-string))
+            (ft "~A~A~%" *LOOKFOR* ret-string))
+          (ft "~A~%" ret-string))))))
+
+
+
+
+; vi: ft=lisp

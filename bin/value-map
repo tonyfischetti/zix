@@ -1,0 +1,74 @@
+#!/usr/local/bin/lispscript
+; vi: ft=lisp
+
+
+(defparams *thefile*    *num-values*    *rainbow-p*
+           *tmpdir*     *start*         *end*
+           *sequence*   *debug-p*       *step*)
+
+(defconstant +rain-colors+ '("red" "orange" "yellow" "green"
+                             "blue" "purple"))
+
+
+(def-cli-args "value-map" "[-hnserd] [FILE]"
+  "make a topographical map of n values of a black and white image for drawing"
+  (option "-h" "--help" "print usage"
+          (print-usage!))
+  (option "-n" "--num-values" "number of values in map (default 6)"
+          (setq *num-values* (parse-integer (cadr args!)))
+          (process-args! (cddr args!)))
+  (option "-s" "--start" "threshold to start with (out of 100) [default 5]"
+          (setq *start* (parse-integer (cadr args!)))
+          (process-args! (cddr args!)))
+  (option "-e" "--end" "threshold to end with (out of 100) [default 95]"
+          (setq *end* (parse-integer (cadr args!)))
+          (process-args! (cddr args!)))
+  (option "-r" "--rainbow" "uses rainbow colors instead of shades of gray (max 6 values)"
+          (setq *rainbow-p* t)
+          (process-args! (cdr args!)))
+  (option "-d" "--debug" "debug?"
+          (setq *debug-p* t)
+          (process-args! (cdr args!))))
+
+(process-args! (cdr (cmdargs)))
+
+
+« (setq *thefile* Ø (car bare-args!)) or die "No input file" »
+
+(setq *num-values* ? *num-values* 6)
+(setq *num-values* (if (and *rainbow-p* (> *num-values* 6)) 6 *num-values*))
+(setq *start* ? *start* 5)
+(setq *end* ? *end* 95)
+
+(setq *tmpdir* (format nil "tmp-~A" (get-unix-time)))
+
+(setq *step* (- (/ (/ (- *end* *start*) (- *num-values* 1)) 1.0) 0.01))
+
+(setq *sequence* (mapcar #'round (loop for i from *start* to *end* by *step* collect i)))
+
+(when *debug-p* (debug-these *thefile*    *num-values*    *rainbow-p*
+                             *tmpdir*     +rain-colors+   *start*
+                             *end*        *sequence*      *debug-p*
+                             *step*))
+
+(zsh (format nil "mkdir ~A" *tmpdir*))
+
+(if *rainbow-p*
+  (let ((newseq   (mapcar (lambda (x y) (list x y)) *sequence* +rain-colors+)))
+    (for-each newseq
+      (zsh (format nil •convert -threshold ~A% -transparent "white" -colorspace LinearGray -fill "~A" -opaque black ~A ./~A/~A.png•
+                   (car value!) (cadr value!) *thefile* *tmpdir* (car value!)) :echo t)))
+  (for-each *sequence*
+    (zsh (format nil •convert -threshold ~A% -transparent "white" -colorspace LinearGray -fill "gray(~A%%)" -opaque black ~A ./~A/~A.png•
+                 value! value! *thefile* *tmpdir* value!) :echo t)))
+
+(zsh (format nil "composite ./~A/~A.png ./~A/~A.png ./final.png"
+             *tmpdir* (car *sequence*) *tmpdir* (cadr *sequence*)) :echo t)
+
+(for-each (cddr *sequence*)
+  (zsh (format nil "composite ./final.png ./~A/~A.png ./final.png"
+               *tmpdir* value! (+ (round *step*) value!)) :echo t))
+
+(zsh (format nil "rm -rf ~A" *tmpdir*))
+
+; vi: ft=lisp

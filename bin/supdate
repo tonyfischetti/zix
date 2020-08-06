@@ -1,0 +1,179 @@
+#!/usr/local/bin/lispscript
+; vi: ft=lisp
+
+
+(defvar /uname/ (zsh "uname"))
+(defvar /hostname/ (zsh "hostname"))
+(defvar /home/ (zsh "echo $HOME"))
+
+(defvar /allplaces/ '((zsh        .   "~/.zsh")
+                      (vim        .   "~/.vim")
+                      (sbcl       .   "~/.sbcl")
+                      (r          .   "~/.rix")
+                      (tmux       .   "~/.tmux")
+                      (cmus       .   "~/cmus")
+                      (starlight  .   "~/.starlight")
+                      (dix        .   "~/.dix")))
+
+
+(defun check-for-updates (arepo adirectory)
+  (let ((ret (zsh (fn •cd ~A && git pull --dry-run 2>&1• adirectory))))
+    (unless (string= "" ret)
+      (red "~A has an update~%" arepo))))
+
+
+(defun check-for-local-changes (arepo adirectory)
+  (let ((ret (zsh (fn •cd ~A && git diff 2>&1• adirectory))))
+    (unless (string= "" ret)
+      (red "~A has local changes to commit~%" arepo))))
+
+
+(defun check-for-untracked-changes (arepo adirectory)
+  (let ((ret (zsh (fn •cd ~A && git status 2>&1• adirectory))))
+    (when (~m ret "nothing added to commit but untracked files present")
+      (red "~A has local untracked changes to commit~%" arepo))))
+
+
+(for-each/alist /allplaces/
+  (ft (yellow "Checking repo: ~A~%" key!))
+  « (let ((results (list (check-for-local-changes key! value!)
+                         (check-for-untracked-changes key! value!)
+                         (check-for-updates key! value!))))
+    (aif (remove-if #'null results)
+      (mapcar #'princ it!)
+      (ft (green "~A all good~%" key!))))
+    OR DO (ft (red "ERROR PROCESSING REPO ~A~%" key!)) »
+  (terpri))
+
+
+(unless (> (length (cmdargs)) 1) (die ""))
+
+
+(defvar /ALL-P/       (member "-a" (cmdargs) :test #'string=))
+(defvar /PACKAGES-P/  (member "--packages" (cmdargs) :test #'string=))
+(defvar /MUSIC-P/     (member "--music" (cmdargs) :test #'string=))
+
+(when (or /PACKAGES-P/ /ALL-P/)
+  (when (string= /uname/ "Linux")
+    (when (y-or-n-p "update installed debian package listing?")
+      (ft (yellow "~%updating debian package listing~%"))
+      (zsh (fn "apt list --installed > ~A/.dix/pkg-lists/apt-list-~A"
+               /home/ /hostname/) :echo t)
+      (ft (green "done.~%")))))
+
+(when (or /PACKAGES-P/ /ALL-P/)
+  (when (string= /uname/ "Darwin")
+    (when (y-or-n-p "update installed macports?")
+      (ft (yellow "~%updating installed macports port listing~%"))
+      (zsh (fn "port installed | ack 'active.\s*' > ~A/.dix/other-os/macos/ports-~A"
+               /home/ /hostname/) :echo t)
+      (ft (green "done.~%")))))
+
+(when /ALL-P/
+  (when (string= /uname/ "Linux")
+    (when (y-or-n-p "update apt sources?")
+      (ft (yellow "~%updating apt sources~%"))
+      (zsh (fn "cp /etc/apt/sources.list ~A/.dix/etc/apt/" /home/) :echo t)
+      (ft (green "done.~%")))))
+
+(when /ALL-P/
+  (when (y-or-n-p "update firefox history?")
+    (ft (yellow "~%updating firefox history~%"))
+    (zsh "ffhistupdate")
+    (ft (green "done.~%"))))
+
+(when /ALL-P/
+  (when (y-or-n-p "update history files?")
+    (ft (yellow "~%updating history files~%"))
+    (zsh (fn •zpaq add "~A/Dropbox/Carlos IV/Backups/OS/histories.zpaq" "~A/Dropbox/histories" -to histories -key• /home/ /home/) :echo t :return-string nil)
+    (ft (green "done.~%"))))
+
+(when /ALL-P/
+  (when (y-or-n-p "update keys backup?")
+    (ft (yellow "~%updating keys backup~%"))
+    (zsh (fn •zpaq add "~A/Dropbox/Carlos IV/Backups/OS/keys.zpaq" "~A/.keys" -to keys -key• /home/ /home/) :echo t :return-string nil)
+    (ft (green "done.~%"))))
+
+(when /ALL-P/
+  (when (string= /uname/ "Linux")
+    (when (y-or-n-p "update xfce confs backup?")
+      (ft (yellow "~%updating xfce confs backup~%"))
+      (zsh (fn •zpaq add "~A/Dropbox/Carlos IV/Backups/OS/Debian/some-dot-conf-dirs/xfce4-~A.zpaq" "~A/.config/xfce4" -to xfce4• /home/ /hostname/ /home/) :echo t :return-string nil)
+      (ft (green "done.~%")))))
+
+(when (or /MUSIC-P/ /ALL-P/)
+  (when (y-or-n-p "update music library listing?")
+    (ft (yellow "~%updating music library listing~%"))
+    (zsh "find ~/Dropbox/music | sort | perl -pe 's@.+?music/@music/@' > ~/cmus/music-library" :echo t)
+    (ft (green "done.~%"))))
+
+(when (or /MUSIC-P/ /ALL-P/)
+  (when (y-or-n-p "update spotify playlists backup?")
+    (ft (yellow "~%updating spotify playlists backup~%"))
+    (zsh "~/.zsh/more-scripts/spotify-backup.py 2> /dev/null > ~/cmus/spotify-playlists.txt" :echo t)
+    (ft (green "done.~%"))))
+
+(when /ALL-P/
+  (when (y-or-n-p "update quicklisp client?")
+    (ft (yellow "~%updating quicklisp client~%"))
+    (zsh • sbcl --eval "(progn (ql:update-client) (quit))"• :echo t)
+    (ft (green "done.~%"))))
+
+(when /ALL-P/
+  (when (y-or-n-p "update quicklisp packages?")
+    (ft (yellow "~%updating quicklisp packages~%"))
+    (zsh •sbcl --eval '(progn (ql:update-dist "quicklisp") (quit))'• :echo t)
+    (ft (green "done.~%"))))
+
+(when /ALL-P/
+  (when (y-or-n-p "update quicklisp archives?")
+    (ft (yellow "~%updating quicklisp archives~%"))
+    (zsh (fn "zpaq a '~A/Dropbox/Carlos IV/Backups/OS/lisp-software/ql-software-~A.zpaq' ~A/quicklisp/dists/quicklisp/software -to ql-software-~A"
+             /home/ /hostname/ /home/ /hostname/) :echo t)
+    (ft (green "done.~%"))))
+
+(when /ALL-P/
+  (when (y-or-n-p "update lisp core?")
+    (ft (yellow "~%updating lisp core~%"))
+    (zsh "~/.zsh/bin/update-lisp-core.sh" :echo t)
+    (ft (green "done.~%"))))
+
+(when /ALL-P/
+  (when (y-or-n-p "update R packages?")
+    (ft (yellow "~%updating R packages~%"))
+    (zsh •R -e 'update.packages()'• :echo t)
+    (ft (green "done.~%"))))
+
+(when /ALL-P/
+  (when (y-or-n-p "update installed R packages listing?")
+    (ft (yellow "~%updating installed R packages listing~%"))
+    (zsh (fn "ls ~A/local/R_libs | sort > ~A/.rix/pkg-list-~A" /home/ /home/ /hostname/) :echo t)
+    (ft (green "done.~%"))))
+
+(when /ALL-P/
+  (when (y-or-n-p "update R library archives?")
+    (ft (yellow "~%updating R library archives~%"))
+    (zsh (fn "zpaq a '~A/Dropbox/Carlos IV/Backups/OS/R_libs/R_libs-~A.zpaq' ~A/local/R_libs -to R_libs-~A"
+             /home/ /hostname/ /home/ /hostname/) :echo t)
+    (ft (green "done.~%"))))
+
+(when /ALL-P/
+  (when (y-or-n-p "update Python packages archives?")
+    (ft (yellow "~%updating Python packages archives~%"))
+    (if (string= /uname/ "Linux")
+      (zsh (fn "zpaq a '~A/Dropbox/Carlos IV/Backups/OS/py-packages/site-packages-~A.zpaq' ~A/.local/lib/python3.7/site-packages -to site-packages-~A"
+               /home/ /hostname/ /home/ /hostname/) :echo t)
+      (zsh (fn "zpaq a '~A/Dropbox/Carlos IV/Backups/OS/py-packages/py-library-~A.zpaq' ~A/Library/Python/3.7 -to py-library-~A"
+               /home/ /hostname/ /home/ /hostname/) :echo t))
+    (ft (green "done.~%"))))
+
+(when /ALL-P/
+  (when (string= /uname/ "Linux")
+    (when (y-or-n-p "update xapian package index?")
+      (ft (yellow "~%updating xapian package index~%"))
+      (zsh •sudo update-apt-xapian-index• :echo t)
+      (ft (green "done.~%")))))
+
+(ft "~%")
+
+; vi: ft=lisp

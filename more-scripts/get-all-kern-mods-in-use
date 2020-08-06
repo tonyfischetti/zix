@@ -1,0 +1,27 @@
+#!/usr/local/bin/lispscript
+; vi: ft=lisp
+
+; (defvar /aliases/ (zsh •cat /lib/modules/`uname -r`/modules.alias | ack '^alias ' | awk '{print $2}'•
+;                        :split t))
+
+(defvar /aliases/ (zsh •lsmod | tail -n +2 | perl -pe 's/\s+\d+\s+\d+\s+/\n/' | perl -pe 's/,/\n/g' | sort | uniq•
+                       :split t))
+
+(defvar /some-regex/ (fn •^.+~A/kernel/• (zsh "uname -r")))
+(defvar /collection/ (make-hash-table :test #'equal))
+
+(for-each/list /aliases/
+  «
+  (let ((ret (zsh (fn •modprobe -C=/dev/null --show-depends '~A'• value!) :split t)))
+    (when (= (length ret) 0) (continue!))
+    (for-each/list (mapcar (lambda (x) (~r (~r x /some-regex/ "") •\s+$• "")) ret)
+      (setf (gethash value! /collection/) t))
+    )
+  or do (continue!) »
+  )
+
+(for-each/hash /collection/
+  (ft "~A~%" key!))
+
+; vi: ft=lisp
+

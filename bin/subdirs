@@ -1,0 +1,53 @@
+#!/usr/local/bin/lispscript
+; vi: ft=lisp
+
+
+(defparams *sep* *out-p*)
+
+(def-cli-args "subdirs" "-[hio] -s SEPARATOR"
+  "puts files in current directory into (or out of) folders based on the name
+   It only goes one directory deep. That's all I need for now
+   MAKE SURE YOU RUN `clean-name` on all files before attempting this"
+  (option "-h" "--help" "print usage"
+          (print-usage!))
+  (option "-s" "--sep" "separator"
+          (setq *sep* (cadr args!))
+          (process-args! (cddr args!)))
+  (option "-i" "--in" "into subfolders? (default)"
+          (setq *out-p* nil)
+          (process-args! (cdr args!)))
+  (option "-o" "--o" "out of subfolders?"
+          (setq *out-p* t)
+          (process-args! (cdr args!))))
+
+(process-args! (cdr (cmdargs)))
+
+« *sep* or die "no separator provided" »
+
+
+
+(if *out-p*
+  (progn
+    (for-each/list (zsh •find . -maxdepth 1 -type d | perl -pe 's/^..//' | ack -v '^\.'• :split t)
+      (let* ((dir         value!)
+             (files       (~s (zsh (format nil •ls ~A• dir)) "\\n")))
+        (for-each files
+          (let* ((fullpath      (format nil "~A/~A" dir value!))
+                 (newname       (format nil "~A~A~A" dir *sep* value!)))
+            « (zsh (format nil •mv "~A" "~A"• fullpath newname) :echo t)
+              or do (continue!) »
+            (format t "~%"))))))
+  (progn
+    (for-each/list (zsh •find . -maxdepth 1 -type f | perl -pe 's/^..//' | ack -v '^\.'• :split t)
+      (unless (~m value! *sep*)
+        (continue!))
+      (let* ((whole           value!)
+             (dasplit         (~s whole *sep*))
+             (dirname         (car dasplit))
+             (filename        (cadr dasplit)))
+        (zsh (format nil "mkdir -p ~A" dirname) :echo t)
+        (zsh (format nil •mv "~A" "~A/~A"• whole dirname filename) :echo t)
+        (format t "~%")))))
+
+
+; vi: ft=lisp

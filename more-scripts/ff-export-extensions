@@ -1,0 +1,25 @@
+#!/usr/local/bin/lispscript
+; vi: ft=lisp
+
+(defvar +FILE+ (format nil "~A/extensions.json" (zsh "echo $FIREFOXPROFILE")))
+
+(defparameter *parsed* nil)
+
+(with-a-file +FILE+ :r
+  (setq *parsed* {(cl-json:decode-json stream!) :ADDONS}))
+
+
+(for-each/list *parsed*
+  (let* ((id        {value! :ID})
+         (indef     {value! :DEFAULT-LOCALE})
+         (name      {indef :NAME})
+         (desc      {indef :DESCRIPTION})
+         (url       {indef :HOMEPAGE-+URL+})
+         (version   {value! :VERSION}))
+    (when (~m id "mozilla\\.org$") (continue!))
+    (format t "~A:~%" name)
+    (format t "~{  ~A~%~}" (list desc version url id)))
+  (format t "~%"))
+
+; vi: ft=lisp
+

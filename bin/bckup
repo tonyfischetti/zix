@@ -1,0 +1,163 @@
+#!/usr/local/bin/lispscript
+; vi: ft=lisp
+
+
+; ------------------------------------ ;
+
+; ------------------------------------ ;
+
+(ql:quickload :ppath :silent t)
+
+(defconstant +BCKHOME+ (ppath:expanduser "~/.bckups/"))
+
+
+(defparams *tar-cmd*      *cp-cmd*      *acap*
+           *given-path*   *gzipp*       *xzp*
+           *notime*       *if-exists*   *dry-run*
+           *follow*       *cpormv*)
+
+(setq *tar-cmd*     "tar"
+      *cp-cmd*      "cp"
+      *if-exists*   :make-it-work
+      *follow*      t
+      *cpormv*      *cp-cmd*)
+
+(setq *clix-output-stream*  *terminal-io*)
+(setq *clix-log-level*      2)
+
+
+(defun inc-gen ()
+  (let ((counter 1))
+    #'(lambda () (incf counter))))
+
+(defconstant +incrementor+ (inc-gen))
+
+
+; --------------------------------------------------------------- ;
+
+(def-cli-args "bckup" "[-hazJnd] [FILE]"
+  "make a quick backup of a file or directory"
+  (option "-h" "--help" "print usage"
+          (print-usage!))
+  (option "-a" "--aca" "(acá) leave backup in current directory"
+          (setq *acap* t)
+          (process-args! (cdr args!)))
+  (option "-z" "--gzip" "use GZIP compression"
+          (setq *gzipp* t)
+          (process-args! (cdr args!)))
+  (option "-J" "--xz" "use XZ compression"
+          (setq *xzp* t)
+          (process-args! (cdr args!)))
+  (option "-d" "--dry-run" "dry run (don't do anything)"
+          (setq *dry-run* t)
+          (process-args! (cdr args!)))
+  (option "-n" "--no-time" "don't put the time of day in the filename"
+          (setq *notime* t)
+          (process-args! (cdr args!)))
+  (option "-H" "--no-dereference" "don't follow symbolic links"
+          (setq *follow* nil)
+          (process-args! (cdr args!)))
+  (option "-m" "--move" "move (overwrite) instead of copy (dangerous)"
+          (setq *cpormv* "mv")
+          (process-args! (cdr args!)))
+  (option "-e" "--error" "error on file exist (instead of adding -vNUM)"
+          (setq *if-exists* :error)
+          (process-args! (cdr args!))))
+
+; --------------------------------------------------------------- ;
+
+
+(defun split-ext-real (afilename)
+  (str-scan-to-strings afilename "^(.+/)?(.+?)?(-v\\d+?)?(\\..+)?$"))
+
+(defun make-new (afilename anum)
+  (let* ((thesplit     (split-ext-real afilename))
+         (thesplitf    (substitute-if "" #'null thesplit)))
+    (format nil "~A~A~A~A"
+            (svref thesplitf 0)
+            (svref thesplitf 1)
+            (format nil "-v~A" anum)
+            (svref thesplitf 3))))
+
+(defun add-date (afilename)
+  (let* ((thesplit     (split-ext-real afilename))
+         (thesplitf    (substitute-if "" #'null thesplit)))
+    (format nil "~A~A~A~A~A"
+            (svref thesplitf 0)
+            (svref thesplitf 1)
+            (format nil "-~A" (~r (get-current-time :just-date *notime* :time-sep "_") " " "_"))
+            (svref thesplitf 2)
+            (svref thesplitf 3))))
+
+(defun exist-in-any-way (afilename)
+  (or (ppath:exists afilename) (ppath:isdir afilename) (ppath:isfile afilename)))
+
+
+(defun check-for-presence (afilename &key (if-exists :error))
+  (let ((afilename2 (ppath:normpath (ppath:expanduser afilename))))
+    (cond ((and (exist-in-any-way afilename2) (eq if-exists :error))
+                  (error (format nil "file <~A> already exists" afilename2)))
+           ((exist-in-any-way afilename2)
+                  (check-for-presence (make-new afilename (funcall +incrementor+))
+                                      :if-exists if-exists))
+           (t
+                  afilename))))
+
+; --------------------------------------------------------------- ;
+
+
+(defun bk-file (afile)
+  (or-die ((format nil "bckup fatal error: ~A" error!))
+    (let* ((thebase      (ppath:basename afile))
+           (thebasef     (~r thebase "^\\." "DOT"))
+           (newname      (add-date thebasef))
+           (fullname     (check-for-presence (format nil "~A~A" (if *acap* "" +BCKHOME+) newname)
+                                             :if-exists *if-exists*))
+           (thecmd       (format nil "~A \"~A\" \"~A\"" *cpormv* afile fullname)))
+      (zsh thecmd :echo t :dry-run *dry-run*))))
+
+
+; --------------------------------------------------------------- ;
+
+(defun bk-dir (adir)
+  (or-die ((format nil "bckup fatal error: ~A" error!))
+    (let* ((mycwd        (format nil "~A/" (zsh "pwd")))
+           (ddirname     (ppath:dirname adir))
+           (adirb        (ppath:basename adir))
+           (adirf        (~r adirb "^\\." "DOT"))
+           (newname      (format nil "~A.tar" (add-date adirf)))
+           (newnamef     (~r newname "\\s+" "_"))
+           (fullname     (check-for-presence
+                           (format nil "~A~A~A" (if *acap* mycwd +BCKHOME+) newnamef
+                                   (if *gzipp* ".gz" (if *xzp* ".xz" "")))
+                                             :if-exists *if-exists*))
+           (thecmd       (format nil "cd \"~A\"; ~A cvf~A~A \"~A\" \"~A\""
+                                 ddirname *tar-cmd*
+                                 (if *follow* "h" "")
+                                 (if *gzipp* "z" (if *xzp* "J" ""))
+                                 fullname adirb)))
+      (zsh thecmd :echo t :dry-run *dry-run*))))
+
+; --------------------------------------------------------------- ;
+
+
+(defun main ()
+  (if->then
+    (ppath:isdir *givenpath*)             -> (bk-dir *givenpath*)
+
+    (and (ppath:isfile *givenpath*)
+         (not *gzipp*) (not *xzp*))       -> (bk-file *givenpath*)
+
+    (ppath:isfile *givenpath*)            -> (bk-dir *givenpath*)
+    t                                     -> (die "???")))
+
+
+(process-args! (cdr (cmdargs)))
+
+(setq *givenpath* (car bare-args!))
+
+(main)
+
+
+
+; vi: ft=lisp

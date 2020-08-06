@@ -1,0 +1,18 @@
+#!/usr/local/bin/lispscript
+; vi: ft=lisp
+
+
+« (defparameter *input-file* Ø (cdr (cmdargs)))
+  or die "No input files selected" »
+
+(defun clean-it (afile)
+  (~ra (~ra afile "\\s+" "-") "[^A-Za-z1-9\\.\\-]" "_"))
+
+(for-each/list *input-file*
+  (let ((new-name       (clean-it value!)))
+    (if (or (string= new-name value!) (cl-fad:file-exists-p new-name))
+      (warn (format nil "Cleaned filename (~A) already exists" new-name))
+      (zsh (format nil •mv "~A" ~A• value! new-name) :echo t))))
+
+
+; vi: ft=lisp

@@ -1,0 +1,112 @@
+#!/usr/local/bin/lispscript
+; vi: ft=lisp
+
+
+; ------------------------------------ ;
+
+; ------------------------------------ ;
+
+(defconstant +PLACESLOC+ (format nil "~A/places.sqlite" (zsh "echo $FIREFOXPROFILE")))
+(defconstant +tmpdir+ (fn "tmp-~A" (get-unix-time)))
+(defconstant +home+ (zsh "echo $HOME"))
+
+(format t "EXPORTING SQLITE DATABASE~%")
+(zsh (fn "mkdir ~A" +tmpdir+))
+(zsh (format nil "cp ~A ./~A" +PLACESLOC+ +tmpdir+))
+(zsh (fn "sqlite3 -separator '🐰' ./~A/places.sqlite 'select * from moz_places;' > ./~A/moz-places.bsv" +tmpdir+ +tmpdir+))
+(zsh (fn "sqlite3 -separator '🐰' ./~A/places.sqlite 'select * from moz_historyvisits order by visit_date;' > ./~A/history-visits.bsv" +tmpdir+ +tmpdir+))
+
+
+
+(format t "PROCESSING 'MOZ_PLACES'~%")
+(with-open-file (mystream (fn "./~A/moz-places.dat" +tmpdir+) :direction :output :if-exists :supersede)
+  (format mystream "~A~C~A~C~A~%" "id" #\Tab "url" #\Tab "title")
+  (for-each/line (fn "./~A/moz-places.bsv" +tmpdir+)
+    (unless (~m value! •^\d+•)
+      (continue!))
+    (let* ((dasplit     (str-split value! "🐰"))
+           (id          (car dasplit))
+           (url         (cadr dasplit))
+           (title       (caddr dasplit)))
+      (when (~m id •\d+•)
+        (format mystream "~A~C~A~C~A~%" id #\Tab url #\Tab title)))))
+
+
+(format t "PROCESSING 'MOZ_HISTORYVISITS'~%")
+(with-open-file (mystream (fn "./~A/history-visits.dat" +tmpdir+) :direction :output :if-exists :supersede)
+  (format mystream "~S~C~S~C~S~C~S~%" "id" #\Tab "place_id" #\Tab "visit_date" #\Tab "visit_type")
+  (for-each/line (fn "./~A/history-visits.bsv" +tmpdir+)
+    (let* ((dasplit     (str-split value! "🐰"))
+           (id          (elt dasplit 0))
+           (place_id    (elt dasplit 2))
+           (visit_date  (-<> (elt dasplit 3) (str-replace <> "\\d{6}$" "")))
+           (visit_type  (elt dasplit 4)))
+      (format mystream "~S~C~S~C~D~C~S~%" id #\Tab place_id #\Tab visit_date #\Tab visit_type))))
+
+
+(defvar +rcodelist+
+  `("#!/usr/local/bin//Rscript --vanilla"
+  ""
+  "library(data.table)"
+  "library(magrittr)"
+  "library(stringr)"
+  ""
+  "source('~/.rix/tony-utils.R')"
+  ""
+  "options(warn=1)"
+  ""
+  ,(fn "places <- fread('./~A/moz-places.dat', na.strings=c('', 'NA', 'NIL'), quote='')" +tmpdir+)
+  "places[, id:=as.integer(id)]"
+  "places[!is.na(id), ] -> places"
+  "setkey(places, 'id')"
+  ""
+  ,(fn "visits <- fread('./~A/history-visits.dat', na.strings=c('', 'NA', 'NIL'))" +tmpdir+)
+  "setnames(visits, 'id', 'oid')"
+  "setkey(visits, 'place_id')"
+  ""
+  "places[visits] -> comb"
+  ""
+  "comb[, url:=str_replace(url, '#.*$', '')]"
+  "comb[, url:=str_replace_all(url, ':', '_')]"
+  "comb[, title:=str_replace_all(title, ':', '_')]"
+  ""
+  "setorder(comb, visit_date)"
+  ""
+  "comb[visit_type %in% c(1, 2, 3, 5, 6, 7)] -> comb"
+  ""
+  "comb[, tags:='']"
+  "comb[str_detect(url, 'https?_//\\\\w*\\\\.?youtube\\\\.com'), tags:='youtube']"
+  "comb[str_detect(url, 'https?_//\\\\w*\\\\.?wikipedia\\\\.org'), tags:='wikipedia']"
+  "comb[str_detect(url, 'https?_//\\\\w*\\\\.?instagram\\\\.com'), tags:='instagram']"
+  "comb[str_detect(url, 'https?_//\\\\w*\\\\.?reddit\\\\.com'), tags:='reddit']"
+  "comb[str_detect(url, 'https?_//\\\\w*\\\\.?amazon\\\\.com'), tags:='amazon']"
+  "comb[str_detect(url, 'https?_//\\\\w*\\\\.?google\\\\.com/search'), tags:='search']"
+  "comb[str_detect(url, 'https?_//\\\\w*\\\\.?stackoverflow\\\\.com'), tags:='stackoverflow']"
+  "comb[str_detect(url, 'https?_//\\\\w*\\\\.?github\\\\.com'), tags:='github']"
+  "comb[visit_type==7, tags:='download']"
+  ""
+  "comb <- comb[!(str_detect(url, '//mail\\\\.google\\\\.com/mail/u/\\\\d/$') & str_detect(title, '^Inbox')), ]"
+  "comb <- comb[!str_detect(url, '//calendar\\\\.google\\\\.com/calendar/.?$'), ]"
+  ""
+  "setorder(comb, visit_date)"
+  ""
+  "for(i in 1:comb[,.N]){"
+  "  thetime <- comb[i, visit_date]"
+  "  title   <- comb[i, title]"
+  "  url     <- comb[i, url]"
+  "  tags     <- comb[i, tags]"
+  "  cat(sprintf(':FIREFOX:NA:NA:NA:NA: %d:%s;%s -> %s\\\n', thetime, tags, url, title))"
+  "}"))
+
+(defvar +rcode+ (format nil "~{~A~%~}" +rcodelist+))
+
+(with-open-file (mystream (fn "./~A/r.R" +tmpdir+) :direction :output)
+  (format mystream "~A~%" +rcode+))
+
+(format t "RUNNING R SCRIPT~%")
+(zsh (fn "Rscript ./~A/r.R > ./~A/.firefox_history" +tmpdir+ +tmpdir+))
+(zsh (fn •cp ./~A/.firefox_history ~A/Dropbox/histories/firefox• +tmpdir+ +home+))
+(zsh (fn "rm -rf ./~A" +tmpdir+))
+
+
+; vi: ft=lisp

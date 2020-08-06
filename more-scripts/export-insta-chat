@@ -1,0 +1,60 @@
+#!/usr/local/bin/lispscript
+; vi: ft=lisp
+
+(setq *clix-curly-test* #'equal)
+
+« (defparameter *infile* Ø (cadr (cmdargs)))
+    or die "no input file given" »
+
+(defparameter *parsed* nil)
+(defparameter *me* nil)
+
+(defparameter *convos* (make-hash-table :test #'equal))
+
+(zsh (format nil "cat ~A | jq | sponge ~A" *infile* *infile*) :echo t)
+(zsh "mkdir -p out" :echo t)
+
+
+(defun me-p (x)
+ (or (string= x "tony_fischetti_art") (string= x "tonyfischetti")) )
+
+(defun get-participant (analist)
+  (-<> analist (assoc :PARTICIPANTS <>) (cdr <>) (remove-if #'me-p <>)
+       (car <>) (format nil "~A" <>)))
+
+(defun get-me (analist)
+  (-<> analist (assoc :PARTICIPANTS <>) (cdr <>) (remove-if-not #'me-p <>)
+       (car <>) (format nil "~A" <>)))
+
+(defun make-line (analist me partner)
+  (format nil "~A~%@~A: ~A~%"
+          (~r (~r {analist :CREATED--AT} "\\..+" "") "T" " ")
+          (let ((sender {analist :SENDER}))
+            (if (me-p sender)
+              (format nil "~A" me)
+              (format nil "~A" partner)))
+          (aif {analist :TEXT} it! (aif {analist :MEDIA} it! (return-from make-line "")))))
+
+
+(with-a-file *infile* :r
+  (setq *parsed* (cl-json:decode-json stream!)))
+
+(setq *me* (get-me (car *parsed*)))
+
+(for-each *parsed*
+  (let* ((theconvo              value!)
+         (partner               (get-participant theconvo))
+         (messages              (cdr (assoc :CONVERSATION value!))))
+    (when (null {*convos* partner})
+      (setf {*convos* partner} nil))
+    (for-each messages
+      (let ((thisline           (make-line value! *me* partner)))
+        (setf {*convos* partner} (cons thisline {*convos* partner}))))))
+
+(for-each *convos*
+  (with-a-file (format nil "./out/~A.txt" key!) :w
+    (for-each value!
+      (format stream! "~A" value!))))
+
+
+; vi: ft=lisp
