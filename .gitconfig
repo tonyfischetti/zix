@@ -1,0 +1,26 @@
+[user]
+	name = Tony Fischetti
+	email = tony.fischetti@gmail.com
+    username = tonyfischetti
+[core]
+    editor = vim
+    abbrev = 13
+[color]
+	ui = true
+[credential]
+	helper = /usr/share/doc/git/contrib/credential/libsecret/git-credential-libsecret
+[url "https://github.com/"]
+    insteadOf = gh:
+[github]
+    user = tonyfischetti
+[pretty]
+    fixes = Fixes: %h (\"%s\")
+[pull]
+   rebase = false
+[sendemail]
+	from = Tony Fischetti <tony.fischetti@gmail.com>
+	smtpserver = smtp.gmail.com
+	smtpuser = tony.fischetti@gmail.com
+	smtpencryption = tls
+	chainreplyto = false
+	smtpserverport = 587
