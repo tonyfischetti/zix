@@ -9,7 +9,7 @@
 
 (def-cli-args "ssl" "-[hdks] [-o FILENAME] AFILE"
   "use openssl's aes-256 encryption to encrypt or decrypt files.
-   Will decide encrypt' or 'decrypt' based on whether file ends in '.enc'"
+   Will decide encrypt' or 'decrypt' based on whether file ends in '.aes'"
    (option "-h" "--help" "print usage"
            (print-usage!))
    (options "-d" "--dry-run" "dry run (print commands but don't to anything"
@@ -35,7 +35,7 @@
 
 
 (defun is-encrypted-p (file)
-  (~m file "\\.enc$"))
+  (~m file "\\.aes$"))
 
 (setq *is-encrypted* (is-encrypted-p *file*))
 
@@ -46,8 +46,8 @@
                          (if *out-override*
                            *out-override*
                            (if *is-encrypted*
-                             (~r *file* "\\.enc$" "")
-                             (format nil "~A.enc" *file*)))))
+                             (~r *file* "\\.aes$" "")
+                             (format nil "~A.aes" *file*)))))
 
 (zsh *thecmd* :echo t :dry-run *debug-p*)
 
