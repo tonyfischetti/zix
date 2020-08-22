@@ -224,6 +224,7 @@ hash -d debian="$HOME/Dropbox/Carlos IV/Backups/OS/Debian/"
 hash -d zbin="$HOME/.zsh/bin/"
 hash -d mscripts="$HOME/.zsh/more-scripts/"
 hash -d pictures="$HOME/Dropbox/Carlos IV/Backups/Pictures/"
+hash -d os="$HOME/Dropbox/Carlos IV/Backups/OS/"
 
 # if [[ $ZOS = 'Android' ]]
 # then
