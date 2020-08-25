@@ -13,6 +13,8 @@ A place to update and store my zsh configuration
     ln -s ~/.zsh/.gitconfig ~/.gitconfig
     ssl -k ~/.zsh/ssh_config.aes
     ln -s ~/.zsh/ssh_config ~/.ssh/config
+    mkdir -p ~/.ssh/login-keys.d
+    ln -s AKEY ~/.ssh/login-keys.d/AKEY
 
 
 
