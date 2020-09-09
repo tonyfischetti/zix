@@ -84,6 +84,7 @@ export LESS_TERMCAP_us=$'\E[1;32m'     # begin underline
 export LESS_TERMCAP_ue=$'\E[0m'        # reset underline
 export SYSTEMD_COLORS=1
 export SYSTEMD_PAGER=""
+export TIMEFMT="User-mode: %U	Kernel-mode: %S	Wall: %E	Perc: %P"
 
 # pretty ls colors
 eval $(dircolors)
@@ -152,6 +153,8 @@ alias ctop="top -F -R -o cpu"
 alias mtop="top -F -R -o rsize"
 alias youtube-dl="youtube-dl -f best --add-metadata --embed-subs --all-subs"
 alias fd="fdfind"
+alias phav="rsync -Phav"
+alias blake="openssl dgst -blake2b512 -hex"
 # alias youtube-dl="youtube-dl -f best --add-metadata --write-all-thumbnails --embed-thumbnail --write-info-json --embed-subs --all-subs"
 # alias base64="base64 -w 0"
 
