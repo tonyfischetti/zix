@@ -12,6 +12,7 @@
 # changed or added
 
 --color-match=bold bright_magenta
+--smart-case
 
 # Common Lisp
 --type-add=lisp:ext:lisp,lsp,asd
