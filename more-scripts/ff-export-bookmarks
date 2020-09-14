@@ -1,6 +1,9 @@
 #!/usr/local/bin/lispscript
 ; vi: ft=lisp
 
+(setq *print-readably* nil)
+(setq *clix-curly-test* #'string=)
+
 (defparameter *parsed* nil)
 (defconstant +DIR+ (format nil "~A/bookmarkbackups" (zsh "echo $FIREFOXPROFILE")))
 
@@ -11,31 +14,18 @@
 
 
 (zsh (format nil "dejsonlz4 ~A > ~A" +FULLFN+ +TMPFILE+))
-; (defparameter *raw* (zsh (format nil "dejsonlz4 ~A" +FULLFN+)))
 
-; (format t "~S~%" *raw*)
-; (die "")
-
-(with-a-file +TMPFILE+ :r
-  (setq *parsed* {(cl-json:decode-json stream!) :CHILDREN}))
+(setq *parsed* (parse-json (slurp +TMPFILE+)))
 
 (zsh (format nil "rm ~A" +TMPFILE+))
 
-(setq *parsed* {(car *parsed*) :CHILDREN})
-
-
-; (defun handle-folder (alist thetitle astream)
-;   (format astream "~%!! ~S !!~%" thetitle)
-;   (for-each alist
-;     (when (string= {value! :TYPE} "text/x-moz-place-separator")
-;       (handle-folder {value! :CHILDREN} {value! :TITLE} astream))
-;     (let ((url            {value! :URI})
-;           (title          {value! :TITLE}))
-;       (format astream "~S         ~S~%" title url))))
+(setq *parsed* (-<> *parsed*
+                    {<> "children"}
+                    (car <>)
+                    {<> "children"}))
 
 
 (defparameter *indent* "")
-
 
 
 (defun print-aref (title url astream)
@@ -51,13 +41,13 @@
     (print-html-indent astream)
     (format astream "~A<b>~A</b><br>~%" *indent* thetitle)
     (for-each alist
-      (if (string= {value! :TYPE} "text/x-moz-place-container")
+      (if (string= {value! "type"} "text/x-moz-place-container")
         (progn
           (let ((*indent* (format nil "~A  " *indent*)))
-            (handle-folder {value! :CHILDREN} {value! :TITLE} astream)))
+            (handle-folder {value! "children"} {value! "title"} astream)))
         (progn
-          (let ((url            {value! :URI})
-                (title          {value! :TITLE})
+          (let ((url            {value! "uri"})
+                (title          {value! "title"})
                 (*indent*       (format nil "~A    " *indent*)))
             (print-aref title url astream)))))
     (format astream "<br>~%")))
@@ -66,11 +56,11 @@
   (format stream! "<html>~%<title>Tony's Bookmarks</title>~%<body>~%<h1>Tony Fischetti's Bookmarks</h1>~%")
   (format stream! "generated on: ~A<br><br><br>~%~%" (make-pretty-time (get-unix-time)))
   (for-each *parsed*
-    (let ((thettype       {value! :TYPE}))
+    (let ((thettype       {value! "type"}))
       (when (string= thettype  "text/x-moz-place-separator")
         (continue!))
       (when (string= thettype "text/x-moz-place-container")
-        (handle-folder {value! :CHILDREN} {value! :TITLE} stream!))))
+        (handle-folder {value! "children"} {value! "title"} stream!))))
   (format stream! "~%</body>~%</html>~%"))
 
 
