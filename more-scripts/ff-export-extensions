@@ -7,7 +7,7 @@
 
 (defparameter *parsed* nil)
 
-(setq *parsed* {(parse-json (slurp +FILE+)) "addons"})
+(setq *parsed* {(parse-json-file +FILE+) "addons"})
 
 (for-each/list *parsed*
   (let* ((id        {value! "id"})
@@ -22,4 +22,3 @@
   (format t "~%"))
 
 ; vi: ft=lisp
-
