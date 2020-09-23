@@ -97,7 +97,7 @@ export ZHOSTNAME=`hostname`
 
 if [[ $ZOS = 'Android' ]]
 then
-    export PATH="$HOME/special-bin:/data/data/com.termux/files/usr/bin:/data/data/com.termux/files/bin:/data/data/com.termux/files/sbin:/system/bin:$PATH"
+    export PATH="$HOME/.zsh/override-bin/android:/data/data/com.termux/files/usr/bin:/data/data/com.termux/files/bin:/data/data/com.termux/files/sbin:/system/bin:$PATH"
 fi
 
 if [[ `hostname` = 'tony-macbook' ]]
