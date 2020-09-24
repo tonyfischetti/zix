@@ -95,7 +95,8 @@ export PATH="/usr/local/super/bin:$HOME/.zsh/bin:$HOME/bin:$HOME/.local/bin:/usr
 export ZOS=`uname -o`
 export ZHOSTNAME=`hostname`
 
-if [[ $ZOS = 'Android' ]]
+# android
+if [[ `whoami` = 'u0_a224' ]]
 then
     export PATH="$HOME/.zsh/override-bin/android:/data/data/com.termux/files/usr/bin:/data/data/com.termux/files/bin:/data/data/com.termux/files/sbin:/system/bin:$PATH"
 fi
