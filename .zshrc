@@ -95,7 +95,7 @@ export PATH="/usr/local/super/bin:$HOME/.zsh/bin:$HOME/bin:$HOME/.local/bin:/usr
 export ZOS=`uname -o`
 export ZHOSTNAME=`hostname`
 
-if [[ `whoami` = 'u0_a224' ]]
+if [[ `whoami` = 'u0_a216' ]]
 then
     export ZOS="Android"
 fi
