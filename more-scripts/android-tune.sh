@@ -46,6 +46,10 @@ elif [ $1 = "-i" ] ; then
     echo "\ncpufreq up rate limits:"
     cat /sys/devices/system/cpu/cpufreq/policy0/schedutil/up_rate_limit_us
     cat /sys/devices/system/cpu/cpufreq/policy6/schedutil/up_rate_limit_us
+
+    echo "\ncpufreq down rate limits:"
+    cat /sys/devices/system/cpu/cpufreq/policy0/schedutil/down_rate_limit_us
+    cat /sys/devices/system/cpu/cpufreq/policy6/schedutil/down_rate_limit_us
 else
     echo "un-tuning"
     sysctl -w kernel.sched_tunable_scaling=0
