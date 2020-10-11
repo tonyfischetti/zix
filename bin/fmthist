@@ -182,13 +182,15 @@
 (when (some (lambda (x) (~m x "zsh_")) *histfiletoread*)
   (setq *external-format* :LATIN-1))
 
-(if->then
-  (null *histfiletoread*)           -> (progn
-                                         (setq *external-format* :LATIN-1)
-                                         (setq *histfiletoread* (lookup *fn-zsh-lookup* *local*)))
-  (eq (length *histfiletoread*) 1)  -> (setq *histfiletoread* (car *histfiletoread*)))
+(cond
+  ((null *histfiletoread*)            (progn
+                                        (setq *external-format* :LATIN-1)
+                                        (setq *histfiletoread* (lookup *fn-zsh-lookup* *local*))))
+  ((eq (length *histfiletoread*) 1)   (setq *histfiletoread* (car *histfiletoread*))))
 
-(when (null *histfiletoread*) (setq *histfiletoread* "~/.zsh_history"))
+
+(when (null *histfiletoread*)
+  (setq *histfiletoread* "~/.zsh_history"))
 
 
 (defparameter *our-stream* nil)

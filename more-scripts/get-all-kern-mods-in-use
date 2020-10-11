@@ -1,8 +1,6 @@
 #!/usr/local/bin/lispscript
 ; vi: ft=lisp
 
-; (defvar /aliases/ (zsh •cat /lib/modules/`uname -r`/modules.alias | ack '^alias ' | awk '{print $2}'•
-;                        :split t))
 
 (defvar /aliases/ (zsh •lsmod | tail -n +2 | perl -pe 's/\s+\d+\s+\d+\s+/\n/' | perl -pe 's/,/\n/g' | sort | uniq•
                        :split t))

@@ -3,7 +3,7 @@
 
 
 « (defparameter *input-file* Ø (cdr (cmdargs)))
-  or die "No input files selected" »
+    or die "No input files selected" »
 
 (defun clean-it (afile)
   (~ra (~ra afile "\\s+" "-") "[^A-Za-z1-9\\.\\-]" "_"))

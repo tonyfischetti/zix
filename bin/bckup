@@ -25,13 +25,11 @@
 (setq *clix-output-stream*  *terminal-io*)
 (setq *clix-log-level*      2)
 
-
 (defun inc-gen ()
   (let ((counter 1))
     #'(lambda () (incf counter))))
 
 (defconstant +incrementor+ (inc-gen))
-
 
 ; --------------------------------------------------------------- ;
 
@@ -92,7 +90,6 @@
 (defun exist-in-any-way (afilename)
   (or (ppath:exists afilename) (ppath:isdir afilename) (ppath:isfile afilename)))
 
-
 (defun check-for-presence (afilename &key (if-exists :error))
   (let ((afilename2 (ppath:normpath (ppath:expanduser afilename))))
     (cond ((and (exist-in-any-way afilename2) (eq if-exists :error))
@@ -142,14 +139,12 @@
 
 
 (defun main ()
-  (if->then
-    (ppath:isdir *givenpath*)             -> (bk-dir *givenpath*)
-
-    (and (ppath:isfile *givenpath*)
-         (not *gzipp*) (not *xzp*))       -> (bk-file *givenpath*)
-
-    (ppath:isfile *givenpath*)            -> (bk-dir *givenpath*)
-    t                                     -> (die "???")))
+  (cond
+    ((ppath:isdir *givenpath*)            (bk-dir *givenpath*))
+    ((and (ppath:isfile *givenpath*)
+          (not *gzipp*) (not *xzp*))      (bk-file *givenpath*))
+    ((ppath:isfile *givenpath*)           (bk-dir *givenpath*))
+    (t                                    (die "???"))))
 
 
 (process-args! (cdr (cmdargs)))
