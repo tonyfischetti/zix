@@ -36,9 +36,12 @@
 
 (defun check-everything (key val)
   (with-loading
+    «
     (list (check-for-local-changes key val)
           (check-for-untracked-changes key val)
-          (check-for-updates key val))))
+          (check-for-updates key val))
+      OR DO (fn (red "ERROR PROCESSING REPO ~A~%" key)) » ))
+
 
 (for-each/alist /allplaces/
   (ft (yellow "Checking repo: ~10A" key!))
