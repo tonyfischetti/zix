@@ -34,16 +34,23 @@
       (red "~A has local untracked changes to commit~%" arepo))))
 
 
+(defun check-everything (key val)
+  (with-loading
+    «
+    (list (check-for-local-changes key val)
+          (check-for-untracked-changes key val)
+          (check-for-updates key val))
+      OR DO (fn (red "ERROR PROCESSING REPO ~A~%" key)) » ))
+
+
 (for-each/alist /allplaces/
-  (ft (yellow "Checking repo: ~A~%" key!))
-  « (let ((results (list (check-for-local-changes key! value!)
-                         (check-for-untracked-changes key! value!)
-                         (check-for-updates key! value!))))
-    (aif (remove-if #'null results)
-      (mapcar #'princ it!)
-      (ft (green "~A all good~%" key!))))
-    OR DO (ft (red "ERROR PROCESSING REPO ~A~%" key!)) »
-  (terpri))
+  (ft (yellow "Checking repo: ~10A" key!))
+  « (let ((results (check-everything key! value!)))
+      (aif (remove-if #'null results)
+        (mapcar #'princ it!)
+        (ft (green "~A all good~%" key!))))
+      OR DO (ft (red "ERROR PROCESSING REPO ~A~%" key!)) »
+    (terpri))
 
 
 (unless (> (length (cmdargs)) 1) (die ""))

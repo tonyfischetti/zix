@@ -67,6 +67,7 @@ export R_DATATABLE_NUM_PROCS_PERCENT="100"
 export R_DATATABLE_NUM_THREADS=4
 export R_LIBS=~/local/R_libs/
 export R_LIBS_USER=~/local/R_libs/
+export RSTUDIO_WHICH_R=/usr/local/bin/R
 export PERL5LIB="$HOME/perl5/lib/perl5"
 export PERL_LOCAL_LIB_ROOT="$HOME/perl5"
 export PERL_MB_OPT="--install_base \"~/perl5\""

@@ -92,6 +92,7 @@
     (when (and *clobber-p* (not (string= (change-to-mp4-fn afile) afile)))
       (zsh (format nil •rm "~A"• afile) :echo *echo* :dry-run *dry-run*))
     (setq new-size    (get-size new-name))
+    (setq new-size-b  (parse-integer (get-size new-name :just-bytes t)))
     (format t "Done~%~A -> ~A (~A%)~%~A~%~%~%"
             original-size new-size
             (round (* 100 (/ new-size-b original-size-b)))
