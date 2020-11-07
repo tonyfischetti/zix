@@ -68,6 +68,7 @@
   "The Divine Comedy"
   "The Lawrence Arms"
   "The Lucy Show"
+  "The Pains Of Being Pure At Heart"
   "The Sisters of Mercy"
   "The Sound"
   "Tokyo Police Club"
