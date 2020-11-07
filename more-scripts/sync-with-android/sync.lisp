@@ -106,7 +106,9 @@
       (ft "On playlist: ~A~%" (yellow "~A" playlist))
       (zsh (fn •mkdir -p "~A/music/~A"• /TMP-DIR/ playlist)) :echo t
       (for-each/line full
-        (zsh (fn •ln -sf "~A" "~A/music/~A"• value! /TMP-DIR/ playlist)))))
+        (let ((thebase (file-namestring value!)))
+          (zsh (fn •ln -sf "~A" "~A/music/~A/~4,'0D_~A"• value! /TMP-DIR/
+                   playlist index! thebase))))))
   (zsh (fn •rsync -PhrtLav --delete ~A/music/ android:~A/music•
             /TMP-DIR/ /ANDROID-PREFIX/) :echo t :return-string nil)
   (zsh (fn "rm -rf ~A/music" /TMP-DIR/) :echo t))
