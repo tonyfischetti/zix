@@ -30,6 +30,7 @@
   "Broken Social Scene"
   "Caifanes"
   "Capos Are Indie"
+  "Capos Are Staging"
   "Climatewave and Late Nights"
   "Coldwave"
   "Contemporary Post-Punk"
@@ -42,7 +43,6 @@
   "Guided By Voices"
   "Gustavo Cerati"
   "Hari and Aino"
-  "Indie Rock Playlists Maybe"
   "Joy Division"
   "Keane"
   "KRS-One"
@@ -75,6 +75,7 @@
   "Vaporwave Selects"
   "Vaporwave Transmissions"
   "Young Galaxy"
+  "_temporary"
   ))
 
 
