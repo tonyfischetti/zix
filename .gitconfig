@@ -24,3 +24,5 @@
 	smtpencryption = tls
 	chainreplyto = false
 	smtpserverport = 587
+[credential]
+	helper = cache
