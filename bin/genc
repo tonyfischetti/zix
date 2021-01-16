@@ -1,0 +1,67 @@
+#!/usr/local/bin/lispscript
+; vi: ft=lisp
+
+
+(defparams *debug-p* *keep-p* *is-encrypted* *secure-p* *out-override*
+           *ascii-armor*)
+
+(defvar *enccmdfmt* "gpg ~A -o ~A --no-symkey-cache --s2k-mode 3 --s2k-count 65011712 --s2k-digest-algo SHA512 --s2k-cipher-algo AES256 --symmetric ~A")
+(defvar *deccmdfmt* "gpg -o ~A --no-symkey-cache -d ~A")
+
+(def-cli-args "genc" "-[hdks] [-o FILENAME] AFILE"
+  "use gpg's symmetric AES encryption to encrypt or decrypt files.
+   Will decide encrypt' or 'decrypt' based on whether file ends in '.gpg' or '.asc'"
+   (option "-h" "--help" "print usage"
+           (print-usage!))
+   (options "-d" "--dry-run" "dry run (print commands but don't to anything"
+            (setq *debug-p* t)
+            (process-args! (cdr args!)))
+   (options "-k" "--keep" "DO NOT remove the input file"
+            (setq *keep-p* t)
+            (process-args! (cdr args!)))
+   (options "-a" "--ascii-armor" "use ascii armor"
+            (setq *ascii-armor* t)
+            (process-args! (cdr args!)))
+   (options "-s" "--secure" "securely delete file with srm (only unencrypted one)"
+            (setq *keep-p* nil)
+            (setq *secure-p* t)
+            (process-args! (cdr args!)))
+   (options "-o" "--override-output" "override default output behavior"
+            (setq *out-override* (cadr args!))
+            (process-args! (cddr args!)))
+   )
+
+(process-args! (cdr (cmdargs)))
+
+
+« (defvar *file* Ø (car bare-args!))
+    or die "no input file given" »
+
+
+(defun is-encrypted-p (file)
+  (or (~m file "\\.gpg") (~m file "\\.asc$")))
+
+(setq *is-encrypted* (is-encrypted-p *file*))
+
+
+(defvar *thecmd* 
+  (if *is-encrypted* (format nil *deccmdfmt* 
+                             (if *out-override* *out-override*
+                               (~r (~r *file* "\\.asc" "") "\\.gpg" ""))
+                             *file*)
+    (format nil *enccmdfmt* (if *ascii-armor* "-a" "")
+            (if *out-override* *out-override*
+              (format nil "~A.~A" *file* (if *ascii-armor* "asc" "gpg")))
+            *file*)))
+
+
+(zsh *thecmd* :echo t :dry-run *debug-p*)
+
+(unless *debug-p*
+  (unless *keep-p*
+    (if (and (not *is-encrypted*) *secure-p*)
+      (zsh (format nil "srm -D ~A" *file*) :echo t)
+      (zsh (format nil "/bin/rm ~A" *file*) :echo t))))
+
+
+; vi: ft=lisp
