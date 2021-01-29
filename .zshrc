@@ -289,6 +289,10 @@ pinfodebhelper(){
       echo "" && apt-cache policy "$1" && echo "" && apt-cache depends "$1";
 }
 
+notejournal(){
+    echo "$1" | systemd-cat -t tony-note -p info
+}
+
 # --------------------------------------------------------------- #
 
 
