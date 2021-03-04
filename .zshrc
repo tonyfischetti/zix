@@ -222,6 +222,9 @@ then
     alias pclean="sudo apt-get clean && sudo apt-get autoclean"
     alias psummary="update-alternatives --get-selections"
     alias pnoinactive="sudo apt-get --purge autoremove"
+    ##### kernel compilation aliases for skeeter
+    # alias mrproper='make mrproper'
+    # alias kmake='date && make -j12 bindeb-pkg > /dev/null && date'
 fi
 # --------------------------------------------------------------- #
 
