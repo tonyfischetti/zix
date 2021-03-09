@@ -65,9 +65,6 @@ export R_HISTFILE=~/.Rhistory
 export R_HISTSIZE=1000000
 export R_DATATABLE_NUM_PROCS_PERCENT="100"
 export R_DATATABLE_NUM_THREADS=4
-export R_LIBS=~/local/R_libs/
-export R_LIBS_USER=~/local/R_libs/
-export RSTUDIO_WHICH_R=/usr/local/bin/R
 export PERL5LIB="$HOME/perl5/lib/perl5"
 export PERL_LOCAL_LIB_ROOT="$HOME/perl5"
 export PERL_MB_OPT="--install_base \"~/perl5\""
@@ -105,6 +102,13 @@ fi
 if [[ $ZOS = "Android" ]]
 then
     export PATH="$HOME/.zsh/override-bin/android:/data/data/com.termux/files/usr/bin:/data/data/com.termux/files/bin:/data/data/com.termux/files/sbin:/system/bin:$PATH"
+fi
+
+if [[ $ZOS = "GNU/Linux" ]]
+then
+    export R_LIBS=~/local/R_libs/
+    export R_LIBS_USER=~/local/R_libs/
+    export RSTUDIO_WHICH_R=/usr/local/bin/R
 fi
 
 if [[ `hostname` = 'tony-macbook' ]]
