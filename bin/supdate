@@ -117,7 +117,7 @@
 (when (or /MUSIC-P/ /ALL-P/)
   (when (y-or-n-p "update spotify playlists backup?")
     (ft (yellow "~%updating spotify playlists backup~%"))
-    (zsh "~/.zsh/more-scripts/spotify-backup.py 2> /dev/null > ~/cmus/spotify-playlists.txt" :echo t)
+    (zsh "~/.zsh/more-scripts/spotify-backup.py ~/cmus/spotify-playlists.txt" :echo t)
     (ft (green "done.~%"))))
 
 (when /ALL-P/
