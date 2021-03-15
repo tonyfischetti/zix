@@ -47,7 +47,7 @@
   or die "invalid number of arguments" »
 
 « (setq /from-file/ Ø (enough-namestring (cl-fad:file-exists-p /from-file/)))
-  or die "file to copy doesn't exist" »
+  or die (fn "file to copy (~A) doesn't exist" /from-file/) »
 
 ; requires `realpath` from coreutils
 « (setq /from-file/ Ø (zsh (fn "realpath '~A'" /from-file/)))
