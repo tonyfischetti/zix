@@ -1,0 +1,78 @@
+#!/usr/local/bin/lispscript
+; vi: ft=lisp
+
+
+(defvar /dry-run/       nil)
+(defvar /overwrite-p/   nil)
+(defvar /verbose-p/     nil)
+(defvar /from-file/     nil)
+(defvar /to-dir/        nil)
+(defvar /root/          (sb-posix:getcwd))
+(defvar /full-to-path/  nil)
+(defvar /full-to-dir/   nil)
+
+
+(defmacro explain (astring aform &key (say-done-p nil))
+  `(progn
+     (when /verbose-p/ (ft (yellow "~A~%" ,astring)))
+     (unless /dry-run/ ,aform)
+     (when /verbose-p/ ,(when say-done-p `(ft (green "    done~%"))))))
+
+
+(def-cli-args "copy-with-dirs" "-[hdov] [-r base-directory] FILE-TO-COPY LOCATION"
+  "copy a file to a target directory ensuring that all directories
+   relative to the base directory are created as well
+   (running first with dry run option and then verbose is recommended)"
+  (option "-h" "--help" "print usage"
+          (print-usage!))
+  (option "-d" "--dry-run" "dry run"
+          (setq /dry-run/ t)
+          (process-args! (cdr args!)))
+  (option "-o" "--overwrite" "overwrite file if exists?"
+          (setq /overwrite-p/ t)
+          (process-args! (cdr args!)))
+  (option "-v" "--verbose" "turn on verbose mode"
+          (setq /verbose-p/ t)
+          (process-args! (cdr args!)))
+  (option "-r" "--root" "set base directory (`pwd` by default)"
+          (setq /root/ (cadr args!))
+          (process-args! (cddr args!))))
+
+(process-args! (cdr (cmdargs)))
+
+
+« (progn
+     (setq /from-file/ Ø (car bare-args!))
+     (setq /to-dir/    Ø (cadr bare-args!)))
+  or die "invalid number of arguments" »
+
+« (setq /from-file/ Ø (enough-namestring (cl-fad:file-exists-p /from-file/)))
+  or die "file to copy doesn't exist" »
+
+; requires `realpath` from coreutils
+« (setq /from-file/ Ø (zsh (fn "realpath '~A'" /from-file/)))
+  or die "could not make source file a real path" »
+« (setq /to-dir/ Ø (zsh (fn "realpath '~A'" /to-dir/)))
+  or die "could not make target directory a real path" »
+« (setq /root/ Ø (zsh (fn "realpath '~A'" /root/)))
+  or die "could not make base directory a real path" »
+
+(setq /full-to-path/  (fn "~A/~A" /to-dir/ (str-replace /from-file/ (fn "^~A" /root/) "")))
+(setq /full-to-dir/   (directory-namestring /full-to-path/))
+
+
+(when /dry-run/
+  (debug-these /dry-run/ /overwrite-p/ /verbose-p/ /from-file/
+               /to-dir/ /root/ /full-to-path/ /full-to-dir/)
+  (terpri))
+
+
+(explain (fn "- ensuring path '~A' exists~%" /full-to-dir/)
+  (ensure-directories-exist /full-to-dir/))
+
+(explain (fn "- copying '~A' to:~%  '~A'~A~%" /from-file/ /full-to-path/
+             (if /overwrite-p/ "~%  (overwriting if already exists)" ""))
+  (cl-fad:copy-file /from-file/ /full-to-path/ :overwrite /overwrite-p/))
+
+
+; vi: ft=lisp
