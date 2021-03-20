@@ -98,6 +98,11 @@ then
     export ZOS="Android"
 fi
 
+if [[ `whoami` = 'u0_a225' ]]
+then
+    export ZOS="Android"
+fi
+
 # android
 if [[ $ZOS = "Android" ]]
 then
