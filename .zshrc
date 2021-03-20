@@ -126,7 +126,7 @@ elif [[ `hostname` = 'betazed' ]]
 then
     export FIREFOXPROFILE="~/.mozilla/firefox/b4nptbgd.default-esr"
     export HISTFILE="$HOME/Dropbox/histories/zsh_history-betazed"
-    export R_DATATABLE_NUM_THREADS=8
+    export R_DATATABLE_NUM_THREADS=10
 elif [[ `hostname` = 'vertiform-city' ]]
 then
     export HISTFILE="$HOME/Dropbox/histories/zsh_history-vertiform-city"
