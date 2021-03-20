@@ -13,7 +13,7 @@
 (defvar /ANDROID-PREFIX/ (fn "~A/storage/" /ANDROID-HOME/))
 (defvar /PICTURES-PREFIX/ (fn "~A/pictures/" /ANDROID-PREFIX/))
 (defvar /PHOTOS-PREFIX/ (fn "~A/dcim/Camera" /ANDROID-PREFIX/))
-(defvar /ANDROID-USER/ "u0_a216")
+(defvar /ANDROID-USER/ "u0_a225")
 (defvar /WHATSAPP-DB-LOCATION/ "/data/data/com.whatsapp/databases/msgstore.db")
 (defvar /MESSAGES-DB-LOCATION/ "/data/data/com.google.android.apps.messaging/databases/bugle_db")
 (defvar /TMP-DIR/ (fn "~A/Desktop/ANDROID-SYNC-~A" /HOME/ (get-unix-time)))
