@@ -236,6 +236,11 @@ then
     # alias mrproper='make mrproper'
     # alias kmake='date && make -j12 bindeb-pkg > /dev/null && date'
 fi
+if [[ $ZOS = "Android" ]]
+then
+    alias psearch="apt search"
+fi
+
 # --------------------------------------------------------------- #
 
 # --------------------------------------------------------------- #
@@ -282,7 +287,7 @@ allm4astomp3s(){
 }
 
 trimmp4(){
-    ffmpeg -i ${1} -ss ${2} -to ${3} -c copy ${1}-trimmed.mp4
+    ffmpeg -i ${1} -ss ${2} -to ${3} -c copy ../trmd/${1}
 }
 
 recentcontexts(){
