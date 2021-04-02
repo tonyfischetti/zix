@@ -105,7 +105,7 @@
 
 (format t "RUNNING R SCRIPT~%")
 (zsh (fn "Rscript ./~A/r.R > ./~A/.firefox_history" +tmpdir+ +tmpdir+))
-(zsh (fn •cp ./~A/.firefox_history ~A/Dropbox/histories/firefox• +tmpdir+ +home+))
+(zsh (fn •cp ./~A/.firefox_history ~A/Desktop/new-firefox• +tmpdir+ +home+))
 (zsh (fn "rm -rf ./~A" +tmpdir+))
 
 
