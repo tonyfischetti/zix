@@ -60,7 +60,7 @@
 
 
 (defun make-conv-command (afile tmp-name scaling)
-  (format nil •ffmpeg -i "~A" ~A ~A -max_muxing_queue_size 9999 ~A "~A"•
+  (format nil •ffmpeg -i "~A" ~A ~A -max_muxing_queue_size 9999 ~A "~A" -loglevel error•
           afile
           (if *not-265* "" "-vcodec libx265")
           (if *scaling* (format nil •-vf scale="iw/~A:ih/~A"• scaling scaling) "")
@@ -82,7 +82,7 @@
       (progn
         (format t "~%File exists so the output file will remain ~A~%" tmp-name)
         (setq new-name tmp-name)))
-    (format t "~%Converting ~A now (~A) ~%" afile original-size)
+    (format t "~%Converting ~A now (~A)    [~A]~%" afile original-size (get-current-time))
     (with-time
       (zsh conv-command :echo *echo* :dry-run *dry-run*)
       (setq elapsed time!))
