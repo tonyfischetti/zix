@@ -1,12 +1,13 @@
 zix
 ===
 
-A place to update and store my zsh configuration
+A place to update and store my zsh configuration and some dot files
 
     git clone https://github.com/tonyfischetti/zix.git ~/.zsh
     ln -s ~/.zsh/.zshrc ~/.zshrc
     ln -s ~/.zsh/.ackrc ~/.ackrc
     ln -s ~/.zsh/.wgetrc ~/.wgetrc
+    ln -s ~/.zsh/.sqliterc ~/.sqliterc
     ln -s ~/.zsh/.htoprc ~/.config/htop/htoprc
     sudo ln -s ~/.zsh/lisp /usr/local/bin/lisp
     sudo ln -s ~/.zsh/lispscript /usr/local/bin/lispscript
@@ -26,4 +27,4 @@ For asciiquarium
   sudo apt install libcurses-perl
   cpan
   cpan Term:Animation
-  
+
