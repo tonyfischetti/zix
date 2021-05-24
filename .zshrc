@@ -172,6 +172,8 @@ alias fd="fdfind"
 alias phav="rsync -Phav"
 alias phan="rsync -Phav --no-perms --no-owner --no-group"
 alias blake="openssl dgst -blake2b512 -hex"
+alias weather='curl "wttr.in/~Washington+Heights?m&p"'
+alias weather2='curl "wttr.in/~Washington+Heights?m&p&format=v2"'
 # alias youtube-dl="youtube-dl -f best --add-metadata --write-all-thumbnails --embed-thumbnail --write-info-json --embed-subs --all-subs"
 # alias base64="base64 -w 0"
 
