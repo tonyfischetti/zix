@@ -10,25 +10,25 @@
 
 (def-cli-args "genc" "-[hdks] [-o FILENAME] AFILE"
   "use gpg's symmetric AES encryption to encrypt or decrypt files.
-   Will decide encrypt' or 'decrypt' based on whether file ends in '.gpg' or '.asc'"
+   Will decide to 'encrypt' or 'decrypt' based on whether file ends in '.gpg' or '.asc'"
    (option "-h" "--help" "print usage"
            (print-usage!))
-   (options "-d" "--dry-run" "dry run (print commands but don't to anything"
-            (setq *debug-p* t)
-            (process-args! (cdr args!)))
-   (options "-k" "--keep" "DO NOT remove the input file"
-            (setq *keep-p* t)
-            (process-args! (cdr args!)))
-   (options "-a" "--ascii-armor" "use ascii armor"
-            (setq *ascii-armor* t)
-            (process-args! (cdr args!)))
-   (options "-s" "--secure" "securely delete file with srm (only unencrypted one)"
-            (setq *keep-p* nil)
-            (setq *secure-p* t)
-            (process-args! (cdr args!)))
-   (options "-o" "--override-output" "override default output behavior"
-            (setq *out-override* (cadr args!))
-            (process-args! (cddr args!)))
+   (option "-d" "--dry-run" "dry run (print commands but don't to anything"
+          (setq *debug-p* t)
+          (process-args! (cdr args!)))
+   (option "-k" "--keep" "DO NOT remove the input file"
+          (setq *keep-p* t)
+          (process-args! (cdr args!)))
+   (option "-a" "--ascii-armor" "use ascii armor"
+          (setq *ascii-armor* t)
+          (process-args! (cdr args!)))
+   (option "-s" "--secure" "securely delete file with srm (only unencrypted one)"
+          (setq *keep-p* nil)
+          (setq *secure-p* t)
+          (process-args! (cdr args!)))
+   (option "-o" "--override-output" "override default output behavior"
+           (setq *out-override* (cadr args!))
+           (process-args! (cddr args!)))
    )
 
 (process-args! (cdr (cmdargs)))
