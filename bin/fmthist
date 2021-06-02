@@ -180,7 +180,7 @@
 ; --------------------------------------------------------------- ;
 
 (when (some (lambda (x) (~m x "zsh_")) *histfiletoread*)
-  (setq *external-format* :LATIN-1))
+  (setq *external-format* #+sbcl :LATIN-1 #+clisp CHARSET:ISO-8859-1))
 
 (cond
   ((null *histfiletoread*)            (progn

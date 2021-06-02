@@ -1,3 +1,3 @@
 #!/bin/bash
 
-/usr/local/bin/sbcl --core /usr/local/lib/sbcl/clix.core --script $@;
+/usr/local/bin/sbcl --core ~/.lisp/pluto-sbcl.core --script $@;

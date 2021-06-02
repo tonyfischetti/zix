@@ -8,8 +8,9 @@
 
 (defvar /allplaces/ '((zsh        .   "~/.zsh")
                       (vim        .   "~/.vim")
-                      (sbcl       .   "~/.sbcl")
-                      (r          .   "~/.rix")
+                      (clix       .   "~/.lisp")
+                      (pluto      .   "~/pluto")
+                      (rix        .   "~/.rix")
                       (tmux       .   "~/.tmux")
                       (cmus       .   "~/cmus")
                       (starlight  .   "~/.starlight")
@@ -140,9 +141,9 @@
     (ft (green "done.~%"))))
 
 (when /ALL-P/
-  (when (y-or-n-p "update lisp core?")
-    (ft (yellow "~%updating lisp core~%"))
-    (zsh "~/.zsh/bin/update-lisp-core.sh" :echo t)
+  (when (y-or-n-p "update lisp cores?")
+    (ft (yellow "~%updating lisp cores~%"))
+    (zsh "~/.zsh/bin/update-lisp-cores.sh" :echo t)
     (ft (green "done.~%"))))
 
 (when /ALL-P/

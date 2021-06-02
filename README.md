@@ -9,8 +9,8 @@ A place to update and store my zsh configuration and some dot files
     ln -s ~/.zsh/.wgetrc ~/.wgetrc
     ln -s ~/.zsh/.sqliterc ~/.sqliterc
     ln -s ~/.zsh/.htoprc ~/.config/htop/htoprc
-    sudo ln -s ~/.zsh/lisp /usr/local/bin/lisp
-    sudo ln -s ~/.zsh/lispscript /usr/local/bin/lispscript
+    sudo ln -s ~/.zsh/bin/lisp /usr/local/bin/lisp
+    sudo ln -s ~/.zsh/bin/lispscript /usr/local/bin/lispscript
     ln -s ~/.zsh/.gitconfig ~/.gitconfig
     ssl -k ~/.zsh/ssh_config.aes
     ln -s ~/.zsh/ssh_config ~/.ssh/config
