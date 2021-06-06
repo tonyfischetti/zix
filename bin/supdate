@@ -31,7 +31,7 @@
 
 (defun check-for-untracked-changes (arepo adirectory)
   (let ((ret (zsh (fn •cd ~A && git status 2>&1• adirectory))))
-    (when (~m ret "nothing added to commit but untracked files present")
+    (when (search "nothing added to commit but untracked files present" ret)
       (red "~A has local untracked changes to commit~%" arepo))))
 
 
