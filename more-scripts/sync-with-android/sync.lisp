@@ -106,8 +106,10 @@
       (ft "On playlist: ~A~%" (yellow "~A" playlist))
       (zsh (fn •mkdir -p "~A/music/~A"• /TMP-DIR/ playlist)) :echo t
       (for-each/line full
-        (let ((thebase (file-namestring value!)))
-          (zsh (fn •ln -sf "~A" "~A/music/~A/~4,'0D_~A"• value! /TMP-DIR/
+        ; TODO: dumb slow to use regex. do something else
+        (let* ((xlatedpath (~r value! "^.HOME." /HOME/))
+               (thebase (file-namestring xlatedpath)))
+          (zsh (fn •ln -sf "~A" "~A/music/~A/~4,'0D_~A"• xlatedpath /TMP-DIR/
                    playlist index! thebase))))))
   (zsh (fn •rsync -PhrtLav --delete ~A/music/ android:~A/music•
             /TMP-DIR/ /ANDROID-PREFIX/) :echo t :return-string nil)
