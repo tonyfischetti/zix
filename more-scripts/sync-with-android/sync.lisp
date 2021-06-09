@@ -4,19 +4,20 @@
 
 (load (fn "~A/data.lisp" /where-am-i/))
 
-
-(defvar /HOME/ (zsh "echo $HOME"))
-(defvar /CMUS-HOME/ (zsh "echo $CMUS_HOME"))
-(defvar /PLAYLIST-HOME/ (fn •~A/playlists/• /CMUS-HOME/))
-(defvar /MUSIC-LOCATION/ (fn •~A/Dropbox/music/• /HOME/))
-(defvar /ANDROID-HOME/ •/data/data/com.termux/files/home/•)
-(defvar /ANDROID-PREFIX/ (fn "~A/storage/" /ANDROID-HOME/))
-(defvar /PICTURES-PREFIX/ (fn "~A/pictures/" /ANDROID-PREFIX/))
-(defvar /PHOTOS-PREFIX/ (fn "~A/dcim/Camera" /ANDROID-PREFIX/))
-(defvar /ANDROID-USER/ "u0_a225")
-(defvar /WHATSAPP-DB-LOCATION/ "/data/data/com.whatsapp/databases/msgstore.db")
-(defvar /MESSAGES-DB-LOCATION/ "/data/data/com.google.android.apps.messaging/databases/bugle_db")
-(defvar /TMP-DIR/ (fn "~A/Desktop/ANDROID-SYNC-~A" /HOME/ (get-unix-time)))
+(defvar /HOME/                  (get-envvar "HOME"))
+(defvar /CMUS-HOME/             (get-envvar "CMUS_HOME"))
+(defvar /PLAYLIST-HOME/         (fn •~A/playlists/• /CMUS-HOME/))
+(defvar /MUSIC-LOCATION/        (fn •~A/Dropbox/music/• /HOME/))
+(defvar /ANDROID-HOME/          •/data/data/com.termux/files/home/•)
+(defvar /ANDROID-PREFIX/        (fn "~A/storage/" /ANDROID-HOME/))
+(defvar /PICTURES-PREFIX/       (fn "~A/pictures/" /ANDROID-PREFIX/))
+(defvar /PHOTOS-PREFIX/         (fn "~A/dcim/Camera" /ANDROID-PREFIX/))
+(defvar /ANDROID-USER/          "u0_a225")
+(defvar /WHATSAPP-DB-LOCATION/  "/data/data/com.whatsapp/databases/msgstore.db")
+(defvar /MESSAGES-DB-LOCATION/  "/data/data/com.google.android.apps.messaging/databases/bugle_db")
+(defvar /TMP-DIR/               (fn "~A/Desktop/ANDROID-SYNC-~A"
+                                    /HOME/ (get-current-time :time-sep "-"
+                                                             :dt-sep "_")))
 (defvar /LENGTH/ 0)
 
 (zsh (fn "mkdir '~A'" /TMP-DIR/) :echo t)
