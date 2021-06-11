@@ -109,8 +109,8 @@
       (for-each/line full
         (let* ((xlatedpath (~r value! "^.HOME." /HOME/))
                (thebase (file-namestring xlatedpath)))
-          (zsh-fast (fn •ln -sf "~A" "~A/music/~A/~4,'0D_~A"•
-                        xlatedpath /TMP-DIR/ playlist index! thebase))))))
+          (zsh-simple (fn •ln -sf "~A" "~A/music/~A/~4,'0D_~A"•
+                          xlatedpath /TMP-DIR/ playlist index! thebase))))))
   (zsh (fn •rsync -PhrtLav --delete ~A/music/ android:~A/music•
             /TMP-DIR/ /ANDROID-PREFIX/) :echo t :return-string nil)
   (zsh (fn "rm -rf ~A/music" /TMP-DIR/) :echo t))
