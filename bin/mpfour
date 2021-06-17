@@ -52,12 +52,6 @@
 (defun change-to-mp4-fn (afile)
   (format nil "~A.mp4" (chop-extension afile)))
 
-(defun get-size (afile &key (just-bytes nil))
-  (if *dry-run* "1"
-    (~r (zsh (format nil •du ~A "~A"•
-                     (if just-bytes "-sb" "")
-                     afile)) "\\s+.*$" "")))
-
 
 (defun make-conv-command (afile tmp-name scaling)
   (format nil •ffmpeg -i "~A" ~A ~A -max_muxing_queue_size 9999 ~A "~A" -loglevel error•

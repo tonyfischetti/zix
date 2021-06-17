@@ -1,6 +1,7 @@
 #!/usr/local/bin/lispscript
 ; vi: ft=lisp
 
+(ql:quickload :cl-fad :silent t)
 
 (defvar /dry-run/       nil)
 (defvar /overwrite-p/   nil)
@@ -46,7 +47,7 @@
      (setq /to-dir/    Ø (cadr bare-args!)))
   or die "invalid number of arguments" »
 
-« (setq /from-file/ Ø (enough-namestring (cl-fad:file-exists-p /from-file/)))
+« (setq /from-file/ Ø (enough-namestring (probe-file /from-file/)))
   or die (fn "file to copy (~A) doesn't exist" /from-file/) »
 
 ; requires `realpath` from coreutils

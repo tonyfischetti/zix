@@ -5,4 +5,4 @@ cd ~/.lisp; sbcl --eval "(progn (save-lisp-and-die \"pluto-sbcl.core\" :save-run
 
 # CLISP
 # (not implemented yet)
-cd ~/lisp; clisp -q -x '(progn (ql:quickload :pluto) (use-package :pluto) (EXT:SAVEINITMEM "pluto-clisp.mem"))'
+cd ~/.lisp; clisp -q -x '(progn (ql:quickload :pluto) (use-package :pluto) (EXT:SAVEINITMEM "pluto-clisp.mem"))'
