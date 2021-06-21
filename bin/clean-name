@@ -10,7 +10,7 @@
 
 (for-each/list *input-file*
   (let ((new-name       (clean-it value!)))
-    (if (or (string= new-name value!) (cl-fad:file-exists-p new-name))
+    (if (or (string= new-name value!) (probe-file new-name))
       (warn (format nil "Cleaned filename (~A) already exists" new-name))
       (zsh (format nil •mv "~A" ~A• value! new-name) :echo t))))
 
