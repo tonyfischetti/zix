@@ -13,8 +13,8 @@
 (format t "EXPORTING SQLITE DATABASE~%")
 (zsh (fn "mkdir ~A" +tmpdir+))
 (zsh (format nil "cp ~A ./~A" +PLACESLOC+ +tmpdir+))
-(zsh (fn "sqlite3 -separator '🐰' ./~A/places.sqlite 'select * from moz_places;' > ./~A/moz-places.bsv" +tmpdir+ +tmpdir+))
-(zsh (fn "sqlite3 -separator '🐰' ./~A/places.sqlite 'select * from moz_historyvisits order by visit_date;' > ./~A/history-visits.bsv" +tmpdir+ +tmpdir+))
+(zsh (fn "sqlite3 -init /dev/null -separator '🐰' ./~A/places.sqlite 'select * from moz_places;' > ./~A/moz-places.bsv" +tmpdir+ +tmpdir+))
+(zsh (fn "sqlite3 -init /dev/null -separator '🐰' ./~A/places.sqlite 'select * from moz_historyvisits order by visit_date;' > ./~A/history-visits.bsv" +tmpdir+ +tmpdir+))
 
 
 
