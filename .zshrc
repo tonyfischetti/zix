@@ -171,6 +171,7 @@ alias youtube-dl="youtube-dl -f best --add-metadata --embed-subs --all-subs"
 alias fd="fdfind"
 alias phav="rsync -Phav"
 alias phan="rsync -Phav --no-perms --no-owner --no-group"
+alias info="info --vi-keys"
 alias blake="openssl dgst -blake2b512 -hex"
 alias weather='curl "wttr.in/~Washington+Heights?m&p"'
 alias weather2='curl "wttr.in/~Washington+Heights?m&p&format=v2"'
