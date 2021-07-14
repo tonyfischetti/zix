@@ -222,7 +222,7 @@ then
     alias android-sync="~/.zsh/more-scripts/sync-with-android/sync.lisp"
     alias vtkeys="sudo loadkeys ~/.dix/vt-caps-to-control.kmap"
     alias sgc="sudo grub-customizer"
-    alias journal="journalctl"
+    alias journal="journalctl -b -ef | ccze -A"
     alias pupdate="sudo apt update && apt list --upgradable"
     alias pindexupdate="sudo update-apt-xapian-index"
     alias poutdated="apt list --upgradable"
