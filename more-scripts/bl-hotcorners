@@ -19,6 +19,7 @@
 #    Renamed for BunsenLabs
 
 # edited by tony fischetti to make compatible with python 3
+# and small tweaks for latency/performance
 
 from Xlib import display
 from Xlib.ext.xtest import fake_input
@@ -27,7 +28,9 @@ from subprocess import Popen, PIPE, STDOUT
 import sys, time, os, configparser, re
 import argparse
 
-check_intervall = 0.2
+# parameters
+check_intervall = 0.1  # was 0.2
+second_sleep = 0.1     # was 0.2
 
 ap = argparse.ArgumentParser(description="Hotcorners")
 ap.add_argument("-k", "--kill", help="attempt to kill any runnng instances",
@@ -81,14 +84,16 @@ elif opts.daemon:
         Config.write(cfgfile)
         cfgfile.close()
 
+    # read only once
+    Config.read(rcfile)
+
     while True:
-        Config.read(rcfile)
         time.sleep(check_intervall)
         pos = mousepos()
 
         if pos[0] == 0 and pos[1] == 0:
             if Config.get('Hot Corners','top_left_corner_command') != '':
-                time.sleep(0.2)
+                time.sleep(second_sleep)
                 pos = mousepos()
                 if pos[0] == 0 and pos[1] == 0:
                     mousemove(pos[0] + bounce, pos[1] + bounce)
@@ -98,7 +103,7 @@ elif opts.daemon:
 
         elif pos[0] == rt and pos[1] == 0:
             if Config.get('Hot Corners','top_right_corner_command') != '':
-                time.sleep(0.2)
+                time.sleep(second_sleep)
                 pos = mousepos()
                 if pos[0] == rt and pos[1] == 0 :
                     mousemove(pos[0] - bounce, pos[1] + bounce)
@@ -108,7 +113,7 @@ elif opts.daemon:
 
         elif pos[0] == 0 and pos[1] == bt:
             if Config.get('Hot Corners','bottom_left_corner_command') != '':
-                time.sleep(0.2)
+                time.sleep(second_sleep)
                 pos = mousepos()
                 if pos[0] == 0 and pos[1] == bt:
                     mousemove(pos[0] + bounce, pos[1] - bounce)
@@ -118,7 +123,7 @@ elif opts.daemon:
 
         elif pos[0] == rt and pos[1] == bt:
             if Config.get('Hot Corners','bottom_right_corner_command') != '':
-                time.sleep(0.2)
+                time.sleep(second_sleep)
                 pos = mousepos()
                 if pos[0] == rt and pos[1] == bt:
                     mousemove(pos[0] - bounce, pos[1] - bounce)
