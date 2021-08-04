@@ -29,12 +29,12 @@ import sys, time, os, configparser, re
 import argparse
 
 # parameters
-check_interval = 0.1  # was 0.2
-second_sleep = 0.1     # was 0.2
+check_interval  = 0.1   # was 0.2
+second_sleep    = 0.1   # was 0.2
 
 ap = argparse.ArgumentParser(description="Hotcorners")
-ap.add_argument("-k", "--kill", help="attempt to kill any runnng instances",
-            action="store_true")
+# ap.add_argument("-k", "--kill", help="attempt to kill any runnng instances",
+#             action="store_true")
 ap.add_argument("-d", "--daemon", help="run daemon and listen for cursor triggers",
             action="store_true")
 opts = ap.parse_args(sys.argv[1:])
@@ -49,12 +49,12 @@ hw = width / 2
 rt = width - 1
 bt = height - 1
 
-if opts.kill:
-    print("Attempting to kill any running instances...")
-    os.system('pkill -9 -f bl-hotcorners')
-    exit()
+# if opts.kill:
+#     print("Attempting to kill any running instances...")
+#     os.system('pkill -9 -f bl-hotcorners')
+#     exit()
 
-elif opts.daemon:
+if opts.daemon:
     Config = configparser.ConfigParser()
     cfgdir = os.getenv("HOME")+"/.config/bl-hotcorners"
     rcfile = cfgdir+"/bl-hotcornersrc"
@@ -96,43 +96,45 @@ elif opts.daemon:
         time.sleep(check_interval)
         pos = mousepos()
 
-        if pos[0] == 0 and pos[1] == 0:
-            if TOP_LEFT_COMMAND:
-                time.sleep(second_sleep)
-                pos = mousepos()
-                if pos[0] == 0 and pos[1] == 0:
-                    mousemove(pos[0] + bounce, pos[1] + bounce)
-                    os.system("({}) &".format(TOP_LEFT_COMMAND))
-                    mousemove(pos[0] + bounce, pos[1] + bounce)
-                    time.sleep(2)
+        if pos[1] == 0:
+            if pos[0] == 0:
+                if TOP_LEFT_COMMAND:
+                    time.sleep(second_sleep)
+                    pos = mousepos()
+                    if pos[0] == 0 and pos[1] == 0:
+                        mousemove(pos[0] + bounce, pos[1] + bounce)
+                        os.system("({}) &".format(TOP_LEFT_COMMAND))
+                        mousemove(pos[0] + bounce, pos[1] + bounce)
+                        time.sleep(2)
 
-        elif pos[0] == rt and pos[1] == 0:
-            if TOP_RIGHT_COMMAND:
-                time.sleep(second_sleep)
-                pos = mousepos()
-                if pos[0] == rt and pos[1] == 0 :
-                    mousemove(pos[0] - bounce, pos[1] + bounce)
-                    os.system("({}) &".format(TOP_RIGHT_COMMAND))
-                    mousemove(pos[0] - bounce, pos[1] + bounce)
-                    time.sleep(2)
+            elif pos[0] == rt:
+                if TOP_RIGHT_COMMAND:
+                    time.sleep(second_sleep)
+                    pos = mousepos()
+                    if pos[0] == rt and pos[1] == 0 :
+                        mousemove(pos[0] - bounce, pos[1] + bounce)
+                        os.system("({}) &".format(TOP_RIGHT_COMMAND))
+                        mousemove(pos[0] - bounce, pos[1] + bounce)
+                        time.sleep(2)
 
-        elif pos[0] == 0 and pos[1] == bt:
-            if BOTTOM_LEFT_COMMAND:
-                time.sleep(second_sleep)
-                pos = mousepos()
-                if pos[0] == 0 and pos[1] == bt:
-                    mousemove(pos[0] + bounce, pos[1] - bounce)
-                    os.system("({}) &".format(BOTTOM_LEFT_COMMAND))
-                    mousemove(pos[0] + bounce, pos[1] - bounce)
-                    time.sleep(2)
+        if pos[1] == bt:
+            if pos[0] == 0:
+                if BOTTOM_LEFT_COMMAND:
+                    time.sleep(second_sleep)
+                    pos = mousepos()
+                    if pos[0] == 0 and pos[1] == bt:
+                        mousemove(pos[0] + bounce, pos[1] - bounce)
+                        os.system("({}) &".format(BOTTOM_LEFT_COMMAND))
+                        mousemove(pos[0] + bounce, pos[1] - bounce)
+                        time.sleep(2)
 
-        elif pos[0] == rt and pos[1] == bt:
-            if BOTTOM_RIGHT_COMMAND:
-                time.sleep(second_sleep)
-                pos = mousepos()
-                if pos[0] == rt and pos[1] == bt:
-                    mousemove(pos[0] - bounce, pos[1] - bounce)
-                    os.system("({}) &".format(BOTTOM_RIGHT_COMMAND))
-                    mousemove(pos[0] - bounce, pos[1] - bounce)
-                    time.sleep(2)
+            elif pos[0] == rt:
+                if BOTTOM_RIGHT_COMMAND:
+                    time.sleep(second_sleep)
+                    pos = mousepos()
+                    if pos[0] == rt and pos[1] == bt:
+                        mousemove(pos[0] - bounce, pos[1] - bounce)
+                        os.system("({}) &".format(BOTTOM_RIGHT_COMMAND))
+                        mousemove(pos[0] - bounce, pos[1] - bounce)
+                        time.sleep(2)
 
