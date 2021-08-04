@@ -29,7 +29,7 @@ import sys, time, os, configparser, re
 import argparse
 
 # parameters
-check_intervall = 0.1  # was 0.2
+check_interval = 0.1  # was 0.2
 second_sleep = 0.1     # was 0.2
 
 ap = argparse.ArgumentParser(description="Hotcorners")
@@ -77,7 +77,7 @@ elif opts.daemon:
             os.makedirs(cfgdir)
         cfgfile = open(rcfile,'w')
         Config.add_section('Hot Corners')
-        Config.set('Hot Corners','top_left_corner_command', 'gmrun')
+        Config.set('Hot Corners','top_left_corner_command', '')
         Config.set('Hot Corners','top_right_corner_command', '')
         Config.set('Hot Corners','bottom_left_corner_command', '')
         Config.set('Hot Corners','bottom_right_corner_command', '')
@@ -87,46 +87,52 @@ elif opts.daemon:
     # read only once
     Config.read(rcfile)
 
+    TOP_LEFT_COMMAND     = Config.get('Hot Corners','top_left_corner_command')
+    TOP_RIGHT_COMMAND    = Config.get('Hot Corners','top_right_corner_command')
+    BOTTOM_LEFT_COMMAND  = Config.get('Hot Corners','bottom_left_corner_command')
+    BOTTOM_RIGHT_COMMAND = Config.get('Hot Corners','bottom_right_corner_command')
+
     while True:
-        time.sleep(check_intervall)
+        time.sleep(check_interval)
         pos = mousepos()
 
         if pos[0] == 0 and pos[1] == 0:
-            if Config.get('Hot Corners','top_left_corner_command') != '':
+            if TOP_LEFT_COMMAND:
                 time.sleep(second_sleep)
                 pos = mousepos()
                 if pos[0] == 0 and pos[1] == 0:
                     mousemove(pos[0] + bounce, pos[1] + bounce)
-                    os.system('(' + Config.get('Hot Corners','top_left_corner_command') + ') &')
+                    os.system("({}) &".format(TOP_LEFT_COMMAND))
                     mousemove(pos[0] + bounce, pos[1] + bounce)
                     time.sleep(2)
 
         elif pos[0] == rt and pos[1] == 0:
-            if Config.get('Hot Corners','top_right_corner_command') != '':
+            if TOP_RIGHT_COMMAND:
                 time.sleep(second_sleep)
                 pos = mousepos()
                 if pos[0] == rt and pos[1] == 0 :
                     mousemove(pos[0] - bounce, pos[1] + bounce)
-                    os.system('(' + Config.get('Hot Corners','top_right_corner_command') + ') &')
+                    os.system("({}) &".format(TOP_RIGHT_COMMAND))
                     mousemove(pos[0] - bounce, pos[1] + bounce)
                     time.sleep(2)
 
         elif pos[0] == 0 and pos[1] == bt:
-            if Config.get('Hot Corners','bottom_left_corner_command') != '':
+            if BOTTOM_LEFT_COMMAND:
                 time.sleep(second_sleep)
                 pos = mousepos()
                 if pos[0] == 0 and pos[1] == bt:
                     mousemove(pos[0] + bounce, pos[1] - bounce)
-                    os.system('(' + Config.get('Hot Corners','bottom_left_corner_command') + ') &')
+                    os.system("({}) &".format(BOTTOM_LEFT_COMMAND))
                     mousemove(pos[0] + bounce, pos[1] - bounce)
                     time.sleep(2)
 
         elif pos[0] == rt and pos[1] == bt:
-            if Config.get('Hot Corners','bottom_right_corner_command') != '':
+            if BOTTOM_RIGHT_COMMAND:
                 time.sleep(second_sleep)
                 pos = mousepos()
                 if pos[0] == rt and pos[1] == bt:
                     mousemove(pos[0] - bounce, pos[1] - bounce)
-                    os.system('(' + Config.get('Hot Corners','bottom_right_corner_command') + ') &')
+                    os.system("({}) &".format(BOTTOM_RIGHT_COMMAND))
                     mousemove(pos[0] - bounce, pos[1] - bounce)
                     time.sleep(2)
+
