@@ -132,6 +132,11 @@ then
     export FIREFOXPROFILE="~/.mozilla/firefox/b4nptbgd.default-esr"
     export HISTFILE="$HOME/Dropbox/histories/zsh_history-betazed"
     export R_DATATABLE_NUM_THREADS=10
+elif [[ `hostname` = 'vulcan' ]]
+then
+    export FIREFOXPROFILE="~/.mozilla/firefox/o527aey8.default-esr"
+    export HISTFILE="$HOME/Dropbox/histories/zsh_history-vulcan"
+    export R_DATATABLE_NUM_THREADS=6
 elif [[ `hostname` = 'vertiform-city' ]]
 then
     export HISTFILE="$HOME/Dropbox/histories/zsh_history-vertiform-city"
