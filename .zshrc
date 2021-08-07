@@ -403,3 +403,10 @@ then
 fi
 
 test -e "${HOME}/.iterm2_shell_integration.zsh" && source "${HOME}/.iterm2_shell_integration.zsh"
+
+# THIS IS TEMPORARY BUT IT WORKS
+if [[ `hostname` = 'vulcan' ]]
+then
+    export SSH_AUTH_SOCK="$(find /tmp/ssh* | grep ssh | grep agent 2> /dev/null)"
+    export SSH_AGENT_PID="$(ps aux | ack 'ssh-agent$' | awk '{print $2}')"
+fi
