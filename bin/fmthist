@@ -18,7 +18,7 @@
 (defun pretty-show (index theprog theuname thehostname thecwd thecontext
                           prettytime theactualcmd thetags line)
   #?(format t "[ <~A> | ~A | ~A | ~A ]~%~A~A~A~%~%"
-            theprog thecontext thecwd prettytime +cyan-bold+ theactualcmd
+            thehostname thecontext thecwd prettytime +cyan-bold+ theactualcmd
             +reset-terminal-color+))
 
 (declaim (inline bare-min-show))
@@ -63,15 +63,18 @@
 (defparameter *fn-zsh-lookup*   (list '("cardassia" . "~/Dropbox/histories/zsh_history-cardassia")
                                       '("tony-macbook" . "~/Dropbox/histories/zsh_history-tony-macbook")
                                       '("betazed" . "~/Dropbox/histories/zsh_history-betazed")
-                                      '("qonos" . "~/Dropbox/histories/zsh_history-qonos")))
+                                      '("qonos" . "~/Dropbox/histories/zsh_history-qonos")
+                                      '("vulcan" . "~/Dropbox/histories/zsh_history-vulcan")))
 (defparameter *fn-R-lookup*     (list '("cardassia" . "~/Dropbox/histories/r_extended_history-cardassia")
                                       '("tony-macbook" . "~/Dropbox/histories/r_extended_history-tony-macbook")
                                       '("betazed" . "~/Dropbox/histories/r_extended_history-betazed")
-                                      '("qonos" . "~/Dropbox/histories/r_extended_history-qonos")))
+                                      '("qonos" . "~/Dropbox/histories/r_extended_history-qonos")
+                                      '("vulcan" . "~/Dropbox/histories/r_extended_history-vulcan")))
 (defparameter *fn-lisp-lookup*  (list '("cardassia" . "~/Dropbox/histories/sbcl_history-cardassia")
                                       '("tony-macbook" . "~/Dropbox/histories/sbcl_history-tony-macbook")
                                       '("betazed" . "~/Dropbox/histories/sbcl_history-betazed")
-                                      '("qonos" . "~/Dropbox/histories/sbcl_history-qonos")))
+                                      '("qonos" . "~/Dropbox/histories/sbcl_history-qonos")
+                                      '("vulcan" . "~/Dropbox/histories/sbcl_history-vulcan")))
 (defparameter *fn-firefox*      "~/Dropbox/histories/firefox")
 (defparameter *fn-lastfm*       "~/Dropbox/histories/lastfm-history")
 
