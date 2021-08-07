@@ -9,7 +9,7 @@
 (defvar /firefox/ (make-openable
                     :name "firefox"
                     :searchregex " Mozilla Firefox$"
-                    :cmd "systemd-run --scope --user --unit=ffox firefox"))
+                    :cmd "systemd-run --scope --user firefox"))
 
 (defvar /thunar/ (make-openable
                     :name "thunar"
