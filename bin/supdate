@@ -49,7 +49,7 @@
 (defun git-handle (arepo adirectory)
   (when (string= /uname/ "Linux")
     (when (y-or-n-def "Handle this?" :default #\n)
-      (zsh (fn •xfce4-terminal --working-directory ~A• adirectory) :echo t))))
+      (zsh (fn •xfce4-terminal --working-directory ~A• adirectory)))))
 
 (defun dispatch-git-actions (alist arepo adirectory)
   (let ((tmp (mapcar (lambda (x) (if x t nil)) alist)))
