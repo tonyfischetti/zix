@@ -22,18 +22,15 @@
     (unless (string= "" ret)
       (red "~A has an update~%" arepo))))
 
-
 (defun check-for-local-changes (arepo adirectory)
   (let ((ret (zsh (fn •cd ~A && git diff 2>&1• adirectory))))
     (unless (string= "" ret)
       (red "~A has local changes to commit~%" arepo))))
 
-
 (defun check-for-untracked-changes (arepo adirectory)
   (let ((ret (zsh (fn •cd ~A && git status 2>&1• adirectory))))
     (when (search "nothing added to commit but untracked files present" ret)
       (red "~A has local untracked changes to commit~%" arepo))))
-
 
 (defun check-everything (key val)
   (with-loading
@@ -43,12 +40,28 @@
           (check-for-updates key val))
       OR DO (fn (red "ERROR PROCESSING REPO ~A~%" key)) » ))
 
+(defun git-pull-update (arepo adirectory)
+  (when (y-or-n-def "Pull latest ~A update?" :default #\y)
+    (zsh (fn •cd ~A && git pull• adirectory))))
+
+(defun git-handle (arepo adirectory)
+  (when (string= /uname/ "Linux")
+    (when (y-or-n-def "Handle this?" :default #\n)
+      (zsh (fn •xfce4-terminal --working-directory ~A• adirectory) :echo t))))
+
+(defun dispatch-git-actions (alist arepo adirectory)
+  (let ((tmp (mapcar (lambda (x) (if x t nil)) alist)))
+    (cond
+      ((equal tmp '(nil nil t))     (git-pull-update arepo adirectory))
+       (t                           (git-handle arepo adirectory)))))
 
 (for-each/alist /allplaces/
   (ft (yellow "Checking repo: ~10A" key!))
   « (let ((results (check-everything key! value!)))
       (aif (remove-if #'null results)
-        (mapcar #'princ it!)
+        (progn
+          (mapcar #'princ it!)
+          (dispatch-git-actions results key! value!))
         (ft (green "~A all good~%" key!))))
       OR DO (ft (red "ERROR PROCESSING REPO ~A~%" key!)) »
     (terpri))
@@ -61,127 +74,134 @@
 (defvar /PACKAGES-P/  (member "--packages" (cmdargs) :test #'string=))
 (defvar /MUSIC-P/     (member "--music" (cmdargs) :test #'string=))
 
-(when (or /PACKAGES-P/ /ALL-P/)
-  (when (string= /uname/ "Linux")
-    (when (y-or-n-p "update installed debian package listing?")
-      (ft (yellow "~%updating debian package listing~%"))
-      (zsh (fn "apt list --installed > ~A/.dix/pkg-lists/apt-list-~A"
-               /home/ /hostname/) :echo t)
-      (ft (green "done.~%")))))
 
-(when (or /PACKAGES-P/ /ALL-P/)
-  (when (string= /uname/ "Darwin")
-    (when (y-or-n-p "update installed macports?")
-      (ft (yellow "~%updating installed macports port listing~%"))
-      (zsh (fn "port installed | ack 'active.\s*' > ~A/.dix/other-os/macos/ports-~A"
-               /home/ /hostname/) :echo t)
-      (ft (green "done.~%")))))
+(with-interactive-interrupt-handler "~%peace~%"
+  (progn
 
-(when /ALL-P/
-  (when (string= /uname/ "Linux")
-    (when (y-or-n-p "update apt sources?")
-      (ft (yellow "~%updating apt sources~%"))
-      (zsh (fn "cp /etc/apt/sources.list ~A/.dix/etc/apt/" /home/) :echo t)
-      (ft (green "done.~%")))))
+    (when (or /PACKAGES-P/ /ALL-P/)
+      (when (string= /uname/ "Linux")
 
-(when /ALL-P/
-  (when (y-or-n-p "update firefox history?")
-    (ft (yellow "~%updating firefox history~%"))
-    (zsh "ffhistupdate")
-    (ft (green "done.~%"))))
+    (when (or /PACKAGES-P/ /ALL-P/)
+      (when (string= /uname/ "Linux")
+        (when (y-or-n-def "update installed debian package listing?" :default #\y)
+          (ft (yellow "~%updating debian package listing~%"))
+          (zsh (fn "apt list --installed > ~A/.dix/pkg-lists/apt-list-~A"
+                   /home/ /hostname/) :echo t)
+          (ft (green "done.~%")))))
 
-(when /ALL-P/
-  (when (y-or-n-p "update history files?")
-    (ft (yellow "~%updating history files~%"))
-    (zsh (fn •zpaq add "~A/Dropbox/Carlos IV/Backups/OS/histories.zpaq" "~A/Dropbox/histories" -to histories -key• /home/ /home/) :echo t :return-string nil)
-    (ft (green "done.~%"))))
+    (when (or /PACKAGES-P/ /ALL-P/)
+      (when (string= /uname/ "Darwin")
+        (when (y-or-n-def "update installed macports listing?" :default #\y)
+          (ft (yellow "~%updating installed macports port listing~%"))
+          (zsh (fn "port installed | ack 'active.\s*' > ~A/.dix/other-os/macos/ports-~A"
+                   /home/ /hostname/) :echo t)
+          (ft (green "done.~%")))))
 
-(when /ALL-P/
-  (when (y-or-n-p "update keys backup?")
-    (ft (yellow "~%updating keys backup~%"))
-    (zsh (fn •zpaq add "~A/Dropbox/Carlos IV/Backups/OS/keys.zpaq" "~A/.keys" -to keys -key• /home/ /home/) :echo t :return-string nil)
-    (ft (green "done.~%"))))
+    (when /ALL-P/
+      (when (string= /uname/ "Linux")
+        (when (y-or-n-def "update apt sources?" :default #\n)
+          (ft (yellow "~%updating apt sources~%"))
+          (zsh (fn "cp /etc/apt/sources.list ~A/.dix/etc/apt/" /home/) :echo t)
+          (ft (green "done.~%")))))
 
-(when /ALL-P/
-  (when (string= /uname/ "Linux")
-    (when (y-or-n-p "update xfce confs backup?")
-      (ft (yellow "~%updating xfce confs backup~%"))
-      (zsh (fn •zpaq add "~A/Dropbox/Carlos IV/Backups/OS/Debian/some-dot-conf-dirs/xfce4-~A.zpaq" "~A/.config/xfce4" -to xfce4• /home/ /hostname/ /home/) :echo t :return-string nil)
-      (ft (green "done.~%")))))
+    (when /ALL-P/
+      (when (y-or-n-def "update firefox history?" :default #\n)
+        (ft (yellow "~%updating firefox history~%"))
+        (zsh "ffhistupdate")
+        (ft (green "done.~%"))))
 
-(when (or /MUSIC-P/ /ALL-P/)
-  (when (y-or-n-p "update music library listing?")
-    (ft (yellow "~%updating music library listing~%"))
-    (zsh "find ~/Dropbox/music | sort | perl -pe 's@.+?music/@music/@' > ~/cmus/music-library" :echo t)
-    (ft (green "done.~%"))))
+    (when /ALL-P/
+      (when (y-or-n-def "update history files?" :default #\n)
+        (ft (yellow "~%updating history files~%"))
+        (zsh (fn •zpaq add "~A/Dropbox/Carlos IV/Backups/OS/histories.zpaq" "~A/Dropbox/histories" -to histories -key• /home/ /home/) :echo t :return-string nil)
+        (ft (green "done.~%"))))
 
-(when (or /MUSIC-P/ /ALL-P/)
-  (when (y-or-n-p "update spotify playlists backup?")
-    (ft (yellow "~%updating spotify playlists backup~%"))
-    (zsh "~/.zsh/more-scripts/spotify-backup.py ~/cmus/spotify-playlists.txt" :echo t)
-    (ft (green "done.~%"))))
+    (when /ALL-P/
+      (when (y-or-n-def "update keys backup?" :default #\n)
+        (ft (yellow "~%updating keys backup~%"))
+        (zsh (fn •zpaq add "~A/Dropbox/Carlos IV/Backups/OS/keys.zpaq" "~A/.keys" -to keys -key• /home/ /home/) :echo t :return-string nil)
+        (ft (green "done.~%"))))
 
-(when /ALL-P/
-  (when (y-or-n-p "update quicklisp client?")
-    (ft (yellow "~%updating quicklisp client~%"))
-    (zsh • sbcl --eval "(progn (ql:update-client) (quit))"• :echo t)
-    (ft (green "done.~%"))))
+    (when /ALL-P/
+      (when (string= /uname/ "Linux")
+        (when (y-or-n-def "update xfce confs backup?" :default #\y)
+          (ft (yellow "~%updating xfce confs backup~%"))
+          (zsh (fn •zpaq add "~A/Dropbox/Carlos IV/Backups/OS/Debian/some-dot-conf-dirs/xfce4-~A.zpaq" "~A/.config/xfce4" -to xfce4• /home/ /hostname/ /home/) :echo t :return-string nil)
+          (ft (green "done.~%")))))
 
-(when /ALL-P/
-  (when (y-or-n-p "update quicklisp packages?")
-    (ft (yellow "~%updating quicklisp packages~%"))
-    (zsh •sbcl --eval '(progn (ql:update-dist "quicklisp") (quit))'• :echo t)
-    (ft (green "done.~%"))))
+    (when (or /MUSIC-P/ /ALL-P/)
+      (when (y-or-n-def "update music library listing?" :default #\n)
+        (ft (yellow "~%updating music library listing~%"))
+        (zsh "find ~/Dropbox/music | sort | perl -pe 's@.+?music/@music/@' > ~/cmus/music-library" :echo t)
+        (ft (green "done.~%"))))
 
-(when /ALL-P/
-  (when (y-or-n-p "update quicklisp archives?")
-    (ft (yellow "~%updating quicklisp archives~%"))
-    (zsh (fn "zpaq a '~A/Dropbox/Carlos IV/Backups/OS/lisp-software/ql-software-~A.zpaq' ~A/quicklisp/dists/quicklisp/software -to ql-software-~A"
-             /home/ /hostname/ /home/ /hostname/) :echo t)
-    (ft (green "done.~%"))))
+    (when (or /MUSIC-P/ /ALL-P/)
+      (when (y-or-n-def "update spotify playlists backup?" :default #\n)
+        (ft (yellow "~%updating spotify playlists backup~%"))
+        (zsh "~/.zsh/more-scripts/spotify-backup.py ~/cmus/spotify-playlists.txt" :echo t)
+        (ft (green "done.~%"))))
 
-(when /ALL-P/
-  (when (y-or-n-p "update lisp cores?")
-    (ft (yellow "~%updating lisp cores~%"))
-    (zsh "~/.zsh/bin/update-lisp-cores.sh" :echo t)
-    (ft (green "done.~%"))))
+    (when /ALL-P/
+      (when (y-or-n-def "update quicklisp client?" :default #\n)
+        (ft (yellow "~%updating quicklisp client~%"))
+        (zsh • sbcl --eval "(progn (ql:update-client) (quit))"• :echo t)
+        (ft (green "done.~%"))))
 
-(when /ALL-P/
-  (when (y-or-n-p "update R packages?")
-    (ft (yellow "~%updating R packages~%"))
-    (zsh •R -e 'update.packages()'• :echo t)
-    (ft (green "done.~%"))))
+    (when /ALL-P/
+      (when (y-or-n-def "update quicklisp packages?" :default #\n)
+        (ft (yellow "~%updating quicklisp packages~%"))
+        (zsh •sbcl --eval '(progn (ql:update-dist "quicklisp") (quit))'• :echo t)
+        (ft (green "done.~%"))))
 
-(when /ALL-P/
-  (when (y-or-n-p "update installed R packages listing?")
-    (ft (yellow "~%updating installed R packages listing~%"))
-    (zsh (fn "ls ~A/local/R_libs | sort > ~A/.rix/pkg-list-~A" /home/ /home/ /hostname/) :echo t)
-    (ft (green "done.~%"))))
+    (when /ALL-P/
+      (when (y-or-n-def "update quicklisp archives?" :default #\n)
+        (ft (yellow "~%updating quicklisp archives~%"))
+        (zsh (fn "zpaq a '~A/Dropbox/Carlos IV/Backups/OS/lisp-software/ql-software-~A.zpaq' ~A/quicklisp/dists/quicklisp/software -to ql-software-~A"
+                 /home/ /hostname/ /home/ /hostname/) :echo t)
+        (ft (green "done.~%"))))
 
-(when /ALL-P/
-  (when (y-or-n-p "update R library archives?")
-    (ft (yellow "~%updating R library archives~%"))
-    (zsh (fn "zpaq a '~A/Dropbox/Carlos IV/Backups/OS/R_libs/R_libs-~A.zpaq' ~A/local/R_libs -to R_libs-~A"
-             /home/ /hostname/ /home/ /hostname/) :echo t)
-    (ft (green "done.~%"))))
+    (when /ALL-P/
+      (when (y-or-n-def "update lisp cores?" :default #\y)
+        (ft (yellow "~%updating lisp cores~%"))
+        (zsh "~/.zsh/bin/update-lisp-cores.sh" :echo t)
+        (ft (green "done.~%"))))
 
-(when /ALL-P/
-  (when (y-or-n-p "update Python packages archives?")
-    (ft (yellow "~%updating Python packages archives~%"))
-    (if (string= /uname/ "Linux")
-      (zsh (fn "zpaq a '~A/Dropbox/Carlos IV/Backups/OS/py-packages/site-packages-~A.zpaq' ~A/.local/lib/python3.7/site-packages -to site-packages-~A"
-               /home/ /hostname/ /home/ /hostname/) :echo t)
-      (zsh (fn "zpaq a '~A/Dropbox/Carlos IV/Backups/OS/py-packages/py-library-~A.zpaq' ~A/Library/Python/3.7 -to py-library-~A"
-               /home/ /hostname/ /home/ /hostname/) :echo t))
-    (ft (green "done.~%"))))
+    (when /ALL-P/
+      (when (y-or-n-def "update R packages?" :default #\n)
+        (ft (yellow "~%updating R packages~%"))
+        (zsh •R -e 'update.packages()'• :echo t)
+        (ft (green "done.~%"))))
 
-(when /ALL-P/
-  (when (string= /uname/ "Linux")
-    (when (y-or-n-p "update xapian package index?")
-      (ft (yellow "~%updating xapian package index~%"))
-      (zsh •sudo update-apt-xapian-index• :echo t)
-      (ft (green "done.~%")))))
+    (when /ALL-P/
+      (when (y-or-n-def "update installed R packages listing?" :default #\y)
+        (ft (yellow "~%updating installed R packages listing~%"))
+        (zsh (fn "ls ~A/local/R_libs | sort > ~A/.rix/pkg-list-~A" /home/ /home/ /hostname/) :echo t)
+        (ft (green "done.~%"))))
 
-(ft "~%")
+    (when /ALL-P/
+      (when (y-or-n-def "update R library archives?" :default #\n)
+        (ft (yellow "~%updating R library archives~%"))
+        (zsh (fn "zpaq a '~A/Dropbox/Carlos IV/Backups/OS/R_libs/R_libs-~A.zpaq' ~A/local/R_libs -to R_libs-~A"
+                 /home/ /hostname/ /home/ /hostname/) :echo t)
+        (ft (green "done.~%"))))
+
+    (when /ALL-P/
+      (when (y-or-n-def "update Python packages archives?" :default #\n)
+        (ft (yellow "~%updating Python packages archives~%"))
+        (if (string= /uname/ "Linux")
+          (zsh (fn "zpaq a '~A/Dropbox/Carlos IV/Backups/OS/py-packages/site-packages-~A.zpaq' ~A/.local/lib/python3.7/site-packages -to site-packages-~A"
+                   /home/ /hostname/ /home/ /hostname/) :echo t)
+          (zsh (fn "zpaq a '~A/Dropbox/Carlos IV/Backups/OS/py-packages/py-library-~A.zpaq' ~A/Library/Python/3.7 -to py-library-~A"
+                   /home/ /hostname/ /home/ /hostname/) :echo t))
+        (ft (green "done.~%"))))
+
+    (when /ALL-P/
+      (when (string= /uname/ "Linux")
+        (when (y-or-n-def "update xapian package index?" :default #\n)
+          (ft (yellow "~%updating xapian package index~%"))
+          (zsh •sudo update-apt-xapian-index• :echo t)
+          (ft (green "done.~%")))))
+
+    (ft "~%")))))
 
 ; vi: ft=lisp
