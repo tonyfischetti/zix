@@ -40,9 +40,10 @@
           (check-for-untracked-changes key val)
           (check-for-updates key val))
       OR DO (fn (red "ERROR PROCESSING REPO ~A~%" key)) » ))
+      ; OR DIE error! » ))
 
 (defun git-pull-update (arepo adirectory)
-  (when (y-or-n-def "Pull latest ~A update?" arepo :default #\y)
+  (when (y-or-n-def (fn "Pull latest ~A update?" arepo) :default #\y)
     (zsh (fn •cd ~A && git pull• adirectory))))
 
 (defun git-handle (arepo adirectory)
@@ -65,6 +66,7 @@
           (dispatch-git-actions results key! value!))
         (ft (green "~A all good~%" key!))))
       OR DO (ft (red "ERROR PROCESSING REPO ~A~%" key!)) »
+      ; OR DIE error! »
     (terpri))
 
 
