@@ -6,15 +6,16 @@
 (defvar /hostname/ (zsh "hostname"))
 (defvar /home/ (zsh "echo $HOME"))
 
-(defvar /allplaces/ '((zsh        .   "~/.zsh")
-                      (vim        .   "~/.vim")
-                      (clix       .   "~/.lisp")
-                      (pluto      .   "~/pluto")
-                      (rix        .   "~/.rix")
-                      (tmux       .   "~/.tmux")
-                      (cmus       .   "~/cmus")
-                      (starlight  .   "~/.starlight")
-                      (dix        .   "~/.dix")))
+(defvar /allplaces/ '((zsh          .   "~/.zsh")
+                      (vim          .   "~/.vim")
+                      (clix         .   "~/.lisp")
+                      (pluto        .   "~/pluto")
+                      (rix          .   "~/.rix")
+                      (tmux         .   "~/.tmux")
+                      (cmus         .   "~/cmus")
+                      (starlight    .   "~/starlight")
+                      (starconfig   .   "~/.starlight")
+                      (dix          .   "~/.dix")))
 
 
 (defun check-for-updates (arepo adirectory)
@@ -56,7 +57,7 @@
        (t                           (git-handle arepo adirectory)))))
 
 (for-each/alist /allplaces/
-  (ft (yellow "Checking repo: ~10A" key!))
+  (ft (yellow "Checking repo: ~15A" key!))
   « (let ((results (check-everything key! value!)))
       (aif (remove-if #'null results)
         (progn
