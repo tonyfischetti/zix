@@ -2,9 +2,15 @@
 ; vi: ft=lisp
 
 
-(defvar /uname/ (zsh "uname"))
-(defvar /hostname/ (zsh "hostname"))
 (defvar /home/ (zsh "echo $HOME"))
+(defvar /sys-info/  (sys/info))
+(defvar /gnu-p/     (eq { /sys-info/ :os } :gnu/linux))
+(defvar /darwin-p/  (eq { /sys-info/ :os } :darwin))
+(defvar /hostname/  { /sys-info/ :hostname })
+(defvar /debian-p/  (when /gnu-p/ (eq { /sys-info/ :distro } :debian)))
+
+(debug-these /gnu-p/ /darwin-p/ /hostname/ /debian-p/)
+
 
 (defvar /allplaces/ '((zsh          .   "~/.zsh")
                       (vim          .   "~/.vim")
@@ -47,7 +53,7 @@
     (zsh (fn •cd ~A && git pull• adirectory))))
 
 (defun git-handle (arepo adirectory)
-  (when (string= /uname/ "Linux")
+  (when /gnu-p/
     (when (y-or-n-def "Handle this?" :default #\n)
       (zsh (fn •xfce4-terminal --working-directory ~A• adirectory)))))
 
@@ -81,11 +87,11 @@
 (with-interactive-interrupt-handler "~%peace~%"
   (progn
 
-    (when (or /PACKAGES-P/ /ALL-P/)
-      (when (string= /uname/ "Linux")
+    ; (when (or /PACKAGES-P/ /ALL-P/)
+    ;   (when (string= /uname/ "Linux")
 
     (when (or /PACKAGES-P/ /ALL-P/)
-      (when (string= /uname/ "Linux")
+      (when /debian-p/
         (when (y-or-n-def "update installed debian package listing?" :default #\y)
           (ft (yellow "~%updating debian package listing~%"))
           (zsh (fn "apt list --installed > ~A/.dix/pkg-lists/apt-list-~A"
@@ -93,7 +99,7 @@
           (ft (green "done.~%")))))
 
     (when (or /PACKAGES-P/ /ALL-P/)
-      (when (string= /uname/ "Darwin")
+      (when /darwin-p/
         (when (y-or-n-def "update installed macports listing?" :default #\y)
           (ft (yellow "~%updating installed macports port listing~%"))
           (zsh (fn "port installed | ack 'active.\s*' > ~A/.dix/other-os/macos/ports-~A"
@@ -101,7 +107,7 @@
           (ft (green "done.~%")))))
 
     (when /ALL-P/
-      (when (string= /uname/ "Linux")
+      (when /debian-p/
         (when (y-or-n-def "update apt sources?" :default #\n)
           (ft (yellow "~%updating apt sources~%"))
           (zsh (fn "cp /etc/apt/sources.list ~A/.dix/etc/apt/" /home/) :echo t)
@@ -126,7 +132,7 @@
         (ft (green "done.~%"))))
 
     (when /ALL-P/
-      (when (string= /uname/ "Linux")
+      (when /gnu-p/
         (when (y-or-n-def "update xfce confs backup?" :default #\y)
           (ft (yellow "~%updating xfce confs backup~%"))
           (zsh (fn •zpaq add "~A/Dropbox/Carlos IV/Backups/OS/Debian/some-dot-conf-dirs/xfce4-~A.zpaq" "~A/.config/xfce4" -to xfce4• /home/ /hostname/ /home/) :echo t :return-string nil)
@@ -191,20 +197,21 @@
     (when /ALL-P/
       (when (y-or-n-def "update Python packages archives?" :default #\n)
         (ft (yellow "~%updating Python packages archives~%"))
-        (if (string= /uname/ "Linux")
+        (when /gnu-p/
           (zsh (fn "zpaq a '~A/Dropbox/Carlos IV/Backups/OS/py-packages/site-packages-~A.zpaq' ~A/.local/lib/python3.7/site-packages -to site-packages-~A"
-                   /home/ /hostname/ /home/ /hostname/) :echo t)
+                   /home/ /hostname/ /home/ /hostname/) :echo t))
+        (when /darwin-p/
           (zsh (fn "zpaq a '~A/Dropbox/Carlos IV/Backups/OS/py-packages/py-library-~A.zpaq' ~A/Library/Python/3.7 -to py-library-~A"
                    /home/ /hostname/ /home/ /hostname/) :echo t))
         (ft (green "done.~%"))))
 
     (when /ALL-P/
-      (when (string= /uname/ "Linux")
+      (when /debian-p/
         (when (y-or-n-def "update xapian package index?" :default #\n)
           (ft (yellow "~%updating xapian package index~%"))
           (zsh •sudo update-apt-xapian-index• :echo t)
           (ft (green "done.~%")))))
 
-    (ft "~%")))))
+    (ft "~%")))
 
 ; vi: ft=lisp
