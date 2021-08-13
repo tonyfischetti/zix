@@ -236,6 +236,6 @@
         (zsh •sudo update-apt-xapian-index• :echo t)
         (ft (green "done.~%")))))
 
-  (ft "~%")))
+  (ft "~%"))
 
 ; vi: ft=lisp
