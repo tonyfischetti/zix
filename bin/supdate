@@ -9,6 +9,7 @@
 (defvar /hostname/  { /sys-info/ :hostname })
 (defvar /debian-p/  (when /gnu-p/ (eq { /sys-info/ :distro } :debian)))
 
+(defvar /pluto-updated-p/ nil)
 
 
 ; ; -------------------------------------------------------------- ;
@@ -77,7 +78,9 @@
 
 (defun git-pull-update (arepo adirectory)
   (when (y-or-n-def (fn "Pull latest ~A update?" arepo) :default #\y)
-    (zsh (fn •cd ~A && git pull• adirectory))))
+    (zsh (fn •cd ~A && git pull• adirectory))
+    (when (or (eq arepo 'pluto) (eq arepo 'clix))
+      (setq /pluto-updated-p/ t))))
 
 (defun git-handle (arepo adirectory)
   (when /gnu-p/
@@ -103,8 +106,17 @@
     (terpri))
 ; -------------------------------------------------------------- ;
 
+(defun update-lisp-cores ()
+  (when (y-or-n-def "update lisp cores?" :default #\y)
+    (ft (yellow "~%updating lisp cores~%"))
+    (zsh "~/.zsh/bin/update-lisp-cores.sh" :echo t)
+    (ft (green "done.~%"))))
 
-(unless (> (length (cmdargs)) 1) (die ""))
+
+(unless (> (length (cmdargs)) 1)
+  (when /pluto-updated-p/
+    (update-lisp-cores))
+  (die ""))
 
 
 (defvar /ALL-P/       (member "-a" (cmdargs) :test #'string=))
@@ -194,10 +206,7 @@
       (ft (green "done.~%"))))
 
   (when /ALL-P/
-    (when (y-or-n-def "update lisp cores?" :default #\y)
-      (ft (yellow "~%updating lisp cores~%"))
-      (zsh "~/.zsh/bin/update-lisp-cores.sh" :echo t)
-      (ft (green "done.~%"))))
+    (update-lisp-cores))
 
   (when /ALL-P/
     (when (y-or-n-def "update R packages?" :default #\n)
