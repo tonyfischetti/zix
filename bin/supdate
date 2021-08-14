@@ -6,6 +6,7 @@
 (defvar /sys-info/  (sys/info))
 (defvar /gnu-p/     (eq { /sys-info/ :os } :gnu/linux))
 (defvar /darwin-p/  (eq { /sys-info/ :os } :darwin))
+(defvar /android-p/ (eq { /sys-info/ :os } :android))
 (defvar /hostname/  { /sys-info/ :hostname })
 (defvar /debian-p/  (when /gnu-p/ (eq { /sys-info/ :distro } :debian)))
 
@@ -114,7 +115,7 @@
 
 
 (unless (> (length (cmdargs)) 1)
-  (when /pluto-updated-p/
+  (when (and /pluto-updated-p/ (not /android-p/))
     (update-lisp-cores))
   (die ""))
 
