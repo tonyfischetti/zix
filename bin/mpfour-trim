@@ -1,0 +1,57 @@
+#!/usr/local/bin/lispscript
+; vi: ft=lisp
+
+
+(defparams *dry-run* *output-dir* *echo*
+           *the-times* *input-file*
+           *multiple-times*
+           *number-of-cuts*)
+
+(setq *output-dir*  ".")
+(setq *echo*        t)
+
+
+(def-cli-args "mpfour-trim" "-[hdE] [-o OUTPUT-DIR] FILE LIST-OF-TIMESTAMPS"
+  "Trims an mp4 into segment(s) based on time using ffmpeg.
+   MAKE SURE YOU RUN `clean-name` on file before attempting this.
+   If there is more than segment, a '+LETTER' will be put before the mp4 extension"
+  (option "-h" "--help" "print usage"
+          (print-usage!))
+  (option "-o" "--output-dir"
+          "specify output directory. this is relative to the location of the input file"
+          (setq *output-dir* (cadr args!))
+          (process-args! (cddr args!)))
+  (option "-d" "--dry-run" "perform a dry run"
+           (setq *dry-run* t)
+           (process-args! (cdr args!)))
+  (option "-E" "--no-echo" "turn off ffmpeg command echo"
+          (setq *echo* nil)
+          (process-args! (cdr args!))))
+
+(process-args! (cdr (cmdargs)))
+
+
+« (setq *input-file* Ø (pop bare-args!)) or die "No input files" »
+« (setq *the-times* Ø (group bare-args!))
+    or die "times must be specified and be a multiple of two" »
+
+(setq *number-of-cuts* (length *the-times*))
+
+(when (> *number-of-cuts* 26) (die "too many cuts"))
+
+(when (> *number-of-cuts* 1) (setq *multiple-times* t))
+
+
+(for-each/list *the-times*
+  (debug-these value!)
+  (zsh (fn •ffmpeg -i "~A" -ss ~A -to ~A -c copy ./~A -n•
+           *input-file* (car value!) (cadr value!)
+           (str+ *output-dir* "/" (remove-extension *input-file* ".mp4")
+                 (if *multiple-times*
+                   (fn "+~A.mp4" (code-char (+ index! 96)))
+                   ".mp4")))
+           :dry-run *dry-run*
+           :echo *echo*))
+
+
+; vi: ft=lisp

@@ -11,7 +11,7 @@
 (setq *echo*        t)
 
 
-(def-cli-args "mpfour" "-[hdncE] [-o OUTPUT-DIR] [-s SCALING-PARAM] list-of-files"
+(def-cli-args "mpfour-encode" "-[hdncE] [-o OUTPUT-DIR] [-s SCALING-PARAM] list-of-files"
   "Uses ffmpeg to re-encode a video file to mp4 (with options)
    MAKE SURE YOU RUN `clean-name` on all files before attempting this"
   (option "-h" "--help" "print usage"
@@ -46,11 +46,8 @@
 (setq *num-of-files* (length *input-files*))
 
 
-(defun chop-extension (afile)
-  (~r afile "\\.[A-Za-z1-9]+?$" ""))
-
 (defun change-to-mp4-fn (afile)
-  (format nil "~A.mp4" (chop-extension afile)))
+  (format nil "~A.mp4" (remove-extension afile)))
 
 
 (defun make-conv-command (afile tmp-name scaling)

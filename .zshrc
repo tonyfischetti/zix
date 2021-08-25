@@ -294,10 +294,6 @@ allm4astomp3s(){
     find ${1} -type f | ack '\.m4a$' | parallel --bar -j1 ffmpeg -i {} -codec:a libmp3lame -q:a 2 {.}.mp3;
 }
 
-trimmp4(){
-    ffmpeg -i ${1} -ss ${2} -to ${3} -c copy ../trmd/${1}
-}
-
 recentcontexts(){
     cat "$1" | awk -F: '{ print $6 }' | tac | eweniq | tac | ack -v '^\s+$'
 }
