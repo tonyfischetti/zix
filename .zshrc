@@ -306,6 +306,10 @@ mcd(){
     mkdir -p "$1"; cd "$1"
 }
 
+mpfour-codec(){
+    ffprobe -v error -select_streams v:0 -show_entries stream=codec_name -of default=noprint_wrappers=1:nokey=1 "$1"
+}
+
 pinfodebhelper(){
     apt-cache show "$1" | grep -v "^Depends" | grep -v "^Recommends" | grep -v "Suggests" | grep -v "^Breaks" | grep -v "^Conflicts" &&
       echo "" && apt-cache policy "$1" && echo "" && apt-cache depends "$1";
