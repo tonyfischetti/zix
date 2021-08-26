@@ -43,7 +43,6 @@
 
 
 (for-each/list *the-times*
-  (debug-these value!)
   (zsh (fn •ffmpeg -i "~A" -ss ~A -to ~A -c copy ./~A -n•
            *input-file* (car value!) (cadr value!)
            (str+ *output-dir* "/" (remove-extension *input-file* ".mp4")

@@ -45,10 +45,8 @@
 « (setq *input-files* Ø bare-args!) or die "No input files" »
 (setq *num-of-files* (length *input-files*))
 
-
 (defun change-to-mp4-fn (afile)
   (format nil "~A.mp4" (remove-extension afile)))
-
 
 (defun make-conv-command (afile tmp-name scaling)
   (format nil •ffmpeg -i "~A" ~A ~A -max_muxing_queue_size 9999 ~A "~A" -loglevel error•
@@ -57,7 +55,6 @@
           (if *scaling* (format nil •-vf scale="iw/~A:ih/~A"• scaling scaling) "")
           (if *num-threads* (fn "-threads ~A" *num-threads*) "")
           tmp-name))
-
 
 (defun perform-trick (afile)
   (let* ((tmp-name         (format nil "tmp~A.mp4" (get-universal-time)))
@@ -98,5 +95,3 @@
 
 
 ; vi: ft=lisp
-
-
