@@ -1,0 +1,38 @@
+#!/usr/local/bin/lispscript
+; vi: ft=lisp
+
+(defparams *input-files* *output-file*)
+
+(def-cli-args "mpfour-cat" "-[hdE] [-o OUTPUT-FILE] FILES"
+  "Concatenates an arbitrary number of mp4s into one. Must have the
+   same parameters. The input files are sorted in alphabetical order."
+  (option "-h" "--help" "print usage"
+          (print-usage!))
+  (option "-o" "--output-file"
+          "specify output file"
+          (setq *output-file* (cadr args!))
+          (process-args! (cddr args!))))
+
+(process-args! (cdr (cmdargs)))
+
+
+« (setq *input-files* Ø bare-args!) or die "No input files" »
+« Ø *output-file* or die "No output file specified" »
+
+(setq *input-files* (sort (mapcar #'realpath *input-files*) #'string<))
+
+(with-temp-file
+  (with-a-file tempfile! :w
+    (for-each/list *input-files*
+      (format stream! "file '~A'~%" value!)))
+  (setq tmp (slurp tempfile!))
+  (ft "contents of temp file ~A:~%~A~%" tempfile! tmp)
+  (terpri)
+  (zsh (fn "ffmpeg -f concat -safe 0 -i ~A -c copy ~A"
+           tempfile! *output-file*) :echo t))
+
+(when (y-or-n-def (fn "Delete input files?") :default #\n)
+  (for-each/list *input-files*
+    (zsh (fn "rm ~A" value!) :echo t)))
+
+; vi: ft=lisp
