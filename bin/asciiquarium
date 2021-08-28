@@ -1563,8 +1563,6 @@ q{
 }
 
 
-
-
 sub add_dolphin {
     my @parm = @_;
 
@@ -1634,6 +1632,78 @@ q{
 	);
 }
 
+sub add_blowfish {
+    my @parm = @_;
+
+	add_blowfish_1(@parm);
+}
+
+sub add_blowfish_1 {
+	my ($old_ent, $anim) = @_;
+
+	my @blowfish_image = (
+q{
+      <\_/\_/\
+   .\/,-----, "\
+   \/-\     /, @)
+(==(-= \___/  - =<
+   /\-'/v;vv\`,,)
+   `/\//v|v\v\,/
+      </"\/"\/
+},q{
+    /\_/\_/>
+  /" ,-----,\/`
+ (@ ,\     /-\/
+>= -  \___/ =-)==)
+ (,,`/vv;v\'-/\
+  \,/v/v|v\\\\/\`
+    \/"\/"\>
+});
+
+	my @blowfish_mask = (
+q{
+      11111111
+   1112222222 11
+   1112     21 W1
+333111 22222  1 11
+   11111111111111
+   1111111111111
+      11111111
+},q{
+    11111111
+  11 2222222111
+ 1W 12     2111
+11 1  22222 111333
+ 11111111111111
+  1111111111111
+    11111111
+});
+
+
+	my $dir = int(rand(2));
+	my $x;
+	my $speed = 2;
+	if($dir) {
+		$x = $anim->width()-1;
+		$speed *= -1;
+	} else {
+		$x = -18;
+	}
+	my $max_height = 7;
+	my $min_height = $anim->height() - 10;
+	my $y = int(rand($min_height - $max_height)) + $max_height;
+	my $color_mask = rand_color($blowfish_mask[$dir]);
+	$anim->new_entity(
+		shape		=> $blowfish_image[$dir],
+		auto_trans	=> 1,
+		color		=> $color_mask,
+		position	=> [ $x, $y, $depth{'shark'} ],
+		callback_args	=> [ $speed, 0, 0 ],
+		death_cb	=> \&random_cool_new_object,
+		die_offscreen	=> 1,
+		default_color	=> 'BLUE',
+	);
+}
 
 # --------------------------------------------------------------- #
 # --------------------------------------------------------------- #
@@ -1661,6 +1731,7 @@ sub init_cool_new_objects {
         \&add_seahorse,
         \&add_swordfish,
         \&add_dolphin,
+        \&add_blowfish,
     );
 }
 
