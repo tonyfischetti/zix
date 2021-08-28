@@ -2,3 +2,4 @@ cache/
 .DS_Store
 more-scripts/sync-with-android/tmp/
 ssh_config
+bin/debug
