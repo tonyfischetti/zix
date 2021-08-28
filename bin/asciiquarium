@@ -76,7 +76,7 @@ my %depth = (
 	shark		=> 2,
 	fish_start	=> 3,
 	fish_end	=> 20,
-	seaweed		=> 21, 
+	seaweed		=> 21,
 	castle		=> 22,
 
 	# waterline
@@ -113,7 +113,7 @@ sub main {
 		add_all_seaweed($anim);
 		add_all_fish($anim);
 		random_object(undef, $anim);
-		
+
 		$anim->redraw_screen();
 
 		my $nexttime = 0;
@@ -264,7 +264,7 @@ sub add_bubble {
 		callback_args	=> [ 0, -1, 0, .1 ],
 		die_offscreen	=> 1,
 		physical	=> 1,
-		coll_handler	=> \&bubble_collision, 
+		coll_handler	=> \&bubble_collision,
 		default_color	=> 'CYAN',
 	);
 }
@@ -657,7 +657,7 @@ q{
 sub add_fish_entity {
 	my $anim = shift;
 	my @fish_image = @_;
-	
+
 	# 1: body
 	# 2: dorsal fin
 	# 3: flippers
@@ -714,7 +714,7 @@ sub fish_callback {
 sub add_ship {
 	my ($old_ent, $anim) = @_;
 
-	my @ship_image = (	
+	my @ship_image = (
 q{
      |    |    |
     )_)  )_)  )_)
@@ -853,7 +853,7 @@ q{
 		$spout_align = 11;
 		$x = -18;
 	}
-	
+
 	# no water spout
 	for (1..5) {
 		push(@whale_anim, "\n\n\n" . $whale_image[$dir]);
