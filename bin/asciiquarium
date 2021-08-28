@@ -54,7 +54,7 @@ use warnings;
 
 my $version = "1.1";
 my $new_fish = 1;
-my $new_monster = 1;
+my $new_monster = 0;
 
 our $opt_c;
 getopts('c');
@@ -65,6 +65,7 @@ if ($opt_c) {			# 'classic' mode
 }
 
 my @random_objects = init_random_objects();
+my @cool_new_objects = init_cool_new_objects();
 
 # the Z depth at which certain items occur
 my %depth = (
@@ -110,9 +111,11 @@ sub main {
 
 		add_environment($anim);
 		add_castle($anim);
+		add_conch($anim);
 		add_all_seaweed($anim);
-		add_all_fish($anim);
+        add_all_fish($anim);
 		random_object(undef, $anim);
+		random_cool_new_object(undef, $anim);
 
 		$anim->redraw_screen();
 
@@ -206,6 +209,45 @@ sub add_castle {
 		default_color	=> 'BLACK',
 	);
 }
+
+# --------------------------------------------------------------- #}
+# --------------------------------------------------------------- #}
+
+sub add_conch {
+	my ($anim) = @_;
+	my $conch_image = q{
+   /\
+  {.-}
+ ;_.-'\
+{    _.}_
+ \.-' /  `,
+  \  |    /
+   \ |  ,/
+    \|_/
+};
+	my $conch_mask = q{
+   mm
+  mmmm
+ mmmmmm
+m    mmmm
+ mmmm m  mm
+  m  m    m
+   m m  mm
+    mmmm
+};
+
+	$anim->new_entity(
+		name		=> "conch",
+		shape		=> $conch_image,
+		color		=> $conch_mask,
+		# position	=> [ $anim->width()-60, $anim->height()-13, $depth{'castle'} ],
+		position	=> [ 5, $anim->height()-8, $depth{'castle'} ],
+		default_color	=> 'BLACK',
+	);
+}
+
+# --------------------------------------------------------------- #}
+# --------------------------------------------------------------- #}
 
 sub add_all_seaweed {
 	my ($anim) = @_;
@@ -1244,6 +1286,7 @@ q{
 	my $color_mask = rand_color($big_fish_mask[$dir]);
 	$anim->new_entity(
 		shape		=> $big_fish_image[$dir],
+		# auto_trans	=> 1,
 		auto_trans	=> 1,
 		color		=> $color_mask,
 		position	=> [ $x, $y, $depth{'shark'} ],
@@ -1254,12 +1297,355 @@ q{
 	);
 }
 
+# --------------------------------------------------------------- #
+
+sub add_top_turtle {
+	my ($old_ent, $anim) = @_;
+
+	my @top_turtle_image = (
+q{
+   ,+'/.\'+,    ___
+ \/\_/\_/\_/\,+' * \
+
+/_/'-------'\_\
+},
+q{
+ ___    ,+'/.\'+,
+/ * '+,/\_/\_/\_/\/
+
+     /_/'-------'\_\
+});
+
+	my @top_turtle_mask = (
+q{
+   GGGGGGGGG    GGG
+ GGGGGGGGGGGGGGG W G
+
+GGGGGGGGGGGGGGG
+},
+q{
+ ggg    ggggggggg
+g W ggggggggggggggg
+
+     ggggggggggggggg
+});
+
+	my $dir = int(rand(2));
+	my $x = -20;
+	my $speed = 1;
+	if($dir) {
+		$speed *= -1;
+		$x = $anim->width()-2;
+	}
+
+	$anim->new_entity(
+		color		=> $top_turtle_mask[$dir],
+		shape		=> $top_turtle_image[$dir],
+		auto_trans	=> 1,
+		position	=> [ $x, 3, 1 ],
+		default_color	=> 'GREEN',
+		callback_args	=> [ $speed, 0, 0 ],
+		die_offscreen	=> 1,
+		death_cb	=> \&random_object,
+	);
+}
+
+sub add_ducks {
+	my ($old_ent, $anim) = @_;
+
+	my @ducks_image = (
+q{
+    _      _      _
+ __(.)= __(.)> __(.)<
+ \___)  \___)  \___)
+},
+q{
+  _      _      _
+>(.)__ <(.)__ =(.)__
+ (___/  (___/  (___/
+});
+
+	my @ducks_mask = (
+q{
+    Y      Y      Y
+ YYYWYY YYYWYY YYYWYY
+ YYYYY  YYYYY  YYYYY
+},
+q{
+  Y      Y      Y
+YYWYYY YYWYYY YYWYYY
+ YYYYY  YYYYY  YYYYY
+});
+
+	my $dir = int(rand(2));
+	my $x = -21;
+	my $speed = 1;
+	if($dir) {
+		$speed *= -1;
+		$x = $anim->width()-2;
+	}
+
+	$anim->new_entity(
+		color		=> $ducks_mask[$dir],
+		shape		=> $ducks_image[$dir],
+		auto_trans	=> 1,
+		position	=> [ $x, 4, 1 ],
+		default_color	=> 'YELLOW',
+		callback_args	=> [ $speed, 0, 0 ],
+		die_offscreen	=> 1,
+		death_cb	=> \&random_object,
+	);
+}
+
+# --------------------------------------------------------------- #
+# --------------------------------------------------------------- #
+
+sub add_seahorse {
+    my @parm = @_;
+
+	add_seahorse_1(@parm);
+}
+
+sub add_seahorse_1 {
+	my ($old_ent, $anim) = @_;
+
+	my @seahorse_image = (
+q{
+     __/)/)
+    _'   o(_.-.
+  /'.     .---'
+/'-./    (
+)     ; __\
+\_.'\ : __|
+     )  _/
+    (  (,.
+     '-.-'
+},q{
+    (\(\__
+.-._(o   '_
+'---.     .'\
+     (    \.-'\
+    /__ ;     (
+    |__ : \'._\
+     \_  )
+     .,)  )
+     '-.-'
+});
+
+	my @seahorse_mask = (
+q{
+     111111
+    11   W11111
+  211     11111
+11111    1
+1     5 331
+11111 5 331
+     1  11
+    1  111
+     11111
+},q{
+    111111
+11111W   11
+11111     112
+     1    11111
+    133 5     1
+    133 5 11111
+     11  1
+     111  1
+     11111
+});
+
+
+	my $dir = int(rand(2));
+	my $x;
+	my $speed = 2;
+	if($dir) {
+		$x = $anim->width()-1;
+		$speed *= -1;
+	} else {
+		$x = -15;
+	}
+	my $max_height = 9;
+	my $min_height = $anim->height() - 10;
+	my $y = int(rand($min_height - $max_height)) + $max_height;
+	my $color_mask = rand_color($seahorse_mask[$dir]);
+	$anim->new_entity(
+		shape		=> $seahorse_image[$dir],
+		auto_trans	=> 1,
+		color		=> $color_mask,
+		position	=> [ $x, $y, $depth{'shark'} ],
+		callback_args	=> [ $speed, 0, 0 ],
+		death_cb	=> \&random_cool_new_object,
+		die_offscreen	=> 1,
+		default_color	=> 'YELLOW',
+	);
+}
+
+sub add_swordfish {
+    my @parm = @_;
+
+	add_swordfish_1(@parm);
+}
+
+sub add_swordfish_1 {
+	my ($old_ent, $anim) = @_;
+
+	my @swordfish_image = (
+q{
+                             )",
+_                           /\\\\\\\
+ ",            _____,,,,,--\\\\\\\\\\\)
+  \\\        ,,;_______\\\\\\\\\----""";_
+   )\_.-'`"""""......-------------,o";__________
+   ==.-.,____           """;;;;,__._.=='""
+   )/    "   "\""---;...,______:.-"
+  //           ")_.-`      _.-'
+_.'                    _.-'
+},q{
+                ,"(
+               ////\                           _
+              (//////--,,,,,_____            ,"
+            _;"""----/////_______;,,        //
+__________;"o,-------------......"""""`'-._/(
+      ""'==._.__,;;;;"""           ____,.-.==
+             "-.:______,...;---""/"   "    \(
+                 '-._      `-._("           \\\
+                     '-._                    '._
+});
+
+	my @swordfish_mask = (
+q{
+                             111
+1                           11111
+ 11            1111111111111111111
+  11        111333333333333333311111
+   11111111333322222222222222222211W111111111111
+   1111111111           333333333311111111
+   11    1   1111111111111111111111
+  11           111111      1111
+111                    1111
+},q{
+                111
+               11111                           1
+              1111111111111111111            11
+            111113333333333333333111        11
+111111111111W11222222222222222222333311111111
+      111111113333333333           1111111111
+             1111111111111111111111   1    11
+                 1111      111111           11
+                     1111                    111
+});
+
+
+	my $dir = int(rand(2));
+	my $x;
+	my $speed = 2;
+	if($dir) {
+		$x = $anim->width()-1;
+		$speed *= -1;
+	} else {
+		$x = -48;
+	}
+	my $max_height = 9;
+	my $min_height = $anim->height() - 10;
+	my $y = int(rand($min_height - $max_height)) + $max_height;
+	my $color_mask = rand_color($swordfish_mask[$dir]);
+	$anim->new_entity(
+		shape		=> $swordfish_image[$dir],
+		auto_trans	=> 1,
+		color		=> $color_mask,
+		position	=> [ $x, $y, $depth{'shark'} ],
+		callback_args	=> [ $speed, 0, 0 ],
+		death_cb	=> \&random_cool_new_object,
+		die_offscreen	=> 1,
+		default_color	=> 'YELLOW',
+	);
+}
+
+
+
+
+sub add_dolphin {
+    my @parm = @_;
+
+	add_dolphin_1(@parm);
+}
+
+sub add_dolphin_1 {
+	my ($old_ent, $anim) = @_;
+
+	my @dolphin_image = (
+q{
+            ;'-.
+`;-._        )  '---.._
+  >  `-.__.-'          `'.__
+ /_.-'-._         _,   ^ ---)
+ `       `'------/_.'----```
+                     `
+},q{
+             .-';
+      _..---'  (        _.-;`
+ __.'`          '-.__.-`  <
+(--- ^   ,_         _.-'-._\
+ ```----'._\------'`       `
+       `
+});
+
+	my @dolphin_mask = (
+q{
+            1111
+11111        1  1111111
+  1  11111111          11111
+ 11111111         11   W 1111
+ 1       1111111111111111111
+                     1
+},q{
+             1111
+      1111111  1        11111
+ 11111          11111111  1
+1111 W   11         11111111
+ 1111111111111111111       1
+       1
+});
+
+
+	my $dir = int(rand(2));
+	my $x;
+	my $speed = 2;
+	if($dir) {
+		$x = $anim->width()-1;
+		$speed *= -1;
+	} else {
+		$x = -29;
+	}
+	my $max_height = 6;
+	my $min_height = $anim->height() - 10;
+	my $y = int(rand($min_height - $max_height)) + $max_height;
+	my $color_mask = rand_blue_color($dolphin_mask[$dir]);
+	$anim->new_entity(
+		shape		=> $dolphin_image[$dir],
+		auto_trans	=> 1,
+		color		=> $color_mask,
+		position	=> [ $x, $y, $depth{'shark'} ],
+		callback_args	=> [ $speed, 0, 0 ],
+		death_cb	=> \&random_cool_new_object,
+		die_offscreen	=> 1,
+		default_color	=> 'BLUE',
+	);
+}
+
+
+# --------------------------------------------------------------- #
+# --------------------------------------------------------------- #
+
 sub init_random_objects {
 	return (
 		\&add_ship,
 		\&add_whale,
 		\&add_monster,
-		\&add_big_fish,
+        \&add_big_fish,
+        \&add_top_turtle,
+        \&add_ducks,
 	);
 }
 
@@ -1268,6 +1654,20 @@ sub random_object {
 	my ($dead_object, $anim) = @_;
 	my $sub = int(rand(scalar(@random_objects)));
 	$random_objects[$sub]->($dead_object, $anim);
+}
+
+sub init_cool_new_objects {
+    return (
+        \&add_seahorse,
+        \&add_swordfish,
+        \&add_dolphin,
+    );
+}
+
+sub random_cool_new_object {
+	my ($dead_object, $anim) = @_;
+	my $sub = int(rand(scalar(@cool_new_objects)));
+	$cool_new_objects[$sub]->($dead_object, $anim);
 }
 
 sub dprint {
@@ -1319,6 +1719,16 @@ sub center {
 sub rand_color {
 	my ($color_mask) = @_;
 	my @colors = ('c','C','r','R','y','Y','b','B','g','G','m','M');
+	foreach my $i (1..9) {
+		my $color = $colors[int(rand($#colors))];
+		$color_mask =~ s/$i/$color/gm;
+	}
+	return $color_mask;
+}
+
+sub rand_blue_color {
+	my ($color_mask) = @_;
+	my @colors = ('c','C','b','B');
 	foreach my $i (1..9) {
 		my $color = $colors[int(rand($#colors))];
 		$color_mask =~ s/$i/$color/gm;
