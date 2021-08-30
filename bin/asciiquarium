@@ -112,6 +112,7 @@ sub main {
 		add_environment($anim);
 		add_castle($anim);
 		add_conch($anim);
+		# add_clam($anim);
 		add_all_seaweed($anim);
         add_all_fish($anim);
         random_object(undef, $anim);
@@ -240,11 +241,36 @@ m    mmmm
 		name		=> "conch",
 		shape		=> $conch_image,
 		color		=> $conch_mask,
-		# position	=> [ $anim->width()-60, $anim->height()-13, $depth{'castle'} ],
 		position	=> [ 5, $anim->height()-8, $depth{'castle'} ],
 		default_color	=> 'BLACK',
 	);
 }
+
+# sub add_clam {
+# 	my ($anim) = @_;
+# 	my $clam_image = q{
+#    .--:--.
+#  ./\  |  /\.
+# :'. \ | / .':
+# |- `.\-/.' -|
+#  `--(___)--'
+# };
+# 	my $clam_mask = q{
+#    1111111
+#  111  1  111
+# 111 1 1 1 111
+# 11 1111111 11
+#  11111111111
+# };
+#
+# 	$anim->new_entity(
+# 		name		=> "clam",
+# 		shape		=> $clam_image,
+# 		color		=> $clam_mask,
+# 		position	=> [ 50, $anim->height()-5, $depth{'castle'} ],
+# 		default_color	=> 'BLACK',
+# 	);
+# }
 
 # --------------------------------------------------------------- #}
 # --------------------------------------------------------------- #}
@@ -1708,11 +1734,13 @@ sub add_submarine {
 
     # make the submarine more rare
     my $tmp2 = int(rand(4)); # TODO: tune
-    dprint("tmp2 is $tmp2\n");
-    if ($tmp2 > 1){
+    # add_submarine_1(@parm);
+    if ($tmp2 > 2){
 	    add_submarine_1(@parm);
-    } elsif ($tmp2 > 0){
+    } elsif ($tmp2 > 1){
         add_dolphin_1(@parm);
+    } elsif ($tmp2 > 0){
+        add_seahorse_1(@parm);
     } else {
         add_blowfish_1(@parm);
     }
@@ -1769,7 +1797,7 @@ c     cccc                                                   ccccc    cc
 	} else {
 		$x = -72;
 	}
-	my $max_height = 15;
+	my $max_height = $anim->height-30;
 	my $min_height = $anim->height() - 7;
 	my $y = int(rand($min_height - $max_height)) + $max_height;
 	my $color_mask = rand_color($submarine_mask[$dir]);
