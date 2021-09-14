@@ -58,8 +58,8 @@ PS1="%F{#fda878}▇▇▇▇▇▇ %~ ▇ %{$reset_color%}"
 
 export EDITOR="vim"
 export GIT_EDITOR="vim"
-export BLOCKSIZE=si
-export BLOCK_SIZE=si
+export BLOCKSIZE=human
+export BLOCK_SIZE=human
 export ZUNAME=`uname`
 export R_HISTFILE=~/.Rhistory
 export R_HISTSIZE=1000000
