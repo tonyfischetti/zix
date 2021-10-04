@@ -45,7 +45,7 @@
 (for-each/list *the-times*
   (zsh (fn •ffmpeg -i "~A" -ss ~A -to ~A -c copy ./~A -n•
            *input-file* (car value!) (cadr value!)
-           (str+ *output-dir* "/" (remove-extension *input-file* ".mp4")
+           (str+ *output-dir* "/" (pathname-name *input-file*)
                  (if *multiple-times*
                    (fn "+~A.mp4" (code-char (+ index! 96)))
                    ".mp4")))
