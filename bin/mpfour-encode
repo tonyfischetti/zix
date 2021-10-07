@@ -60,8 +60,8 @@
   (let* ((tmp-name         (format nil "tmp~A.mp4" (get-universal-time)))
          (new-name         (format nil "~A/~A" *output-dir* (change-to-mp4-fn afile)))
          (conv-command     (make-conv-command afile tmp-name *scaling*))
-         (original-size    (file-size afile))
-         (original-size-b  (file-size afile :just-bytes t))
+         (original-size    (file-size afile :human t))
+         (original-size-b  (file-size afile))
          (new-size         nil)
          (new-size-b       nil)
          (elapsed          nil)
@@ -79,8 +79,8 @@
       (zsh (format nil •mv "~A" "~A"• tmp-name new-name) :echo *echo* :dry-run *dry-run*))
     (when (and *clobber-p* (not (string= (change-to-mp4-fn afile) afile)))
       (zsh (format nil •rm "~A"• afile) :echo *echo* :dry-run *dry-run*))
-    (setq new-size    (file-size new-name))
-    (setq new-size-b  (file-size new-name :just-bytes t))
+    (setq new-size    (file-size new-name :human t))
+    (setq new-size-b  (file-size new-name))
     (format t "Done~%~A -> ~A (~A%)~%~A~%~%~%"
             original-size new-size
             (round (* 100 (/ new-size-b original-size-b)))
