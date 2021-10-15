@@ -46,7 +46,7 @@
 (setq *num-of-files* (length *input-files*))
 
 (defun change-to-mp4-fn (afile)
-  (format nil "~A.mp4" (remove-extension afile)))
+  (format nil "~A.mp4" (pathname-name afile)))
 
 (defun make-conv-command (afile tmp-name scaling)
   (format nil •ffmpeg -i "~A" ~A ~A -max_muxing_queue_size 9999 ~A "~A" -loglevel error•
