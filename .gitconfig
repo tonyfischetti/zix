@@ -2,7 +2,7 @@
 	name = Tony Fischetti
 	email = tony.fischetti@gmail.com
     username = tonyfischetti
-	signingkey = ED97C903EFAB566F
+    signingkey = BA9ED673D250AFB3
 [core]
     editor = vim
     abbrev = 13
