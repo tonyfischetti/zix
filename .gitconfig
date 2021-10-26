@@ -2,6 +2,7 @@
 	name = Tony Fischetti
 	email = tony.fischetti@gmail.com
     username = tonyfischetti
+	signingkey = ED97C903EFAB566F
 [core]
     editor = vim
     abbrev = 13
@@ -26,3 +27,5 @@
 	smtpserverport = 587
 [credential]
 	helper = cache
+[commit]
+	gpgsign = true
