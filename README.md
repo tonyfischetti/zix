@@ -6,6 +6,7 @@ A place to update and store my zsh configuration and some dot files
     git clone https://github.com/tonyfischetti/zix.git ~/.zsh
     ln -s ~/.zsh/.zshrc ~/.zshrc
     ln -s ~/.zsh/.ackrc ~/.ackrc
+    ln -s ~/.zsh/gpg.conf ~/.gnupg/gpg.conf 
     ln -s ~/.zsh/.wgetrc ~/.wgetrc
     ln -s ~/.zsh/.sqliterc ~/.sqliterc
     ln -s ~/.zsh/.htoprc ~/.config/htop/htoprc
