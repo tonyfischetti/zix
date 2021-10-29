@@ -83,6 +83,7 @@ export LESS_TERMCAP_ue=$'\E[0m'        # reset underline
 export SYSTEMD_COLORS=1
 export SYSTEMD_PAGER=""
 export TIMEFMT="User-mode: %U	Kernel-mode: %S	Wall: %E	Perc: %P"
+export PASSWORD_STORE_ENABLE_EXTENSIONS="true"
 
 # pretty ls colors
 eval $(dircolors)
