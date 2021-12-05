@@ -93,13 +93,9 @@ export PATH="$HOME/.local/bin:/usr/local/super/bin:$HOME/.zsh/bin:$HOME/bin:$HOM
 
 export ZOS=`uname -o`
 export ZHOSTNAME=`hostname`
+export ZME=`whoami`
 
-if [[ `whoami` = 'u0_a216' ]]
-then
-    export ZOS="Android"
-fi
-
-if [[ `whoami` = 'u0_a225' ]]
+if [[ $ZME = 'u0_a216' -o `ZME` = 'u0_a280' -o $ZME = 'u0_a225' ]]
 then
     export ZOS="Android"
 fi
