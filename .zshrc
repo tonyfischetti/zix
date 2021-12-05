@@ -95,7 +95,7 @@ export ZOS=`uname -o`
 export ZHOSTNAME=`hostname`
 export ZME=`whoami`
 
-if [[ $ZME = 'u0_a216' -o `ZME` = 'u0_a280' -o $ZME = 'u0_a225' ]]
+if [[ $ZME = 'u0_a216' -o $ZME = 'u0_a280' -o $ZME = 'u0_a225' ]]
 then
     export ZOS="Android"
 fi
