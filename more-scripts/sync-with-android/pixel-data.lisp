@@ -8,6 +8,7 @@
   "Screenshots"
   "Twitter"
   "Reddit"
+  "Boost"
 ))
 
 ; picture folders to sync (push)
