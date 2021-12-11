@@ -1,3 +1,15 @@
 #!/data/data/com.termux/files/usr/bin/sh
 
+export ZME=`whoami`
+
 echo "pixel4a"
+
+if [[ $ZME = 'u0_a225' ]]
+then
+    echo "pixel4a"
+elif [[ $ZME = 'u0a280' ]]
+then
+    echo "goodtablet"
+else
+    echo "unknown"
+fi
