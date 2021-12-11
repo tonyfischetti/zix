@@ -1,4 +1,4 @@
-#!/data/data/com.termux/files/usr/bin/sh
+#!/data/data/com.termux/files/usr/bin/bash
 
 export ZME=`whoami`
 
@@ -7,7 +7,7 @@ echo "pixel4a"
 if [[ $ZME = 'u0_a225' ]]
 then
     echo "pixel4a"
-elif [[ $ZME = 'u0a280' ]]
+elif [[ $ZME = 'u0_a280' ]]
 then
     echo "goodtablet"
 else
