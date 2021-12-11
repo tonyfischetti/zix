@@ -2,7 +2,12 @@
 
 (defvar /where-am-i/ "/home/tony/.zsh/more-scripts/sync-with-android/")
 
-(load (fn "~A/data.lisp" /where-am-i/))
+(defvar /data-file/ (cond ((string= (cadr (cmdargs)) "pixel") "pixel-data.lisp")
+                          ((string= (cadr (cmdargs)) "goodtablet") "goodtablet-data.lisp")
+                          ((null (cadr (cmdargs))) "pixel-data.lisp")
+                          (t (die "invalid device"))))
+
+(load (fn "~A/~A" /where-am-i/ /data-file/))
 
 (defvar /HOME/                  (get-envvar "HOME"))
 (defvar /CMUS-HOME/             (get-envvar "CMUS_HOME"))
@@ -27,7 +32,7 @@
   (ft (yellow "Pulling picture folders off phone~%"))
   (for-each/list /pic-folders-to-pull/
     (let ((tmppath (fn "~A~A" /PICTURES-PREFIX/ value!)))
-      « (zsh (fn •rsync -Phav 'android:~A' '~A'• tmppath /TMP-DIR/)
+      « (zsh (fn •rsync -Phav '~A:~A' '~A'• /device/ tmppath /TMP-DIR/)
              :echo t
              :return-string nil)
           OR DO (format *error-output* (red "failed~%")) » )))
@@ -37,13 +42,13 @@
   (for-each/list /pic-folders-to-pull/
     (let ((tmppath (fn "~A~A" /PICTURES-PREFIX/ value!)))
       (when (y-or-n-p (fn "delete folder: ~A ?" tmppath))
-        « (zsh (fn •ssh android rm -rf ~A• tmppath) :echo t)
+        « (zsh (fn •ssh ~A rm -rf ~A• /device/ tmppath) :echo t)
             OR DO (format *error-output* (red "failed~%")) » ))))
 
 (ft "~%")
 (when (y-or-n-p "Pull photos off phone?")
   (ft (yellow "Pulling picture folders off phone~%"))
-  « (zsh (fn •rsync -Phav 'android:~A' '~A'• /PHOTOS-PREFIX/ /TMP-DIR/)
+  « (zsh (fn •rsync -Phav '~A:~A' '~A'• /device/ /PHOTOS-PREFIX/ /TMP-DIR/)
          :echo t
          :return-string nil)
       OR DO (format *error-output* (red "failed~%")) »
@@ -54,37 +59,37 @@
 
 (ft "~%")
 (when (y-or-n-p "Delete photo folder?")
-  « (zsh (fn •ssh android rm -rf ~A• /PHOTOS-PREFIX/) :echo t)
+  « (zsh (fn •ssh ~A rm -rf ~A• /device/ /PHOTOS-PREFIX/) :echo t)
       OR DO (format *error-output* (red "failed~%")) » )
 
 (ft "~%")
 (when (y-or-n-p "Pull WhatsApp database?")
-  « (zsh (fn •ssh android "su -c 'cp ~A ~A'"•
-             /WHATSAPP-DB-LOCATION/ /ANDROID-HOME/) :echo t)
+  « (zsh (fn •ssh ~A "su -c 'cp ~A ~A'"•
+             /device/ /WHATSAPP-DB-LOCATION/ /ANDROID-HOME/) :echo t)
       OR DO (format *error-output* (red "failed~%")) »
-  « (zsh (fn •ssh android "su -c 'chown ~A ~A/msgstore.db'"•
-             /ANDROID-USER/ /ANDROID-HOME/) :echo t)
+  « (zsh (fn •ssh ~A "su -c 'chown ~A ~A/msgstore.db'"•
+             /device/ /ANDROID-USER/ /ANDROID-HOME/) :echo t)
       OR DO (format *error-output* (red "failed~%")) »
-  « (zsh (fn •rsync -Phav android:~A/msgstore.db '~A'•
-           /ANDROID-HOME/ /TMP-DIR/) :echo t :return-string nil)
+  « (zsh (fn •rsync -Phav ~A:~A/msgstore.db '~A'•
+             /device/ /ANDROID-HOME/ /TMP-DIR/) :echo t :return-string nil)
       OR DO (format *error-output* (red "failed~%")) »
-  « (zsh (fn •ssh android "rm ~A/msgstore.db"•
-             /ANDROID-HOME/) :echo t)
+  « (zsh (fn •ssh ~A "rm ~A/msgstore.db"•
+             /device/ /ANDROID-HOME/) :echo t)
       OR DO (format *error-output* (red "failed~%")) » )
 
 (ft "~%")
 (when (y-or-n-p "Pull Messages database?")
-  « (zsh (fn •ssh android "su -c 'cp ~A ~A'"•
-             /MESSAGES-DB-LOCATION/ /ANDROID-HOME/) :echo t)
+  « (zsh (fn •ssh ~A "su -c 'cp ~A ~A'"•
+             /device/ /MESSAGES-DB-LOCATION/ /ANDROID-HOME/) :echo t)
       OR DO (format *error-output* (red "failed~%")) »
-  « (zsh (fn •ssh android "su -c 'chown ~A ~A/bugle_db'"•
-             /ANDROID-USER/ /ANDROID-HOME/) :echo t)
+  « (zsh (fn •ssh ~A "su -c 'chown ~A ~A/bugle_db'"•
+             /device/ /ANDROID-USER/ /ANDROID-HOME/) :echo t)
       OR DO (format *error-output* (red "failed~%")) »
-  « (zsh (fn •rsync -Phav android:~A/bugle_db '~A'•
-           /ANDROID-HOME/ /TMP-DIR/) :echo t :return-string nil)
+  « (zsh (fn •rsync -Phav ~A:~A/bugle_db '~A'•
+             /device/ /ANDROID-HOME/ /TMP-DIR/) :echo t :return-string nil)
       OR DO (format *error-output* (red "failed~%")) »
-  « (zsh (fn •ssh android "rm ~A/bugle_db"•
-             /ANDROID-HOME/) :echo t)
+  « (zsh (fn •ssh ~a "rm ~A/bugle_db"•
+             /device/ /ANDROID-HOME/) :echo t)
       OR DO (format *error-output* (red "failed~%")) » )
 
 (ft "~%")
@@ -93,8 +98,8 @@
   (for-each/list /pic-folders-to-push/
     (progress index! /LENGTH/)
     (ft "syncing album: ~A~%" (green value!))
-    « (zsh (fn •rsync -Phav --delete "~A/Dropbox/Carlos IV/Backups/Pictures/~A" android:~A•
-               /HOME/ value! /PICTURES-PREFIX/) :echo t :return-string nil)
+    « (zsh (fn •rsync -Phav --delete "~A/Dropbox/Carlos IV/Backups/Pictures/~A" ~A:~A•
+               /HOME/ value! /device/ /PICTURES-PREFIX/) :echo t :return-string nil)
       OR DO (format *error-output* (red "failed~%")) » ))
 
 (ft "~%")
@@ -111,8 +116,8 @@
                (thebase (file-namestring xlatedpath)))
           (zsh-simple (fn •ln -sf "~A" "~A/music/~A/~4,'0D_~A"•
                           xlatedpath /TMP-DIR/ playlist index! thebase))))))
-  (zsh (fn •rsync -PhrtLav --delete ~A/music/ android:~A/music•
-            /TMP-DIR/ /ANDROID-PREFIX/) :echo t :return-string nil)
+  (zsh (fn •rsync -PhrtLav --delete ~A/music/ ~A:~A/music•
+            /TMP-DIR/ /device/ /ANDROID-PREFIX/) :echo t :return-string nil)
   (zsh (fn "rm -rf ~A/music" /TMP-DIR/) :echo t))
 
 (ft (green "~%done!~%"))
