@@ -63,6 +63,13 @@
       OR DO (format *error-output* (red "failed~%")) » )
 
 (ft "~%")
+(when (y-or-n-p "Push pwstore?")
+  « (zsh (fn •rsync -Phav --delete ~A/Dropbox/pwstore ~A:~A•
+             /HOME/ /device/ /ANDROID-HOME/)
+         :echo t)
+      OR DO (format *error-output* (red "failed~%")) » )
+
+(ft "~%")
 (when (y-or-n-p "Pull WhatsApp database?")
   « (zsh (fn •ssh ~A "su -c 'cp ~A ~A'"•
              /device/ /WHATSAPP-DB-LOCATION/ /ANDROID-HOME/) :echo t)

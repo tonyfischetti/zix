@@ -1,5 +1,5 @@
 
-(defvar /device/ "android")
+(defvar /device/ "pixel")
 
 ; picture folders to _PULL_
 (defvar /pic-folders-to-pull/ (list
