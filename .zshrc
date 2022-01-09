@@ -89,7 +89,7 @@ export PASSWORD_STORE_ENABLE_EXTENSIONS="true"
 eval $(dircolors)
 
 
-export PATH="$HOME/.local/bin:/usr/local/super/bin:$HOME/.zsh/bin:$HOME/bin:$HOME/.local/bin:/usr/local/bin/:/opt/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
+export PATH="$HOME/node/bin:$HOME/.local/bin:/usr/local/super/bin:$HOME/.zsh/bin:$HOME/bin:$HOME/.local/bin:/usr/local/bin/:/opt/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
 
 export ZOS=`uname -o`
 export ZHOSTNAME=`hostname`
