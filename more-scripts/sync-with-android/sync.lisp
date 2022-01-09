@@ -17,6 +17,7 @@
 (defvar /ANDROID-PREFIX/        (fn "~A/storage/" /ANDROID-HOME/))
 (defvar /PICTURES-PREFIX/       (fn "~A/pictures/" /ANDROID-PREFIX/))
 (defvar /PHOTOS-PREFIX/         (fn "~A/dcim/Camera" /ANDROID-PREFIX/))
+(defvar /GT-SCREENSHOT-PREFIX/  (fn "~A/dcim/Screenshots" /ANDROID-PREFIX/))
 (defvar /ANDROID-USER/          "u0_a225")
 (defvar /WHATSAPP-DB-LOCATION/  "/data/data/com.whatsapp/databases/msgstore.db")
 (defvar /MESSAGES-DB-LOCATION/  "/data/data/com.google.android.apps.messaging/databases/bugle_db")
@@ -28,8 +29,8 @@
 (zsh (fn "mkdir '~A'" /TMP-DIR/) :echo t)
 
 (ft "~%")
-(when (y-or-n-p "Pull picture folders off phone?")
-  (ft (yellow "Pulling picture folders off phone~%"))
+(when (y-or-n-p "Pull picture folders off device?")
+  (ft (yellow "Pulling picture folders off device~%"))
   (for-each/list /pic-folders-to-pull/
     (let ((tmppath (fn "~A~A" /PICTURES-PREFIX/ value!)))
       « (zsh (fn •rsync -Phav '~A:~A' '~A'• /device/ tmppath /TMP-DIR/)
@@ -46,8 +47,8 @@
             OR DO (format *error-output* (red "failed~%")) » ))))
 
 (ft "~%")
-(when (y-or-n-p "Pull photos off phone?")
-  (ft (yellow "Pulling picture folders off phone~%"))
+(when (y-or-n-p "Pull photos off device?")
+  (ft (yellow "Pulling picture folders off device~%"))
   « (zsh (fn •rsync -Phav '~A:~A' '~A'• /device/ /PHOTOS-PREFIX/ /TMP-DIR/)
          :echo t
          :return-string nil)
@@ -61,6 +62,21 @@
 (when (y-or-n-p "Delete photo folder?")
   « (zsh (fn •ssh ~A rm -rf ~A• /device/ /PHOTOS-PREFIX/) :echo t)
       OR DO (format *error-output* (red "failed~%")) » )
+
+(when (string= /device/ "goodtablet")
+  ; only relevant to good tablet
+  (ft "~%")
+  (when (y-or-n-p "Pull goodtablet screenshots off device?")
+    (ft (yellow "Pulling goodtablet screenshots off device~%"))
+    « (zsh (fn •rsync -Phav '~A:~A' '~A'•
+               /device/ /GT-SCREENSHOT-PREFIX/ /TMP-DIR/)
+           :echo t
+           :return-string nil)
+        OR DO (format *error-output* (red "failed~%")) » )
+  (ft "~%")
+  (when (y-or-n-p "Delete goodtablet screenshot folder?")
+    « (zsh (fn •ssh ~A rm -rf ~A• /device/ /GT-SCREENSHOT-PREFIX/) :echo t)
+        OR DO (format *error-output* (red "failed~%")) » ))
 
 (ft "~%")
 (when (y-or-n-p "Push pwstore?")
