@@ -21,9 +21,9 @@
 (defvar /ANDROID-USER/          "u0_a225")
 (defvar /WHATSAPP-DB-LOCATION/  "/data/data/com.whatsapp/databases/msgstore.db")
 (defvar /MESSAGES-DB-LOCATION/  "/data/data/com.google.android.apps.messaging/databases/bugle_db")
-(defvar /TMP-DIR/               (fn "~A/Desktop/ANDROID-SYNC-~A"
-                                    /HOME/ (get-current-time :time-sep "-"
-                                                             :dt-sep "_")))
+(defvar /TMP-DIR/               (fn "~A/Desktop/~A-SYNC-~A"
+                                    /HOME/ (string-upcase /DEVICE/)
+                                    (get-current-time :time-sep "-" :dt-sep "_")))
 (defvar /LENGTH/ 0)
 
 (zsh (fn "mkdir '~A'" /TMP-DIR/) :echo t)
@@ -63,7 +63,7 @@
   « (zsh (fn •ssh ~A rm -rf ~A• /device/ /PHOTOS-PREFIX/) :echo t)
       OR DO (format *error-output* (red "failed~%")) » )
 
-(when (string= /device/ "goodtablet")
+(when (string= /DEVICE/ "goodtablet")
   ; only relevant to good tablet
   (ft "~%")
   (when (y-or-n-p "Pull goodtablet screenshots off device?")
