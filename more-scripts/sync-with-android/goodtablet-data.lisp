@@ -27,5 +27,6 @@
 (defvar /playlists-to-push/ (list
   "Climatewave and Late Nights"
   "The Alternative"
-  ))
+  "Reading Time"
+))
 
