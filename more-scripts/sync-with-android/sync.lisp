@@ -18,6 +18,7 @@
 (defvar /PICTURES-PREFIX/       (fn "~A/pictures/" /ANDROID-PREFIX/))
 (defvar /PHOTOS-PREFIX/         (fn "~A/dcim/Camera" /ANDROID-PREFIX/))
 (defvar /GT-SCREENSHOT-PREFIX/  (fn "~A/dcim/Screenshots" /ANDROID-PREFIX/))
+(defvar /GT-S-NOTES-PREFIX/     (fn "~A/shared/s-notes" /ANDROID-PREFIX/))
 (defvar /ANDROID-USER/          "u0_a225")
 (defvar /WHATSAPP-DB-LOCATION/  "/data/data/com.whatsapp/databases/msgstore.db")
 (defvar /MESSAGES-DB-LOCATION/  "/data/data/com.google.android.apps.messaging/databases/bugle_db")
@@ -76,6 +77,15 @@
   (ft "~%")
   (when (y-or-n-p "Delete goodtablet screenshot folder?")
     « (zsh (fn •ssh ~A rm -rf ~A• /device/ /GT-SCREENSHOT-PREFIX/) :echo t)
+        OR DO (format *error-output* (red "failed~%")) » )
+
+  (ft "~%")
+  (when (y-or-n-p "Pull goodtablet samsung notes exports off device?")
+    (ft (yellow "Pulling goodtablet samsung notes exports off device~%"))
+    « (zsh (fn •rsync -Phav '~A:~A' '~A'•
+               /device/ /GT-S-NOTES-PREFIX/ /TMP-DIR/)
+           :echo t
+           :return-string nil)
         OR DO (format *error-output* (red "failed~%")) » ))
 
 (ft "~%")
