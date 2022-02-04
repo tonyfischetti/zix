@@ -322,6 +322,7 @@ notejournal(){
 
 # --------------------------------------------------------------- #
 # ALIASES TO `exit`
+# and other corrections
 
 alias exist="exit"
 alias exsiut="exit"
@@ -384,6 +385,8 @@ alias exiit="exit"
 alias eexit="exit"
 alias exizt="exit"
 alias exir="exit"
+
+alias acl="ack"
 # --------------------------------------------------------------- #
 
 
