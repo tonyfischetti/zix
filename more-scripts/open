@@ -23,7 +23,7 @@
 
 (defvar /spotify/ (make-openable
                     :name "spotify"
-                    :searchregex " Spotify Premium$"
+                    :searchregex " Spotify( Premium)?$"
                     :cmd "systemd-run --scope --user spotify"))
 
 (defvar /whatsapp/ (make-openable
