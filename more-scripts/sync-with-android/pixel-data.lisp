@@ -25,6 +25,7 @@
 
 ; playlists to sync (push)
 (defvar /playlists-to-push/ (list
+  "A Bunch of New Songs"
   "A Tribe Called Quest"
   "Against Me!"
   "And Also The Trees"
@@ -97,6 +98,7 @@
   "Keane"
   "KRS-One"
   "K-The-I"
+  "KAITOYΛA"
   "Ladytron"
   "Laibach"
   "Laiki Mousiki"
