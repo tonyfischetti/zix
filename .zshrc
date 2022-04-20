@@ -48,7 +48,7 @@ autoload -U colors && colors
 # PS1="%F{#79FBD2}▇▇▇▇ %~ ▇▇ %{$reset_color%}"
 # PS1="%F{#fda878}▇▇▇▇▇▇ %~ ▇▇▇ %{$reset_color%}"
 # PS1="%F{#fda878}▇▇▇▇▇▇ %~ ▇ %{$reset_color%}"
-PS1="%F{#fda878}▇▇▇▇▇▇ %~ ▇ %{$reset_color%}"
+PS1="%F{#fda878}▇▇▇▇▇▇ %~ █ %{$reset_color%}"
 # --------------------------------------------------------------- #
 
 

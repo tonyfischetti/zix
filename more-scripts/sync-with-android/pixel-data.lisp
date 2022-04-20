@@ -103,7 +103,6 @@
   "KAITOYΛA"
   "Ladytron"
   "Laibach"
-  "Laiki Mousiki"
   "Language Exchange"
   "Little Nemo"
   "Lowlife"
