@@ -1,0 +1,29 @@
+#compdef gulp
+#autoload
+
+#
+# gulp-autocompletion-zsh
+#
+# Autocompletion for your gulp.js tasks
+#
+# Copyright(c) 2014 André König <andre.koenig@posteo.de>
+# MIT Licensed
+#
+
+#
+# André König
+# Github: https://github.com/akoenig
+# Twitter: https://twitter.com/caiifr
+#
+
+#
+# Grabs all available tasks from the `gulpfile.js`
+# in the current directory.
+#
+
+# EDITED by Tony Fischetti
+
+compls=$(grep -Eo 'exports.(\S+)' Gulpfile.js 2>/dev/null | sed s'/exports.//')
+
+completions=(${=compls})
+compadd -- $completions
