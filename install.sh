@@ -8,8 +8,6 @@ ln -s ~/.zsh/.wgetrc ~/.wgetrc
 ln -s ~/.zsh/.sqliterc ~/.sqliterc
 mkdir -p ~/.config/htop
 ln -s ~/.zsh/.htoprc ~/.config/htop/htoprc
-rm ~/.gitconfig
-ln -s ~/.zsh/.gitconfig ~/.gitconfig
 
 sudo ln -s ~/.zsh/bin/lisp /usr/local/bin/lisp
 sudo ln -s ~/.zsh/bin/lispscript /usr/local/bin/lispscript
@@ -21,4 +19,5 @@ mkdir -p ~/.ssh/login-keys.d/
 echo "don't forget to decrypt the ssh_config and run 'ln -s ~/.zsh/ssh_config ~/.ssh/config'"
 echo "and..."
 echo "don't forget to add private key to ~/.ssh/login-keys.d and put key in '~/.keys'"
-
+echo "and..."
+echo "don't forget to 'ln -s ~/.zsh/.gitconfig ~/.gitconfig'"
