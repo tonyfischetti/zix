@@ -122,6 +122,13 @@ sub main {
 
 		my $nexttime = 0;
 
+        my $needredraw = 0;
+
+        $SIG{WINCH} = sub {
+            print "caught sigwinch";
+            $needredraw = 1;
+        };
+
 		while(1) {
 			my $in = lc(getch());
 
@@ -129,10 +136,13 @@ sub main {
 			elsif( $in eq 'r' ) { last; }     # Redraw (will recreate all objects)
 			elsif( $in eq 'p' ) { $paused = !$paused; }
 
+            if   ( $needredraw ) { $needredraw = !$needredraw; last;}
+
 			$anim->animate() unless($paused);
 		}
 		$anim->update_term_size();
 		$anim->remove_all_entities();
+
 
 	}
 
@@ -1857,14 +1867,16 @@ sub dprint {
 	close(D);
 }
 
-sub sighandler {
-	my ($sig) = @_;
-	if($sig eq 'INT') { quit(); }
-	elsif($sig eq 'WINCH') {
-		# ignore SIGWINCH, only redraw when requested
-	}
-	else { quit("Exiting with SIG$sig"); }
-}
+# sub sighandler {
+# 	my ($sig) = @_;
+# 	if($sig eq 'INT') { quit(); }
+# 	# elsif($sig eq 'WINCH') {
+# 	# 	# ignore SIGWINCH, only redraw when requested
+#     #     print("SIG");
+#     #     quit();
+# 	# }
+# 	else { quit("Exiting with SIG$sig"); }
+# }
 
 sub quit {
 	my ($mesg) = @_;
@@ -1873,14 +1885,14 @@ sub quit {
 }
 
 
-sub initialize {
-	# this may be paranoid, but i don't want to leave
-	# the user's terminal in a state that they might not
-	# know how to fix if we die badly
-	foreach my $sig (keys %SIG) {
-		$SIG{$sig} = 'sighandler' unless(defined($SIG{$sig}));
-	}
-}
+# sub initialize {
+# 	# this may be paranoid, but i don't want to leave
+# 	# the user's terminal in a state that they might not
+# 	# know how to fix if we die badly
+# 	foreach my $sig (keys %SIG) {
+# 		$SIG{$sig} = 'sighandler' unless(defined($SIG{$sig}));
+# 	}
+# }
 
 
 sub center {
