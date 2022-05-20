@@ -49,6 +49,12 @@ autoload -U colors && colors
 # PS1="%F{#fda878}▇▇▇▇▇▇ %~ ▇▇▇ %{$reset_color%}"
 # PS1="%F{#fda878}▇▇▇▇▇▇ %~ ▇ %{$reset_color%}"
 PS1="%F{#fda878}▇▇▇▇▇▇ %~ █ %{$reset_color%}"
+
+# for containers, etc...
+if [[ `whoami` = 'marvin' ]]
+then
+    PS1="▇▇▇▇▇▇ %~ █ %{$reset_color%}"
+fi
 # --------------------------------------------------------------- #
 
 
