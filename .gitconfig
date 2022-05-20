@@ -29,3 +29,5 @@
 	helper = cache
 [commit]
 	gpgsign = true
+[init]
+	defaultBranch = main
