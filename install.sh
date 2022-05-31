@@ -13,6 +13,7 @@ sudo ln -s ~/.zsh/bin/lisp /usr/local/bin/lisp
 sudo ln -s ~/.zsh/bin/lispscript /usr/local/bin/lispscript
 sudo ln -s ~/.zsh/site-functions/_pass /usr/local/share/zsh/site-functions/_pass
 sudo ln -s ~/.zsh/site-functions/_gulp /usr/local/share/zsh/site-functions/_gulp
+sudo ln -s ~/.zsh/site-functions/_deno /usr/local/share/zsh/site-functions/_deno
 
 mkdir -p ~/.ssh/login-keys.d/
 

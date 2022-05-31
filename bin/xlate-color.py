@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#!/usr/bin/python3
 
 """ Convert values between RGB hex codes and xterm-256 color codes.
 

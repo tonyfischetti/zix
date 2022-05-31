@@ -90,12 +90,14 @@ export SYSTEMD_COLORS=1
 export SYSTEMD_PAGER=""
 export TIMEFMT="User-mode: %U	Kernel-mode: %S	Wall: %E	Perc: %P"
 export PASSWORD_STORE_ENABLE_EXTENSIONS="true"
+export DENO_INSTALL="$HOME/.deno"
+export PATH="$DENO_INSTALL/bin:$PATH"
 
 # pretty ls colors
 eval $(dircolors)
 
 
-export PATH="$HOME/node/bin:$HOME/.local/bin:/usr/local/super/bin:$HOME/.zsh/bin:$HOME/bin:$HOME/.local/bin:/usr/local/bin/:/opt/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
+export PATH="$DENO_INSTALL/bin:$HOME/node/bin:$HOME/.local/bin:/usr/local/super/bin:$HOME/.zsh/bin:$HOME/bin:$HOME/.local/bin:/usr/local/bin/:/opt/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
 
 export ZOS=`uname -o`
 export ZHOSTNAME=`hostname`
