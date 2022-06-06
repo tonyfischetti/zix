@@ -23,7 +23,7 @@
 
 # EDITED by Tony Fischetti
 
-compls=$(grep -Eo 'exports.(\S+)' Gulpfile.js 2>/dev/null | sed s'/exports.//')
+compls=$(grep -Eo 'exports.(\S+)\s+' Gulpfile.js 2>/dev/null | sed s'/exports.//')
 
 completions=(${=compls})
 compadd -- $completions
