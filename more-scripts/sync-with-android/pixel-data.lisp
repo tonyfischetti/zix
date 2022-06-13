@@ -63,6 +63,7 @@
   "Crystal Castles"
   "Crystal Stilts"
   "Darkwave"
+  "David Bowie"
   "DDT"
   "Dead Can Dance"
   "Dead Prez"
