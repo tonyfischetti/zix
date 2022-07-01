@@ -2,9 +2,9 @@
 
 (defvar /where-am-i/ "/home/tony/.zsh/more-scripts/sync-with-android/")
 
-(defvar /data-file/ (cond ((string= (cadr (cmdargs)) "pixel") "pixel-data.lisp")
+(defvar /data-file/ (cond ((string= (cadr (cmdargs)) "phone") "phone-data.lisp")
                           ((string= (cadr (cmdargs)) "goodtablet") "goodtablet-data.lisp")
-                          ((null (cadr (cmdargs))) "pixel-data.lisp")
+                          ((null (cadr (cmdargs))) "phone-data.lisp")
                           (t (die "invalid device"))))
 
 (load (fn "~A/~A" /where-am-i/ /data-file/))
@@ -19,7 +19,7 @@
 (defvar /PHOTOS-PREFIX/         (fn "~A/dcim/Camera" /ANDROID-PREFIX/))
 (defvar /GT-SCREENSHOT-PREFIX/  (fn "~A/dcim/Screenshots" /ANDROID-PREFIX/))
 (defvar /GT-S-NOTES-PREFIX/     (fn "~A/shared/s-notes" /ANDROID-PREFIX/))
-(defvar /ANDROID-USER/          "u0_a225")
+(defvar /ANDROID-USER/          "u0_a366")
 (defvar /WHATSAPP-DB-LOCATION/  "/data/data/com.whatsapp/databases/msgstore.db")
 (defvar /MESSAGES-DB-LOCATION/  "/data/data/com.google.android.apps.messaging/databases/bugle_db")
 (defvar /TMP-DIR/               (fn "~A/Desktop/~A-SYNC-~A"
@@ -149,7 +149,7 @@
                (thebase (file-namestring xlatedpath)))
           (zsh-simple (fn •ln -sf "~A" "~A/music/~A/~4,'0D_~A"•
                           xlatedpath /TMP-DIR/ playlist index! thebase))))))
-  (zsh (fn •rsync -PhrtLav --delete ~A/music/ ~A:~A/music•
+  (zsh (fn •rsync -PhrtLav --no-t --delete ~A/music/ ~A:~A/music•
             /TMP-DIR/ /device/ /ANDROID-PREFIX/) :echo t :return-string nil)
   (zsh (fn "rm -rf ~A/music" /TMP-DIR/) :echo t))
 
