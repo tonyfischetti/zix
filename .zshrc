@@ -418,3 +418,10 @@ then
     export SSH_AUTH_SOCK="$(find /tmp/ssh* | grep ssh | grep agent 2> /dev/null)"
     export SSH_AGENT_PID="$(ps aux | ack 'ssh-agent$' | awk '{print $2}')"
 fi
+
+# # bun completions
+# [ -s "/home/tony/.bun/_bun" ] && source "/home/tony/.bun/_bun"
+#
+# # bun
+# export BUN_INSTALL="/home/tony/.bun"
+# export PATH="$BUN_INSTALL/bin:$PATH"
