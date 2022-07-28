@@ -8,6 +8,7 @@ ln -s ~/.zsh/.wgetrc ~/.wgetrc
 ln -s ~/.zsh/.sqliterc ~/.sqliterc
 mkdir -p ~/.config/htop
 ln -s ~/.zsh/.htoprc ~/.config/htop/htoprc
+ln -s ~/.zsh/.npmrc ~/.npmrc
 
 sudo ln -s ~/.zsh/bin/lisp /usr/local/bin/lisp
 sudo ln -s ~/.zsh/bin/lispscript /usr/local/bin/lispscript
