@@ -233,7 +233,7 @@ then
     alias vtkeys="sudo loadkeys ~/.dix/vt-caps-to-control.kmap"
     alias sgc="sudo grub-customizer"
     alias journal="journalctl -b -ef | ccze -A"
-    alias pupdate="sudo apt update && apt list --upgradable"
+    alias pupdate="sudo nala update && nala list --upgradable"
     alias pindexupdate="sudo update-apt-xapian-index"
     alias poutdated="nala list --upgradable"
     alias pupgrade="sudo nala upgrade"
