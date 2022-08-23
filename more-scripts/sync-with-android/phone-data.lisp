@@ -9,6 +9,7 @@
   "Twitter"
   "Reddit"
   "Boost"
+  "Whatsapp"
 ))
 
 ; picture folders to sync (push)
