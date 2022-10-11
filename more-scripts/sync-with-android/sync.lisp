@@ -4,6 +4,7 @@
 
 (defvar /data-file/ (cond ((string= (cadr (cmdargs)) "phone") "phone-data.lisp")
                           ((string= (cadr (cmdargs)) "goodtablet") "goodtablet-data.lisp")
+                          ((string= (cadr (cmdargs)) "grandtablet") "grandtablet-data.lisp")
                           ((null (cadr (cmdargs))) "phone-data.lisp")
                           (t (die "invalid device"))))
 
@@ -78,11 +79,12 @@
   « (zsh (fn •ssh ~A rm -rf ~A• /device/ /SCREENSHOT-PREFIX/) :echo t)
       OR DO (format *error-output* (red "failed~%")) » )
 
-(when (string= /DEVICE/ "goodtablet")
-  ; only relevant to good tablet
+(when (or (string= /DEVICE/ "goodtablet")
+          (string= /DEVICE/ "grandtablet"))
+  ; only relevant to the tablet
   (ft "~%")
-  (when (y-or-n-p "Pull goodtablet samsung notes exports off device?")
-    (ft (yellow "Pulling goodtablet samsung notes exports off device~%"))
+  (when (y-or-n-p "Pull samsung notes exports off device?")
+    (ft (yellow "Pulling samsung notes exports off device~%"))
     « (zsh (fn •rsync -Phav '~A:~A' '~A'•
                /device/ /GT-S-NOTES-PREFIX/ /TMP-DIR/)
            :echo t
@@ -96,35 +98,35 @@
          :echo t)
       OR DO (format *error-output* (red "failed~%")) » )
 
-(ft "~%")
-(when (y-or-n-p "Pull WhatsApp database?")
-  « (zsh (fn •ssh ~A "su -c 'cp ~A ~A'"•
-             /device/ /WHATSAPP-DB-LOCATION/ /ANDROID-HOME/) :echo t)
-      OR DO (format *error-output* (red "failed~%")) »
-  « (zsh (fn •ssh ~A "su -c 'chown ~A ~A/msgstore.db'"•
-             /device/ /ANDROID-USER/ /ANDROID-HOME/) :echo t)
-      OR DO (format *error-output* (red "failed~%")) »
-  « (zsh (fn •rsync -Phav ~A:~A/msgstore.db '~A'•
-             /device/ /ANDROID-HOME/ /TMP-DIR/) :echo t :return-string nil)
-      OR DO (format *error-output* (red "failed~%")) »
-  « (zsh (fn •ssh ~A "rm ~A/msgstore.db"•
-             /device/ /ANDROID-HOME/) :echo t)
-      OR DO (format *error-output* (red "failed~%")) » )
-
-(ft "~%")
-(when (y-or-n-p "Pull Messages database?")
-  « (zsh (fn •ssh ~A "su -c 'cp ~A ~A'"•
-             /device/ /MESSAGES-DB-LOCATION/ /ANDROID-HOME/) :echo t)
-      OR DO (format *error-output* (red "failed~%")) »
-  « (zsh (fn •ssh ~A "su -c 'chown ~A ~A/bugle_db'"•
-             /device/ /ANDROID-USER/ /ANDROID-HOME/) :echo t)
-      OR DO (format *error-output* (red "failed~%")) »
-  « (zsh (fn •rsync -Phav ~A:~A/bugle_db '~A'•
-             /device/ /ANDROID-HOME/ /TMP-DIR/) :echo t :return-string nil)
-      OR DO (format *error-output* (red "failed~%")) »
-  « (zsh (fn •ssh ~a "rm ~A/bugle_db"•
-             /device/ /ANDROID-HOME/) :echo t)
-      OR DO (format *error-output* (red "failed~%")) » )
+; (ft "~%")
+; (when (y-or-n-p "Pull WhatsApp database?")
+;   « (zsh (fn •ssh ~A "su -c 'cp ~A ~A'"•
+;              /device/ /WHATSAPP-DB-LOCATION/ /ANDROID-HOME/) :echo t)
+;       OR DO (format *error-output* (red "failed~%")) »
+;   « (zsh (fn •ssh ~A "su -c 'chown ~A ~A/msgstore.db'"•
+;              /device/ /ANDROID-USER/ /ANDROID-HOME/) :echo t)
+;       OR DO (format *error-output* (red "failed~%")) »
+;   « (zsh (fn •rsync -Phav ~A:~A/msgstore.db '~A'•
+;              /device/ /ANDROID-HOME/ /TMP-DIR/) :echo t :return-string nil)
+;       OR DO (format *error-output* (red "failed~%")) »
+;   « (zsh (fn •ssh ~A "rm ~A/msgstore.db"•
+;              /device/ /ANDROID-HOME/) :echo t)
+;       OR DO (format *error-output* (red "failed~%")) » )
+;
+; (ft "~%")
+; (when (y-or-n-p "Pull Messages database?")
+;   « (zsh (fn •ssh ~A "su -c 'cp ~A ~A'"•
+;              /device/ /MESSAGES-DB-LOCATION/ /ANDROID-HOME/) :echo t)
+;       OR DO (format *error-output* (red "failed~%")) »
+;   « (zsh (fn •ssh ~A "su -c 'chown ~A ~A/bugle_db'"•
+;              /device/ /ANDROID-USER/ /ANDROID-HOME/) :echo t)
+;       OR DO (format *error-output* (red "failed~%")) »
+;   « (zsh (fn •rsync -Phav ~A:~A/bugle_db '~A'•
+;              /device/ /ANDROID-HOME/ /TMP-DIR/) :echo t :return-string nil)
+;       OR DO (format *error-output* (red "failed~%")) »
+;   « (zsh (fn •ssh ~a "rm ~A/bugle_db"•
+;              /device/ /ANDROID-HOME/) :echo t)
+;       OR DO (format *error-output* (red "failed~%")) » )
 
 (ft "~%")
 (when (y-or-n-p "Sync picture folders?")
