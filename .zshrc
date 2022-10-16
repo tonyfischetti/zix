@@ -252,6 +252,7 @@ fi
 if [[ $ZOS = "Android" ]]
 then
     alias psearch="apt search"
+    alias pupdate="sudo apt update && apt list --upgradable"
 fi
 
 # --------------------------------------------------------------- #
