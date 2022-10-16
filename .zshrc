@@ -393,6 +393,7 @@ alias exiit="exit"
 alias eexit="exit"
 alias exizt="exit"
 alias exir="exit"
+alias rciy="exit"
 
 alias acl="ack"
 # --------------------------------------------------------------- #
