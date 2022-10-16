@@ -253,6 +253,12 @@ if [[ $ZOS = "Android" ]]
 then
     alias psearch="apt search"
     alias pupdate="sudo apt update && apt list --upgradable"
+    alias poutdated="apt list --upgradable"
+    alias pupgrade="sudo apt upgrade"
+    alias pinstall="sudo apt install"
+    alias puninstall="sudo apt remove"
+    alias plist="apt list --installed"
+    alias pclean="sudo apt clean && sudo apt autoclean"
 fi
 
 # --------------------------------------------------------------- #
