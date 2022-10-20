@@ -61,8 +61,14 @@
                     :searchregex " . Chromium$"
                     :cmd "systemd-run --scope --user chromium"))
 
+(defvar /transmission/ (make-openable
+                    :name "transmission"
+                    :searchregex "^Transmission$"
+                    :cmd "systemd-run --scope --user transmission-gtk"))
+
 (defvar /all-apps/ (list /firefox/ /thunar/ /terminal/ /spotify/ /whatsapp/
-                         /signal/ /gimp/ /cmus/ /nypl/ /kernel/ /chromium/))
+                         /signal/ /gimp/ /cmus/ /nypl/ /kernel/ /chromium/
+                         /transmission/))
 
 (defun get-windows (aprogregex)
   « (zsh (fn •wmctrl -l | tac | ack '~A'• aprogregex) :split t :echo t)
