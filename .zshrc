@@ -433,3 +433,5 @@ fi
 # # bun
 # export BUN_INSTALL="/home/tony/.bun"
 # export PATH="$BUN_INSTALL/bin:$PATH"
+#
+export GPG_TTY=$(tty)

@@ -247,7 +247,7 @@
       (funcall *printfun* (+ 1 index!) theprog theuname thehostname
                thecwd thecontext prettytime theactualcmd thetags value!)
       )
-      or WARN (fn "FAILED TO PARSE LINE ~A (~A)" index! error!) » ))
+      or WARN (fn "FAILED TO PARSE LINE ~A" index!) » ))
 
 
 ; vi: ft=lisp

@@ -18,8 +18,8 @@
 
 (defvar /terminal/ (make-openable
                     :name "terminal"
-                    :searchregex " Terminal -"
-                    :cmd "systemd-run --scope --user xfce4-terminal --default-working-directory='/home/tony'"))
+                    :searchregex "term-term$"
+                    :cmd "systemd-run --scope --user xfce4-terminal -T term-term --default-working-directory='/home/tony'"))
 
 (defvar /spotify/ (make-openable
                     :name "spotify"
