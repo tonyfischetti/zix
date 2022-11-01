@@ -11,6 +11,7 @@ ln -s ~/.zsh/.htoprc ~/.config/htop/htoprc
 ln -s ~/.zsh/.npmrc ~/.npmrc
 mkdir -p ~/.config/fd
 ln -s ~/.zsh/.fdignore ~/.config/fd/ignore
+mkdir -p ~/.config/powershell
 ln -s ~/.zsh/pwsh-profile.ps1 ~/.config/powershell/Microsoft.PowerShell_profile.ps1
 
 sudo ln -s ~/.zsh/bin/lisp /usr/local/bin/lisp
