@@ -6,69 +6,82 @@
 (defstruct openable
   name searchregex cmd)
 
-(defvar /firefox/ (make-openable
-                    :name "firefox"
-                    :searchregex " Mozilla Firefox$"
-                    :cmd "systemd-run --scope --user firefox"))
 
-(defvar /thunar/ (make-openable
-                    :name "thunar"
-                    :searchregex " File Manager$"
-                    :cmd "systemd-run --scope --user thunar"))
+(defvar /all-apps/
+  (list
 
-(defvar /terminal/ (make-openable
-                    :name "terminal"
-                    :searchregex "term-term$"
-                    :cmd "systemd-run --scope --user xfce4-terminal -T term-term --default-working-directory='/home/tony'"))
+    ; Firefox
+    (make-openable
+      :name "firefox"
+      :searchregex " Mozilla Firefox$"
+      :cmd "systemd-run --scope --user firefox")
 
-(defvar /spotify/ (make-openable
-                    :name "spotify"
-                    :searchregex " Spotify( Premium)?$"
-                    :cmd "systemd-run --scope --user spotify"))
+    ; Thunar
+    (make-openable
+      :name "thunar"
+      :searchregex " File Manager$"
+      :cmd "systemd-run --scope --user thunar")
 
-(defvar /whatsapp/ (make-openable
-                    :name "whatsapp"
-                    :searchregex " WALC$"
-                    :cmd "systemd-run --scope --user /home/tony/bin/WALC.AppImage"))
+    ; Terminal
+    (make-openable
+      :name "terminal"
+      :searchregex "term-term$"
+      :cmd "systemd-run --scope --user xfce4-terminal -T term-term --default-working-directory='/home/tony'")
 
-(defvar /signal/ (make-openable
-                    :name "signal"
-                    :searchregex "^Signal$"
-                    :cmd "systemd-run --scope --user signal-desktop"))
+    ; Spotify
+    (make-openable
+      :name "spotify"
+      :searchregex " Spotify( Premium)?$"
+      :cmd "systemd-run --scope --user spotify")
 
-(defvar /gimp/ (make-openable
-                    :name "gimp"
-                    :searchregex " (GIMP|GNU Image Manipulation Program)$"
-                    :cmd "systemd-run --scope --user gimp"))
+    ; WhatsApp
+    (make-openable
+      :name "whatsapp"
+      :searchregex " WALC$"
+      :cmd "systemd-run --scope --user /home/tony/bin/WALC.AppImage")
 
-(defvar /cmus/ (make-openable
-                    :name "cmus"
-                    :searchregex "cmus-music$"
-                    :cmd "systemd-run --scope --user xfce4-terminal -T cmus-music --default-working-directory=/home/tony/cmus"))
+    ; Signal
+    (make-openable
+      :name "signal"
+      :searchregex "^Signal$"
+      :cmd "systemd-run --scope --user signal-desktop")
 
-(defvar /nypl/ (make-openable
-                    :name "nypl"
-                    :searchregex "nypl-term$"
-                    :cmd "systemd-run --scope --user xfce4-terminal -T nypl-term --default-working-directory=/home/tony/Dropbox/NYPL"))
+    ; Gimp
+    (make-openable
+      :name "gimp"
+      :searchregex " (GIMP|GNU Image Manipulation Program)$"
+      :cmd "systemd-run --scope --user gimp")
 
-(defvar /kernel/ (make-openable
-                    :name "kernel"
-                    :searchregex "kernel-term$"
-                    :cmd "systemd-run --scope --user xfce4-terminal -T kernel-term --default-working-directory=/home/skeeter"))
+    ; Cmus
+    (make-openable
+      :name "cmus"
+      :searchregex "cmus-music$"
+      :cmd "systemd-run --scope --user xfce4-terminal -T cmus-music --default-working-directory=/home/tony/cmus")
 
-(defvar /chromium/ (make-openable
-                    :name "chromium"
-                    :searchregex " . Chromium$"
-                    :cmd "systemd-run --scope --user chromium"))
+    ; NYPL (terminal)
+    (make-openable
+      :name "nypl"
+      :searchregex "nypl-term$"
+      :cmd "systemd-run --scope --user xfce4-terminal -T nypl-term --default-working-directory=/home/tony/Dropbox/NYPL")
 
-(defvar /transmission/ (make-openable
-                    :name "transmission"
-                    :searchregex "^Transmission$"
-                    :cmd "systemd-run --scope --user transmission-gtk"))
+    ; kernel (terminal)
+    (make-openable
+      :name "kernel"
+      :searchregex "kernel-term$"
+      :cmd "systemd-run --scope --user xfce4-terminal -T kernel-term --default-working-directory=/home/skeeter")
 
-(defvar /all-apps/ (list /firefox/ /thunar/ /terminal/ /spotify/ /whatsapp/
-                         /signal/ /gimp/ /cmus/ /nypl/ /kernel/ /chromium/
-                         /transmission/))
+    ; Chromium
+    (make-openable
+      :name "chromium"
+      :searchregex " . Chromium$"
+      :cmd "systemd-run --scope --user chromium")
+
+    ; Transmission
+    (make-openable
+      :name "transmission"
+      :searchregex "^Transmission$"
+      :cmd "systemd-run --scope --user transmission-gtk")))
+
 
 (defun get-windows (aprogregex)
   « (zsh (fn •wmctrl -l | tac | ack '~A'• aprogregex) :split t :echo t)
