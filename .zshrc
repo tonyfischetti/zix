@@ -62,8 +62,8 @@ fi
 # --------------------------------------------------------------- #
 # ENVIRONMENT VARIABLES
 
-export EDITOR="vim"
-export GIT_EDITOR="vim"
+export EDITOR="nvim"
+export GIT_EDITOR="nvim"
 export BLOCKSIZE=human
 export BLOCK_SIZE=human
 export ZUNAME=`uname`
@@ -226,7 +226,8 @@ then
     # linux specifics
     alias open="exo-open"
     alias xclip="xclip -selection clipboard"
-    alias vi="vim"
+    alias vi="nvim"
+    alias vim="nvim"
     alias python="python3"
     alias pip="pip3"
     alias android-sync="~/.zsh/more-scripts/sync-with-android/sync.lisp"
