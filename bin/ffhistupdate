@@ -85,7 +85,7 @@
   "comb[str_detect(url, 'https?_//\\\\w*\\\\.?github\\\\.com'), tags:='github']"
   "comb[visit_type==7, tags:='download']"
   ""
-  "comb <- comb[!(str_detect(url, '//mail\\\\.google\\\\.com/mail/u/\\\\d/$') & str_detect(title, '^Inbox')), ]"
+  "comb <- comb[!str_detect(url, '//mail\\\\.google\\\\.com/mail/u/\\\\d/$'), ]"
   "comb <- comb[!str_detect(url, '//calendar\\\\.google\\\\.com/calendar/.?$'), ]"
   ""
   "setorder(comb, visit_date)"
