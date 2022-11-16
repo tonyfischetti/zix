@@ -228,6 +228,7 @@ then
     alias xclip="xclip -selection clipboard"
     alias vi="nvim"
     alias vim="nvim"
+    alias vimdiff="nvim -d"
     alias python="python3"
     alias pip="pip3"
     alias android-sync="~/.zsh/more-scripts/sync-with-android/sync.lisp"
