@@ -169,6 +169,7 @@
   "The Pains Of Being Pure At Heart"
   "The Police"
   "The Psychedelic Furs"
+  "The Q"
   "The Ramones"
   "The Shins"
   "The Sisters of Mercy"
