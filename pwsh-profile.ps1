@@ -70,3 +70,6 @@ function Prompt {
     "`e[36m▇▇▇▇▇▇ " + (Get-Location) + " █ "
 }
 
+New-Alias vi nvim
+New-Alias vim nvim
+

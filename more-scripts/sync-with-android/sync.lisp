@@ -18,7 +18,7 @@
 (defvar /ANDROID-PREFIX/        (fn "~A/storage/" /ANDROID-HOME/))
 (defvar /PICTURES-PREFIX/       (fn "~A/pictures/" /ANDROID-PREFIX/))
 (defvar /PHOTOS-PREFIX/         (fn "~A/dcim/Camera" /ANDROID-PREFIX/))
-(defvar /SCREENSHOT-PREFIX/  (fn "~A/dcim/Screenshots" /ANDROID-PREFIX/))
+(defvar /SCREENSHOT-PREFIX/     (fn "~A/dcim/Screenshots" /ANDROID-PREFIX/))
 (defvar /GT-S-NOTES-PREFIX/     (fn "~A/shared/s-notes" /ANDROID-PREFIX/))
 (defvar /ANDROID-USER/          "u0_a366")
 (defvar /WHATSAPP-DB-LOCATION/  "/data/data/com.whatsapp/databases/msgstore.db")
