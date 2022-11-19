@@ -402,6 +402,7 @@ alias exizt="exit"
 alias exir="exit"
 alias rciy="exit"
 alias erixt="exit"
+alias ecit="exit"
 
 alias acl="ack"
 # --------------------------------------------------------------- #
