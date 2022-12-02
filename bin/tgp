@@ -1,0 +1,4 @@
+#!/bin/bash
+
+tmux list-panes | ack 'active.$' | perl -pe 's/.+(%\d+) .+/$1/' | xclip -sel clip
+echo done

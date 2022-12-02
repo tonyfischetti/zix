@@ -64,6 +64,7 @@ fi
 
 export EDITOR="nvim"
 export GIT_EDITOR="nvim"
+export VISUAL="nvim"
 export BLOCKSIZE=human
 export BLOCK_SIZE=human
 export ZUNAME=`uname`
@@ -97,7 +98,7 @@ export NODE_PATH="$HOME/.local/lib/node_modules"
 eval $(dircolors)
 
 
-export PATH="$DENO_INSTALL/bin:$HOME/.zsh/bin:$HOME/bin:$HOME/.local/bin:/usr/local/bin/:/opt/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
+export PATH="$HOME/.cargo/bin:$DENO_INSTALL/bin:$HOME/.zsh/bin:$HOME/bin:$HOME/.local/bin:/usr/local/bin/:/opt/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
 
 export ZOS=`uname -o`
 export ZHOSTNAME=`hostname`
