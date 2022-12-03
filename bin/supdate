@@ -43,7 +43,7 @@
 ; -------------------------------------------------------------- ;
 
 (defvar /allplaces/ '((zsh          .   "~/.zsh")
-                      (vim          .   "~/.vim")
+                      (vim          .   "~/.config/nvim")
                       (clix         .   "~/.lisp")
                       (pluto        .   "~/pluto")
                       (rix          .   "~/.rix")
