@@ -13,31 +13,6 @@
 (defvar /pluto-updated-p/ nil)
 
 
-; ; -------------------------------------------------------------- ;
-; ; ------ PACKAGES
-; ; -------------------------------------------------------------- ;
-;
-; (with-interactive-interrupt-handler "~%peace~%"
-;   ; debian only for now
-;   (terpri)
-;   (when (and /debian-p/ (y-or-n-def "update package cache?" :default #\y))
-;     (zsh "sudo apt update"))
-;   (let ((upgrade-results (zsh "apt list --upgradeable")))
-;     (if (string= upgrade-results "Listing...")
-;       (ft "no package updates available~%")
-;       (progn
-;         (ft "upgradeble packages:~%")
-;         (ft "~A~%" upgrade-results)
-;         (terpri)
-;         (when (y-or-n-def "upgrade packages?" :default #\y)
-;           (ft (yellow "~%upgrading packages~%"))
-;           (zsh "sudo apt upgrade")
-;           (ft (green "~%done.~%"))
-;           (terpri))))))
-;
-; ; -------------------------------------------------------------- ;
-
-
 ; -------------------------------------------------------------- ;
 ; ------ GIT REPOS
 ; -------------------------------------------------------------- ;
@@ -173,6 +148,13 @@
       (when (y-or-n-def "update xfce confs backup?" :default #\y)
         (ft (yellow "~%updating xfce confs backup~%"))
         (zsh (fn •zpaq add "~A/Dropbox/Carlos IV/Backups/OS/Debian/some-dot-conf-dirs/xfce4-~A.zpaq" "~A/.config/xfce4" -to xfce4• /home/ /hostname/ /home/) :echo t :return-string nil)
+        (ft (green "done.~%")))))
+
+  (when /ALL-P/
+    (when /gnu-p/
+      (when (y-or-n-def "update vim config folder backup?" :default #\y)
+        (ft (yellow "~%updating vim config folder backup~%"))
+        (zsh (fn •zpaq add "~A/Dropbox/Carlos IV/Backups/OS/Debian/some-dot-conf-dirs/nvim-~A.zpaq" "~A/.config/nvim" -to nvim• /home/ /hostname/ /home/) :echo t :return-string nil)
         (ft (green "done.~%")))))
 
   (when (or /MUSIC-P/ /ALL-P/)
