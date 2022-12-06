@@ -50,7 +50,6 @@
           (check-for-untracked-changes key val)
           (check-for-updates key val))
       OR DO (fn (red "ERROR PROCESSING REPO ~A~%" key)) » ))
-      ; OR DIE error! » ))
 
 (defun git-pull-update (arepo adirectory)
   (when (y-or-n-def (fn "Pull latest ~A update?" arepo) :default #\y)
@@ -141,6 +140,12 @@
     (when (y-or-n-def "update keys backup?" :default #\n)
       (ft (yellow "~%updating keys backup~%"))
       (zsh (fn •zpaq add "~A/Dropbox/Carlos IV/Backups/OS/keys.zpaq" "~A/.keys" -to keys -key• /home/ /home/) :echo t :return-string nil)
+      (ft (green "done.~%"))))
+
+  (when /ALL-P/
+    (when (y-or-n-def "update password store backup?" :default #\n)
+      (ft (yellow "~%updating password store backup~%"))
+      (zsh (fn •zpaq add "~A/Dropbox/Carlos IV/Backups/OS/pwstore.zpaq" "~A/Dropbox/pwstore" -to pwstore• /home/ /home/) :echo t :return-string nil)
       (ft (green "done.~%"))))
 
   (when /ALL-P/
