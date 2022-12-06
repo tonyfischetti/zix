@@ -28,6 +28,9 @@
                                     (get-current-time :time-sep "-" :dt-sep "_")))
 (defvar /LENGTH/ 0)
 
+
+« (zsh "ssh phone exit") OR DIE "cannot connect to device" »
+
 (zsh (fn "mkdir '~A'" /TMP-DIR/) :echo t)
 
 (ft "~%")
