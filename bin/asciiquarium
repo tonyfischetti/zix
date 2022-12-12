@@ -1,5 +1,7 @@
 #!/usr/bin/env perl
-#
+
+# this is pretty heavily patched by <tony.fischetti@gmail.com>
+
 #############################################################################
 # Asciiquarium - An aquarium animation in ASCII art
 #
@@ -217,7 +219,7 @@ sub add_castle {
 		shape		=> $castle_image,
 		color		=> $castle_mask,
 		position	=> [ $anim->width()-32, $anim->height()-13, $depth{'castle'} ],
-		default_color	=> 'BLACK',
+		default_color	=> 'white',
 	);
 }
 
