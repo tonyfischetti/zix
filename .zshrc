@@ -248,6 +248,7 @@ then
     alias pclean="sudo nala clean && sudo nala autoclean"
     alias psummary="update-alternatives --get-selections"
     alias pnoinactive="sudo apt-get --purge autoremove"
+    alias trash=trash-put
     ##### kernel compilation aliases for skeeter
     # alias mrproper='make mrproper'
     # alias kmake='date && make -j12 bindeb-pkg > /dev/null && date'
@@ -333,6 +334,10 @@ pinfodebhelper(){
 
 notejournal(){
     echo "$1" | systemd-cat -t tony-note -p info
+}
+
+search-pass(){
+    fdfind -L --base-directory ~/.password-store | ack "$1"
 }
 
 # --------------------------------------------------------------- #

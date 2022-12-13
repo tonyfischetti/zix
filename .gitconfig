@@ -8,8 +8,6 @@
     abbrev = 13
 [color]
 	ui = true
-# [credential]
-# 	helper = /usr/share/doc/git/contrib/credential/libsecret/git-credential-libsecret
 [url "ssh://git@github.com/"]
   insteadOf = https://github.com/
 [github]
