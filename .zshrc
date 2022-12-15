@@ -340,6 +340,10 @@ search-pass(){
     fdfind -L --base-directory ~/.password-store | ack "$1"
 }
 
+get-pass(){
+    fdfind -L --base-directory ~/.password-store | ack "$1" | tee | parallel -j1 pass {.} "$2"
+}
+
 # --------------------------------------------------------------- #
 
 
