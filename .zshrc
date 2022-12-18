@@ -93,6 +93,7 @@ export TIMEFMT="User-mode: %U	Kernel-mode: %S	Wall: %E	Perc: %P"
 export PASSWORD_STORE_ENABLE_EXTENSIONS="true"
 export DENO_INSTALL="$HOME/.deno"
 export NODE_PATH="$HOME/.local/lib/node_modules"
+export DOCKER_BUILDKIT=1
 
 # pretty ls colors
 eval $(dircolors)
