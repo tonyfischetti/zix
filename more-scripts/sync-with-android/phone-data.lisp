@@ -117,6 +117,7 @@
   "Mustard Plug"
   "My Bloody Valentine"
   "New Order"
+  "Nicki Minaj"
   "NOFX"
   "Northern Portrait"
   "Oppenheimer Analysis"

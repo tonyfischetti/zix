@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -euxo pipefail
+
 ln -s ~/.zsh/.zshrc ~/.zshrc
 ln -s ~/.zsh/.ackrc ~/.ackrc
 mkdir -p ~/.gnupg
