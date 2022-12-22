@@ -169,6 +169,12 @@
       (ft (green "done.~%"))))
 
   (when (or /MUSIC-P/ /ALL-P/)
+    (when (y-or-n-def "update playlists folder for navidrome?" :default #\n)
+      (ft (yellow "~%updating playlists folder for navidrome~%"))
+      (zsh "~/cmus/make-for-navidrome.lisp" :echo t)
+      (ft (green "done.~%"))))
+
+  (when (or /MUSIC-P/ /ALL-P/)
     (when (y-or-n-def "update spotify playlists backup?" :default #\n)
       (ft (yellow "~%updating spotify playlists backup~%"))
       (zsh "~/.zsh/more-scripts/spotify-backup.py ~/cmus/spotify-playlists.txt" :echo t)
