@@ -2,10 +2,12 @@
 
 (defvar /where-am-i/ "/home/tony/.zsh/more-scripts/sync-with-android/")
 
-(defvar /data-file/ (cond ((string= (cadr (cmdargs)) "phone") "phone-data.lisp")
-                          ((string= (cadr (cmdargs)) "goodtablet") "goodtablet-data.lisp")
-                          ((string= (cadr (cmdargs)) "grandtablet") "grandtablet-data.lisp")
-                          ((null (cadr (cmdargs))) "phone-data.lisp")
+(defvar /DEVICE/ (cadr (cmdargs)))
+
+(defvar /data-file/ (cond ((string= /DEVICE/ "phone") "phone-data.lisp")
+                          ((string= /DEVICE/ "goodtablet") "goodtablet-data.lisp")
+                          ((string= /DEVICE/ "grandtablet") "grandtablet-data.lisp")
+                          ((null /DEVICE/) "phone-data.lisp")
                           (t (die "invalid device"))))
 
 (load (fn "~A/~A" /where-am-i/ /data-file/))
@@ -29,7 +31,7 @@
 (defvar /LENGTH/ 0)
 
 
-« (zsh "ssh phone exit") OR DIE "cannot connect to device" »
+« (zsh (fn "ssh ~A exit" /DEVICE/)) OR DIE "cannot connect to device" »
 
 (zsh (fn "mkdir '~A'" /TMP-DIR/) :echo t)
 
