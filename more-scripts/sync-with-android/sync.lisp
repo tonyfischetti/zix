@@ -4,10 +4,12 @@
 
 (defvar /DEVICE/ (cadr (cmdargs)))
 
+(when (null /DEVICE/)
+  (setq /DEVICE/ "phone"))
+
 (defvar /data-file/ (cond ((string= /DEVICE/ "phone") "phone-data.lisp")
                           ((string= /DEVICE/ "goodtablet") "goodtablet-data.lisp")
                           ((string= /DEVICE/ "grandtablet") "grandtablet-data.lisp")
-                          ((null /DEVICE/) "phone-data.lisp")
                           (t (die "invalid device"))))
 
 (load (fn "~A/~A" /where-am-i/ /data-file/))
