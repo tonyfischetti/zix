@@ -81,7 +81,6 @@
   "El Último Vecino"
   "Elvis Costello"
   "Feist"
-  "Forwards and Bachwards"
   "Frank Gambale"
   "Frank _Just Frank_"
   "Frou Frou"
