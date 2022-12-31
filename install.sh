@@ -22,12 +22,3 @@ sudo ln -s ~/.zsh/site-functions/_pass /usr/local/share/zsh/site-functions/_pass
 sudo ln -s ~/.zsh/site-functions/_gulp /usr/local/share/zsh/site-functions/_gulp
 sudo ln -s ~/.zsh/site-functions/_deno /usr/local/share/zsh/site-functions/_deno
 
-mkdir -p ~/.ssh/login-keys.d/
-
-echo "don't forget to decrypt the ssh_config and run 'ln -s ~/.zsh/ssh_config ~/.ssh/config'"
-echo "and..."
-echo "don't forget to add private key to ~/.ssh/login-keys.d and put key in '~/.keys'"
-echo "and..."
-echo "don't forget to 'ln -s ~/.zsh/.gitconfig ~/.gitconfig'"
-
-# WRITE PROGRAM TO FINISH JOB!
