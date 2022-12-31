@@ -29,3 +29,5 @@ echo "and..."
 echo "don't forget to add private key to ~/.ssh/login-keys.d and put key in '~/.keys'"
 echo "and..."
 echo "don't forget to 'ln -s ~/.zsh/.gitconfig ~/.gitconfig'"
+
+# WRITE PROGRAM TO FINISH JOB!

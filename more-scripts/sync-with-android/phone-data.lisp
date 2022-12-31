@@ -107,6 +107,7 @@
   "Language Exchange"
   "Little Nemo"
   "Lowlife"
+  "MF Doom"
   "Manu Chao"
   "Math and Physics Club"
   "Metric"

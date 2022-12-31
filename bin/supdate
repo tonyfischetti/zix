@@ -225,10 +225,10 @@
     (when (y-or-n-def "update Python packages archives?" :default #\n)
       (ft (yellow "~%updating Python packages archives~%"))
       (when /gnu-p/
-        (zsh (fn "zpaq a '~A/Dropbox/Carlos IV/Backups/OS/py-packages/site-packages-~A.zpaq' ~A/.local/lib/python3.7/site-packages -to site-packages-~A"
+        (zsh (fn "zpaq a '~A/Dropbox/Carlos IV/Backups/OS/py-packages/site-packages-~A.zpaq' ~A/.local/lib/python3.9/site-packages -to site-packages-~A"
                  /home/ /hostname/ /home/ /hostname/) :echo t))
       (when /darwin-p/
-        (zsh (fn "zpaq a '~A/Dropbox/Carlos IV/Backups/OS/py-packages/py-library-~A.zpaq' ~A/Library/Python/3.7 -to py-library-~A"
+        (zsh (fn "zpaq a '~A/Dropbox/Carlos IV/Backups/OS/py-packages/py-library-~A.zpaq' ~A/Library/Python/3.9 -to py-library-~A"
                  /home/ /hostname/ /home/ /hostname/) :echo t))
       (ft (green "done.~%"))))
 
