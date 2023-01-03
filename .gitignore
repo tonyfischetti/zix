@@ -5,3 +5,4 @@ ssh_config
 bin/debug
 bin/post-install.sh
 bin/make-post-install-pack.sh
+goodies/

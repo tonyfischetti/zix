@@ -122,6 +122,7 @@
       (when (y-or-n-def "update apt sources?" :default #\n)
         (ft (yellow "~%updating apt sources~%"))
         (zsh (fn "cp /etc/apt/sources.list ~A/.dix/etc/apt/" /home/) :echo t)
+        (zsh (fn "cp -R /etc/apt/sources.list.d ~A/.dix/etc/apt/" /home/) :echo t)
         (ft (green "done.~%")))))
 
   (when /ALL-P/
@@ -134,12 +135,6 @@
     (when (y-or-n-def "update history files?" :default #\n)
       (ft (yellow "~%updating history files~%"))
       (zsh (fn •zpaq add "~A/Dropbox/Carlos IV/Backups/OS/histories.zpaq" "~A/Dropbox/histories" -to histories -key• /home/ /home/) :echo t :return-string nil)
-      (ft (green "done.~%"))))
-
-  (when /ALL-P/
-    (when (y-or-n-def "update keys backup?" :default #\n)
-      (ft (yellow "~%updating keys backup~%"))
-      (zsh (fn •zpaq add "~A/Dropbox/Carlos IV/Backups/OS/keys.zpaq" "~A/.keys" -to keys -key• /home/ /home/) :echo t :return-string nil)
       (ft (green "done.~%"))))
 
   (when /ALL-P/
