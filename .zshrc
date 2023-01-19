@@ -231,7 +231,6 @@ then
     alias vi="nvim"
     alias vim="nvim"
     alias vimdiff="nvim -d"
-    alias python="python3"
     alias pip="pip3"
     alias android-sync="~/.zsh/more-scripts/sync-with-android/sync.lisp"
     alias vtkeys="sudo loadkeys ~/.dix/vt-caps-to-control.kmap"
