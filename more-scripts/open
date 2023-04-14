@@ -70,12 +70,6 @@
       :searchregex "kernel-term$"
       :cmd "systemd-run --scope --user xfce4-terminal -T kernel-term --default-working-directory=/home/skeeter")
 
-    ; mylua (terminal)
-    (make-openable
-      :name "mylua"
-      :searchregex "mylua-term$"
-      :cmd "systemd-run --scope --user xfce4-terminal -T mylua-term --default-working-directory=/home/skeeter")
-
     ; nystec (terminal)
     (make-openable
       :name "nystec"
