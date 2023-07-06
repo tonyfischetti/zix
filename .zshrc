@@ -191,7 +191,46 @@ alias weather2='curl "wttr.in/~Washington+Heights?m&p&format=v2"'
 # alias base64="base64 -w 0"
 
 # OS Specific directives
-if [[ `uname` = 'Darwin' ]]
+if [[ `uname` = 'Linux' ]]
+then
+    # linux specifics
+    alias open="exo-open"
+    alias xclip="xclip -selection clipboard"
+    alias vi="nvim"
+    alias vim="nvim"
+    alias vimdiff="nvim -d"
+    alias pip="pip3"
+    alias android-sync="~/.zsh/more-scripts/sync-with-android/sync.lisp"
+    alias vtkeys="sudo loadkeys ~/.dix/vt-caps-to-control.kmap"
+    alias sgc="sudo grub-customizer"
+    alias journal="journalctl -b -ef | ccze -A"
+    alias pupdate="sudo nala update && nala list --upgradable"
+    alias pindexupdate="sudo update-apt-xapian-index"
+    alias poutdated="nala list --upgradable"
+    alias pupgrade="sudo nala upgrade"
+    alias psearch="axi-cache search"
+    alias pinfo="pinfodebhelper"
+    alias pinstall="sudo nala install"
+    alias puninstall="sudo nala remove"
+    alias plist="apt list --installed"
+    alias pclean="sudo nala clean && sudo nala autoclean"
+    alias psummary="update-alternatives --get-selections"
+    alias pnoinactive="sudo apt-get --purge autoremove"
+    alias trash=trash-put
+    ##### kernel compilation aliases for skeeter
+    # alias mrproper='make mrproper'
+    # alias kmake='date && make -j12 bindeb-pkg > /dev/null && date'
+elif [[ $ZOS = "Android" ]]
+then
+    alias psearch="apt search"
+    alias pupdate="sudo apt update && apt list --upgradable"
+    alias poutdated="apt list --upgradable"
+    alias pupgrade="sudo apt upgrade"
+    alias pinstall="sudo apt install"
+    alias puninstall="sudo apt remove"
+    alias plist="apt list --installed"
+    alias pclean="sudo apt clean && sudo apt autoclean"
+elif [[ `uname` = 'Darwin' ]]
 then
     # mac specifics
     alias vi="mvim -v"
@@ -222,47 +261,6 @@ then
     alias realrm="/bin/rm"
     # alias rm="$HOME/.zsh/bin/rm.sh"
     export JAVA_HOME=/Library/Java/JavaVirtualMachines/openjdk12/Contents/Home
-fi
-if [[ `uname` = 'Linux' ]]
-then
-    # linux specifics
-    alias open="exo-open"
-    alias xclip="xclip -selection clipboard"
-    alias vi="nvim"
-    alias vim="nvim"
-    alias vimdiff="nvim -d"
-    alias pip="pip3"
-    alias android-sync="~/.zsh/more-scripts/sync-with-android/sync.lisp"
-    alias vtkeys="sudo loadkeys ~/.dix/vt-caps-to-control.kmap"
-    alias sgc="sudo grub-customizer"
-    alias journal="journalctl -b -ef | ccze -A"
-    alias pupdate="sudo nala update && nala list --upgradable"
-    alias pindexupdate="sudo update-apt-xapian-index"
-    alias poutdated="nala list --upgradable"
-    alias pupgrade="sudo nala upgrade"
-    alias psearch="axi-cache search"
-    alias pinfo="pinfodebhelper"
-    alias pinstall="sudo nala install"
-    alias puninstall="sudo nala remove"
-    alias plist="apt list --installed"
-    alias pclean="sudo nala clean && sudo nala autoclean"
-    alias psummary="update-alternatives --get-selections"
-    alias pnoinactive="sudo apt-get --purge autoremove"
-    alias trash=trash-put
-    ##### kernel compilation aliases for skeeter
-    # alias mrproper='make mrproper'
-    # alias kmake='date && make -j12 bindeb-pkg > /dev/null && date'
-fi
-if [[ $ZOS = "Android" ]]
-then
-    alias psearch="apt search"
-    alias pupdate="sudo apt update && apt list --upgradable"
-    alias poutdated="apt list --upgradable"
-    alias pupgrade="sudo apt upgrade"
-    alias pinstall="sudo apt install"
-    alias puninstall="sudo apt remove"
-    alias plist="apt list --installed"
-    alias pclean="sudo apt clean && sudo apt autoclean"
 fi
 
 # --------------------------------------------------------------- #
