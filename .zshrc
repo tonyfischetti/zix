@@ -412,6 +412,9 @@ alias ecit="exit"
 alias exiast="exit"
 
 alias acl="ack"
+
+alias lsa="ls"
+alias lsd="ls"
 # --------------------------------------------------------------- #
 
 
