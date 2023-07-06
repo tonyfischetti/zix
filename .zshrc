@@ -94,26 +94,19 @@ export PASSWORD_STORE_ENABLE_EXTENSIONS="true"
 export DENO_INSTALL="$HOME/.deno"
 export NODE_PATH="$HOME/.local/lib/node_modules"
 export DOCKER_BUILDKIT=1
-
-# pretty ls colors
-eval $(dircolors)
-
-
-export PATH="$HOME/.cargo/bin:$DENO_INSTALL/bin:$HOME/.zsh/bin:$HOME/bin:$HOME/.local/bin:/usr/local/bin/:/opt/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
-
 export ZOS=`uname -o`
 export ZHOSTNAME=`hostname`
 export ZME=`whoami`
 
+# pretty ls colors
+eval $(dircolors)
+
+export PATH="$HOME/.cargo/bin:$DENO_INSTALL/bin:$HOME/.zsh/bin:$HOME/bin:$HOME/.local/bin:/usr/local/bin/:/opt/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
+
+
 if [[ $ZME = 'u0_a216' ]] || [[ $ZME = 'u0_a280' ]] || [[ $ZME = 'u0_a225' ]] || [[ $ZME = 'u0a366' ]]
 then
     export ZOS="Android"
-fi
-
-# android
-if [[ $ZOS = "Android" ]]
-then
-    export PATH="$HOME/.zsh/override-bin/android:/data/data/com.termux/files/usr/bin:/data/data/com.termux/files/bin:/data/data/com.termux/files/sbin:/system/bin:$PATH"
 fi
 
 if [[ $ZOS = "GNU/Linux" ]]
@@ -121,6 +114,9 @@ then
     export R_LIBS=~/local/R_libs/
     export R_LIBS_USER=~/local/R_libs/
     export RSTUDIO_WHICH_R=/usr/local/bin/R
+elif [[ $ZOS = "Android" ]]
+then
+    export PATH="$HOME/.zsh/override-bin/android:/data/data/com.termux/files/usr/bin:/data/data/com.termux/files/bin:/data/data/com.termux/files/sbin:/system/bin:$PATH"
 fi
 
 
