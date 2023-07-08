@@ -104,7 +104,7 @@ eval $(dircolors)
 export PATH="$HOME/.cargo/bin:$DENO_INSTALL/bin:$HOME/.zsh/bin:$HOME/bin:$HOME/.local/bin:/usr/local/bin/:/opt/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
 
 
-if [[ $ZME = 'u0_a216' ]] || [[ $ZME = 'u0_a280' ]] || [[ $ZME = 'u0_a225' ]] || [[ $ZME = 'u0a366' ]]
+if [[ $ZME = 'u0_a468']] || [[ $ZME = 'u0_a216' ]] || [[ $ZME = 'u0_a280' ]] || [[ $ZME = 'u0_a225' ]] || [[ $ZME = 'u0a366' ]]
 then
     export ZOS="Android"
 fi
