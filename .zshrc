@@ -94,6 +94,7 @@ export PASSWORD_STORE_ENABLE_EXTENSIONS="true"
 export DENO_INSTALL="$HOME/.deno"
 export NODE_PATH="$HOME/.local/lib/node_modules"
 export DOCKER_BUILDKIT=1
+
 export ZOS=`uname -o`
 export ZHOSTNAME=`hostname`
 export ZME=`whoami`
@@ -206,31 +207,22 @@ then
     alias psummary="update-alternatives --get-selections"
     alias pnoinactive="sudo apt-get --purge autoremove"
     alias trash=trash-put
-    if [[ $ZOS != "Android" ]]
-    then
-        alias psearch="axi-cache search"
-        alias pupdate="sudo nala update && nala list --upgradable"
-        alias poutdated="nala list --upgradable"
-        alias pinstall="sudo nala install"
-        alias puninstall="sudo nala remove"
-        alias pupgrade="sudo nala upgrade"
-        alias plist="apt list --installed"
-        alias pclean="sudo nala clean && sudo nala autoclean"
-    fi
     ##### kernel compilation aliases for skeeter
     # alias mrproper='make mrproper'
     # alias kmake='date && make -j12 bindeb-pkg > /dev/null && date'
-elif [[ $ZOS = "Android" ]]
+fi
+if [[ $ZOS != "Android" ]]
 then
-    alias psearch="apt search"
-    alias pupdate="sudo apt update && apt list --upgradable"
-    alias poutdated="apt list --upgradable"
-    alias pinstall="sudo apt install"
-    alias puninstall="sudo apt remove"
-    alias pupgrade="sudo apt upgrade"
+    alias psearch="axi-cache search"
+    alias pupdate="sudo nala update && nala list --upgradable"
+    alias poutdated="nala list --upgradable"
+    alias pinstall="sudo nala install"
+    alias puninstall="sudo nala remove"
+    alias pupgrade="sudo nala upgrade"
     alias plist="apt list --installed"
-    alias pclean="sudo apt clean && sudo apt autoclean"
-elif [[ `uname` = 'Darwin' ]]
+    alias pclean="sudo nala clean && sudo nala autoclean"
+fi
+if [[ `uname` = 'Darwin' ]]
 then
     # mac specifics
     alias vi="mvim -v"
