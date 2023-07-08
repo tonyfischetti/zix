@@ -211,7 +211,7 @@ then
     # alias mrproper='make mrproper'
     # alias kmake='date && make -j12 bindeb-pkg > /dev/null && date'
 fi
-if [[ $ZOS != "Android" ]]
+if [[ $ZOS == "Android" ]]
 then
     alias psearch="axi-cache search"
     alias pupdate="sudo nala update && nala list --upgradable"
