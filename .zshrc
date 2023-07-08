@@ -217,7 +217,8 @@ then
     ##### kernel compilation aliases for skeeter
     # alias mrproper='make mrproper'
     # alias kmake='date && make -j12 bindeb-pkg > /dev/null && date'
-elif [[ $ZOS = "Android" ]]
+fi
+if [[ $ZOS = "Android" ]]
 then
     alias psearch="apt search"
     alias pupdate="sudo apt update && apt list --upgradable"
@@ -227,7 +228,8 @@ then
     alias puninstall="sudo apt remove"
     alias plist="apt list --installed"
     alias pclean="sudo apt clean && sudo apt autoclean"
-elif [[ `uname` = 'Darwin' ]]
+fi
+if [[ `uname` = 'Darwin' ]]
 then
     # mac specifics
     alias vi="mvim -v"
