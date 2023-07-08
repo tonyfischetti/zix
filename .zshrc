@@ -94,6 +94,7 @@ export PASSWORD_STORE_ENABLE_EXTENSIONS="true"
 export DENO_INSTALL="$HOME/.deno"
 export NODE_PATH="$HOME/.local/lib/node_modules"
 export DOCKER_BUILDKIT=1
+
 export ZOS=`uname -o`
 export ZHOSTNAME=`hostname`
 export ZME=`whoami`
