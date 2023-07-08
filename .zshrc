@@ -201,19 +201,22 @@ then
     alias vtkeys="sudo loadkeys ~/.dix/vt-caps-to-control.kmap"
     alias sgc="sudo grub-customizer"
     alias journal="journalctl -b -ef | ccze -A"
-    alias pupdate="sudo nala update && nala list --upgradable"
     alias pindexupdate="sudo update-apt-xapian-index"
-    alias poutdated="nala list --upgradable"
-    alias pupgrade="sudo nala upgrade"
-    alias psearch="axi-cache search"
     alias pinfo="pinfodebhelper"
-    alias pinstall="sudo nala install"
-    alias puninstall="sudo nala remove"
-    alias plist="apt list --installed"
-    alias pclean="sudo nala clean && sudo nala autoclean"
     alias psummary="update-alternatives --get-selections"
     alias pnoinactive="sudo apt-get --purge autoremove"
     alias trash=trash-put
+    if [[ $ZOS != "Android" ]]
+    then
+        alias psearch="axi-cache search"
+        alias pupdate="sudo nala update && nala list --upgradable"
+        alias poutdated="nala list --upgradable"
+        alias pinstall="sudo nala install"
+        alias puninstall="sudo nala remove"
+        alias pupgrade="sudo nala upgrade"
+        alias plist="apt list --installed"
+        alias pclean="sudo nala clean && sudo nala autoclean"
+    fi
     ##### kernel compilation aliases for skeeter
     # alias mrproper='make mrproper'
     # alias kmake='date && make -j12 bindeb-pkg > /dev/null && date'
@@ -222,9 +225,9 @@ then
     alias psearch="apt search"
     alias pupdate="sudo apt update && apt list --upgradable"
     alias poutdated="apt list --upgradable"
-    alias pupgrade="sudo apt upgrade"
     alias pinstall="sudo apt install"
     alias puninstall="sudo apt remove"
+    alias pupgrade="sudo apt upgrade"
     alias plist="apt list --installed"
     alias pclean="sudo apt clean && sudo apt autoclean"
 elif [[ `uname` = 'Darwin' ]]
