@@ -31,8 +31,8 @@
     ; Spotify
     (make-openable
       :name "spotify"
-      :searchregex " Spotify( Premium)?$"
-      :cmd "systemd-run --scope --user spotify")
+      :searchregex "^Spotify$"
+      :cmd "flatpak run com.spotify.Client")
 
     ; WhatsApp
     (make-openable
