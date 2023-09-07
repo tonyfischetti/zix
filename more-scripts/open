@@ -70,11 +70,11 @@
       :searchregex "kernel-term$"
       :cmd "systemd-run --scope --user xfce4-terminal -T kernel-term --default-working-directory=/home/skeeter")
 
-    ; nystec (terminal)
+    ; doh (terminal)
     (make-openable
-      :name "nystec"
-      :searchregex "nystec-term$"
-      :cmd "systemd-run --scope --user xfce4-terminal -T nystec-term --default-working-directory=/home/skeeter")
+      :name "doh"
+      :searchregex "doh-term$"
+      :cmd "systemd-run --scope --user xfce4-terminal -T doh-term --default-working-directory=/home/tony/Dropbox/Other-Work/NYSTEC/laptop")
 
     ; Chromium
     (make-openable
