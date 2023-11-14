@@ -1,0 +1,2 @@
+options.disp_float_fmt 		= '%.07f'
+options.scroll_incr 		= -3

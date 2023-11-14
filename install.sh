@@ -7,6 +7,7 @@ ln -s ~/.zsh/.ackrc ~/.ackrc
 mkdir -p ~/.gnupg
 ln -s ~/.zsh/gpg.conf ~/.gnupg/gpg.conf
 ln -s ~/.zsh/.wgetrc ~/.wgetrc
+ln -s ~/.zsh/.visidatarc ~/.visidatarc
 ln -s ~/.zsh/.sqliterc ~/.sqliterc
 mkdir -p ~/.config/htop
 ln -s ~/.zsh/.htoprc ~/.config/htop/htoprc
