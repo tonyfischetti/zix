@@ -287,7 +287,7 @@ hash -d vim="$HOME/.config/nvim/"
 # --------------------------------------------------------------- #
 # CUSTOM FUNCTIONS
 
-sep(){
+sep() {
     clear;
     clear;
     clear;
@@ -296,50 +296,56 @@ sep(){
     clear;
 }
 
-toutf8(){
+toutf8() {
     iconv -f $1 -t UTF-8 $2 > zzztemp;
     mv zzztemp $2;
 }
 
-m4atomp3(){
+m4atomp3() {
     ffmpeg -i ${1}.m4a -codec:a libmp3lame -q:a 2 ${1}.mp3;
 }
 
-allm4astomp3s(){
+allm4astomp3s() {
     find ${1} -type f | ack '\.m4a$' | parallel --bar -j1 ffmpeg -i {} -codec:a libmp3lame -q:a 2 {.}.mp3;
 }
 
-recentcontexts(){
+recentcontexts() {
     cat "$1" | awk -F: '{ print $6 }' | tac | eweniq | tac | ack -v '^\s+$'
 }
 
-contextsondate(){
+contextsondate() {
     recentcontexts <(fm -m -P -d $1)
 }
 
-mcd(){
+mcd() {
     mkdir -p "$1"; cd "$1"
 }
 
-mpfour-codec(){
+mpfour-codec() {
     ffprobe -v error -select_streams v:0 -show_entries stream=codec_name -of default=noprint_wrappers=1:nokey=1 "$1"
 }
 
-pinfodebhelper(){
+pinfodebhelper() {
     apt-cache show "$1" | grep -v "^Depends" | grep -v "^Recommends" | grep -v "Suggests" | grep -v "^Breaks" | grep -v "^Conflicts" &&
       echo "" && apt-cache policy "$1" && echo "" && apt-cache depends "$1";
 }
 
-notejournal(){
+notejournal() {
     echo "$1" | systemd-cat -t tony-note -p info
 }
 
-search-pass(){
+search-pass() {
     fdfind -L --base-directory ~/.password-store | ack "$1"
 }
 
-get-pass(){
+get-pass() {
     fdfind -L --base-directory ~/.password-store | ack "$1" | tee | parallel -j1 pass {.} "$2"
+}
+
+ducker() {
+    local lpath=`realpath $1`
+    local rpath=`echo $lpath | sed 's/tony/marvin/'`
+    docker run -v $lpath:$rpath -it risa
 }
 
 # --------------------------------------------------------------- #
