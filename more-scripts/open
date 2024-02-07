@@ -40,6 +40,12 @@
       :searchregex " WALC$"
       :cmd "systemd-run --scope --user /home/tony/bin/WALC.AppImage")
 
+    ; Obsidian
+    (make-openable
+      :name "obsidian"
+      :searchregex " Obsidian v[\\d\\.]+$"
+      :cmd "systemd-run --scope --user obsidian")
+
     ; Signal
     (make-openable
       :name "signal"
