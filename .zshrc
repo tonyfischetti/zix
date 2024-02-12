@@ -276,6 +276,7 @@ hash -d mscripts="$HOME/.zsh/more-scripts/"
 hash -d pictures="$HOME/Dropbox/Carlos IV/Backups/Pictures/"
 hash -d os="$HOME/Dropbox/Carlos IV/Backups/OS/"
 hash -d vim="$HOME/.config/nvim/"
+hash -d obsidian="$HOME/Dropbox/Carlos IV/Obsidian/"
 
 # if [[ $ZOS = 'Android' ]]
 # then
