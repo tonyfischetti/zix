@@ -12,6 +12,6 @@ fs.readdir(codexLocation, { withFileTypes: true, recursive: true }).
   then(res => res.map(i => i.name)).
   then(res => res.map(i => i.replace(codexLocation, ""))).
   then((allFiles) => {
-    console.log(allFiles);
+    allFiles.forEach(i => console.log(i));
   });
 

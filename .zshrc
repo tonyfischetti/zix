@@ -349,6 +349,10 @@ ducker() {
     docker run -v $lpath:$rpath -it risa
 }
 
+cdx() {
+    vim ~/.config/nvim/codex/$1/"$(codex $1 | fzf)"
+}
+
 # --------------------------------------------------------------- #
 
 
