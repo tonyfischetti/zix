@@ -101,8 +101,28 @@ Meta
 package-lock.json
 node_modules/
 .env
+.env.development.local
+.env.test.local
+.env.production.local
+.env.local
+
 dist/
 .well-known/
+
+.cache
+pids
+_.pid
+_.seed
+*.pid.lock
+build/Release
+web_modules/
+*.tsbuildinfo
+.npm
+.eslintcache
+.node_repl_history
+.stylelintcache
+
+
 
 *.xz
 *.gz
@@ -114,10 +134,10 @@ dist/
 .shastore
 
 Thumbs.db
-# db.json
-# *.log
-# public/
-# .deploy*/
+db.json
+*.log
+public/
+.deploy*/
 _multiconfig.yml
 
 gmon.out
