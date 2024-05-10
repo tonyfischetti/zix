@@ -1,5 +1,5 @@
 #!/usr/bin/node
-// vim: filetype=javascript
+// vi: ft=javascript
 
 import * as fs    from 'node:fs/promises';
 import * as os    from 'node:os';
@@ -13,7 +13,5 @@ fs.readdir(codexLocation, { withFileTypes: true, recursive: true }).
   then(res => res.filter(i => i.isFile())).
   then(res => res.map(i => path.join(i.parentPath, i.name))).
   then(res => res.map(i => i.replace(codexLocation, ""))).
-  then((allFiles) => {
-    allFiles.forEach(i => console.log(i));
-  });
+  then((allFiles) => allFiles.forEach(i => console.log(i)));
 

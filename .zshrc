@@ -350,7 +350,7 @@ ducker() {
 }
 
 cdx() {
-    vim -R $HOME/.config/nvim/codex/$1/"$(codex $1 | fzf)"
+    vim $HOME/.config/nvim/codex/$1/"$(codex $1 | fzf)"
 }
 
 # --------------------------------------------------------------- #
