@@ -1,0 +1,44 @@
+#!/usr/bin/node
+// vi: ft=javascript
+
+import * as os    from 'node:os';
+import * as path  from 'node:path';
+import * as proc  from 'node:child_process';
+
+/*
+ * Supported systems are
+ *   - debian
+ *   - android
+ *   - darwin
+ */
+
+const _platform = os.platform();
+const SYSTEM = (_platform === "linux" && os.version().match("Debian")) ? "debian" :
+                  ((_platform === "android") ? "android" :
+                    ((os.platform() === "darwin" ? "darwin" : "?")));
+if (SYSTEM === "?") throw new Error("unrecognized system");
+
+
+/************************************************
+ *** Git repo locations                       ***
+ ************************************************/
+
+const REPOS = {
+  "zsh":        ".zsh",
+  "vim":        ".config/nvim",
+  "clix":       ".lisp",
+  "pluto":      "pluto",
+  "rix":        ".rix",
+  "tmux":       ".tmux",
+  "cmus":       "cmus",
+  "starlight":  "starlight",
+  "starconfig": ".starlight",
+  "dix":        ".dix"
+};
+Object.keys(REPOS).forEach((k, i) => REPOS[k] = path.join(os.homedir(), REPOS[k]));
+
+
+console.log({
+  SYSTEM,
+  REPOS
+});
