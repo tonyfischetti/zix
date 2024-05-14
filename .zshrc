@@ -349,6 +349,10 @@ ducker() {
     docker run -v $lpath:$rpath -it risa
 }
 
+cdx() {
+    vim $HOME/.config/nvim/codex/$1/"$(codex $1 | fzf)"
+}
+
 # --------------------------------------------------------------- #
 
 
@@ -449,11 +453,4 @@ then
     export SSH_AGENT_PID="$(ps aux | ack 'ssh-agent$' | awk '{print $2}')"
 fi
 
-# # bun completions
-# [ -s "/home/tony/.bun/_bun" ] && source "/home/tony/.bun/_bun"
-#
-# # bun
-# export BUN_INSTALL="/home/tony/.bun"
-# export PATH="$BUN_INSTALL/bin:$PATH"
-#
 export GPG_TTY=$(tty)
