@@ -31,8 +31,9 @@
     ; Spotify
     (make-openable
       :name "spotify"
-      :searchregex "^Spotify$"
-      :cmd "flatpak run com.spotify.Client")
+      :searchregex "^Spotify"
+      :cmd "spotify")
+      ; :cmd "flatpak run com.spotify.Client")
 
     ; WhatsApp
     (make-openable
