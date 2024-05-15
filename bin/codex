@@ -7,11 +7,12 @@ import * as path  from 'node:path';
 
 const language = process.argv[2] ?? '';
 
-const codexLocation = `${os.homedir()}/.config/nvim/codex/${language}/`;
+const codexLocation = `${os.homedir()}/.config/nvim/codex/${language}`;
 
 fs.readdir(codexLocation, { withFileTypes: true, recursive: true }).
   then(res => res.filter(i => i.isFile())).
   then(res => res.map(i => path.join(i.parentPath, i.name))).
   then(res => res.map(i => i.replace(codexLocation, ""))).
-  then((allFiles) => allFiles.forEach(i => console.log(i)));
+  then((allFiles) => allFiles.forEach(i => console.log(i))).
+  catch(err => console.log(`Unspecified error: ${err}`));
 
