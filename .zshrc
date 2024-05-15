@@ -102,7 +102,7 @@ export ZME=`whoami`
 # pretty ls colors
 eval $(dircolors)
 
-export PATH="/opt/cosmos/bin:$HOME/.cargo/bin:$DENO_INSTALL/bin:$HOME/.zsh/bin:$HOME/bin:$HOME/.local/bin:/usr/local/bin/:/opt/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
+export PATH="$HOME/.cargo/bin:$DENO_INSTALL/bin:$HOME/.zsh/bin:$HOME/bin:$HOME/.local/bin:/opt/nvim/bin:/usr/local/bin/:/opt/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
 
 
 if [[ $ZME = 'u0_a468' ]] || [[ $ZME = 'u0_a216' ]] || [[ $ZME = 'u0_a280' ]] || [[ $ZME = 'u0_a225' ]] || [[ $ZME = 'u0a366' ]]
