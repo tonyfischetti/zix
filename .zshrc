@@ -353,6 +353,10 @@ cdx() {
     SOME_PATH=$HOME/.config/nvim/codex/$1/"$(codex $1 | fzf)" && vi $SOME_PATH
 }
 
+cxcat() {
+    SOME_PATH=$HOME/.config/nvim/codex/$1/"$(codex $1 | fzf)" && cat $SOME_PATH
+}
+
 # --------------------------------------------------------------- #
 
 
