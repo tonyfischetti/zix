@@ -97,7 +97,7 @@
 
 
 (defun get-windows (aprogregex)
-  « (zsh (fn •wmctrl -l | tac | ack '~A'• aprogregex) :split t :echo t)
+  « (zsh (fn •wmctrl -l | tac | grep '~A'• aprogregex) :split t :echo t)
       or do (return-from get-windows nil) » )
 
 (defun get-wid (alinefromdashl)
