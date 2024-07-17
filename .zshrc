@@ -126,6 +126,11 @@ then
     export FIREFOXPROFILE="~/.mozilla/firefox/q3yebf9y.default-esr"
     export HISTFILE="$HOME/Dropbox/histories/zsh_history-vulcan"
     export R_DATATABLE_NUM_THREADS=6
+elif [[ `hostname` = 'nivar' ]]
+then
+    export FIREFOXPROFILE="~/.mozilla/firefox/bn9pljkw.default-esr"
+    export HISTFILE="$HOME/Dropbox/histories/zsh_history-betazed"
+    export R_DATATABLE_NUM_THREADS=7
 elif [[ `hostname` = 'betazed' ]]
 then
     export FIREFOXPROFILE="~/.mozilla/firefox/b4nptbgd.default-esr"
