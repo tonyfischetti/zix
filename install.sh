@@ -4,7 +4,7 @@ set -euxo pipefail
 
 ln -s ~/.zsh/.zshrc ~/.zshrc
 ln -s ~/.zsh/.ackrc ~/.ackrc
-ln -s ~/.zsh/.gitconfig ~/.gitconfig
+# ln -s ~/.zsh/.gitconfig ~/.gitconfig
 mkdir -p ~/.gnupg
 ln -s ~/.zsh/gpg.conf ~/.gnupg/gpg.conf
 ln -s ~/.zsh/.wgetrc ~/.wgetrc
