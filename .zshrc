@@ -13,7 +13,7 @@ ZSH=$HOME/.zsh
 # ZSH THINGS
 
 # get completions working
-fpath=($ZSH/completions $fpath)
+fpath=($ZSH/site-functions $fpath)
 source $ZSH/completion.zsh
 ZSH_COMPDUMP="$HOME/.zcompdump"
 autoload -U compinit
@@ -118,6 +118,14 @@ then
 elif [[ $ZOS = "Android" ]]
 then
     export PATH="$HOME/.zsh/override-bin/android:/data/data/com.termux/files/usr/bin:/data/data/com.termux/files/bin:/data/data/com.termux/files/sbin:/system/bin:$PATH"
+elif [[ $ZOS = "Darwin" ]]
+then
+    export PATH="$HOMEBREW_PREFIX/opt/coreutils/libexec/gnubin:$PATH"
+    eval "$(/opt/homebrew/bin/brew shellenv)"
+    export PATH="/usr/local/bin:$PATH"
+    export HOMEBREW_NO_ENV_HINTS=1
+    . "$HOME/.atuin/bin/env"
+    eval "$(atuin init zsh --disable-up-arrow)"
 fi
 
 
@@ -238,34 +246,29 @@ fi
 if [[ `uname` = 'Darwin' ]]
 then
     # mac specifics
-    alias vi="mvim -v"
-    alias vim="mvim -v"
-    alias vimdiff="mvim -v -d"
-    alias macvim="mvim"
-    alias awk="gawk"
-    alias sed="gsed"
-    alias find="gfind"
-    alias date="gdate"
-    alias shred="gshred"
-    alias grep="ggrep -P"
-    alias diff="diff --color=always"
-    alias pupdate="sudo port selfupdate"
-    alias poutdated="port outdated"
-    alias pupgrade="sudo port upgrade outdated"
-    alias psearch="port search"
-    alias pinfo="port info"
-    alias pinstall="sudo port install"
-    alias puninstall="sudo port uninstall --follow-dependents"
-    alias plist="port installed requested"
-    alias pclean="sudo port clean --all installed"
-    alias psummary="port select --summary"
-    alias pnoinactive="sudo port uninstall inactive"
-    alias python2='/opt/local/bin/python2.7'
-    alias say="say -v Samantha"
-    alias chrome="/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome"
-    alias realrm="/bin/rm"
-    # alias rm="$HOME/.zsh/bin/rm.sh"
-    export JAVA_HOME=/Library/Java/JavaVirtualMachines/openjdk12/Contents/Home
+    alias vi="nvim"
+    alias vim="nvim"
+    alias vimdiff="nvim -d"
+    alias pupdate="brew update"
+    alias poutdated="brew outdated"
+    alias pupgrade="brew upgrade"
+    alias psearch="brew search"
+    alias pinfo="brew info"
+    alias pinstall="brew install"
+    alias puninstall="brew uninstall"
+    alias plist="brew list"
+    alias pclean="brew clean"
+    # alias pupdate="sudo port selfupdate"
+    # alias poutdated="port outdated"
+    # alias pupgrade="sudo port upgrade outdated"
+    # alias psearch="port search"
+    # alias pinfo="port info"
+    # alias pinstall="sudo port install"
+    # alias puninstall="sudo port uninstall --follow-dependents"
+    # alias plist="port installed requested"
+    # alias pclean="sudo port clean --all installed"
+    # alias psummary="port select --summary"
+    # alias pnoinactive="sudo port uninstall inactive"
 fi
 
 # --------------------------------------------------------------- #
@@ -350,8 +353,9 @@ get-pass() {
 
 ducker() {
     local lpath=`realpath $1`
-    local rpath=`echo $lpath | sed 's/tony/marvin/'`
-    docker run -v $lpath:$rpath -it risa
+    local rpath=`echo $lpath`
+    local spiti=`echo $HOME`
+    docker run -v $lpath:/home/tony/host -v $spiti/Desktop:/home/tony/Desktop -it risa
 }
 
 cdx() {
