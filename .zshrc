@@ -121,6 +121,7 @@ then
 elif [[ $ZOS = "Darwin" ]]
 then
     export PATH="$HOMEBREW_PREFIX/opt/coreutils/libexec/gnubin:$PATH"
+    export PATH="$HOMEBREW_PREFIX/opt/sqlite/bin:$PATH"
     eval "$(/opt/homebrew/bin/brew shellenv)"
     export PATH="/usr/local/bin:$PATH"
     export HOMEBREW_NO_ENV_HINTS=1

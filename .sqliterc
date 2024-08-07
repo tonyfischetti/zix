@@ -1,2 +1,2 @@
 .headers on
-.mode box
+.mode box --wrap 30 -ww
