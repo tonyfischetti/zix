@@ -94,6 +94,7 @@ export PASSWORD_STORE_ENABLE_EXTENSIONS="true"
 export DENO_INSTALL="$HOME/.deno"
 export NODE_PATH="$HOME/.local/lib/node_modules"
 export DOCKER_BUILDKIT=1
+export CODEX_ROOT="$HOME/.config/nvim/codex"
 
 export ZOS=`uname -o`
 export ZHOSTNAME=`hostname`
@@ -360,7 +361,7 @@ ducker() {
 }
 
 cdx() {
-    SOME_PATH=$HOME/.config/nvim/codex/$1/"$(codex $1 | fzf)" && vi $SOME_PATH
+    SOME_PATH=$HOME/.config/nvim/codex/"$($HOME/.config/nvim/codex/codex.js $1)" && echo $SOME_PATH && vi "$SOME_PATH"
 }
 
 cxcat() {
