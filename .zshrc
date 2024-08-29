@@ -49,10 +49,6 @@ autoload -U colors && colors
 # PS1="%{$fg[green]%}%n%{$reset_color%}@%{$fg[cyan]%}%m %{$fg[red]%}%~ %{$reset_color%}♥ "
 # also a nice prompt
 # PS1="%F{#79FBD2}%m %F{#FDA879}%~%{$reset_color%} ♥ "
-# PS1="%F{#79FBD2}▇▇ %~ ▇▇ %{$reset_color%}"
-# PS1="%F{#79FBD2}▇▇▇▇ %~ ▇▇ %{$reset_color%}"
-# PS1="%F{#fda878}▇▇▇▇▇▇ %~ ▇▇▇ %{$reset_color%}"
-# PS1="%F{#fda878}▇▇▇▇▇▇ %~ ▇ %{$reset_color%}"
 PS1="%F{#fda878}▇▇▇▇▇▇ %~ █ %{$reset_color%}"
 
 # for containers, etc...
@@ -322,6 +318,7 @@ sep() {
     clear;
 }
 
+#  TODO: use tempororary files
 toutf8() {
     iconv -f $1 -t UTF-8 $2 > zzztemp;
     mv zzztemp $2;
@@ -333,14 +330,6 @@ m4atomp3() {
 
 allm4astomp3s() {
     find ${1} -type f | ack '\.m4a$' | parallel --bar -j1 ffmpeg -i {} -codec:a libmp3lame -q:a 2 {.}.mp3;
-}
-
-recentcontexts() {
-    cat "$1" | awk -F: '{ print $6 }' | tac | eweniq | tac | ack -v '^\s+$'
-}
-
-contextsondate() {
-    recentcontexts <(fm -m -P -d $1)
 }
 
 mcd() {
@@ -360,14 +349,6 @@ notejournal() {
     echo "$1" | systemd-cat -t tony-note -p info
 }
 
-search-pass() {
-    fdfind -L --base-directory ~/.password-store | ack "$1"
-}
-
-get-pass() {
-    fdfind -L --base-directory ~/.password-store | ack "$1" | tee | parallel -j1 pass {.} "$2"
-}
-
 ducker() {
     local rpath=`realpath $1`
     local spiti=`echo $HOME`
@@ -375,11 +356,7 @@ ducker() {
 }
 
 cdx() {
-    SOME_PATH=$CODEX_ROOT/"$($CODEX_ROOT)/codex.js $1)" && echo $SOME_PATH && vi "$SOME_PATH"
-}
-
-cxcat() {
-    SOME_PATH=$CODEX_ROOT/$1/"$(codex $1 | fzf)" && cat $SOME_PATH
+    SOME_PATH="$($CODEX_ROOT/codex.js $1)" && echo $SOME_PATH && vi "$SOME_PATH"
 }
 
 
