@@ -13,6 +13,7 @@ ln -s ~/.zsh/.sqliterc ~/.sqliterc
 mkdir -p ~/.config/htop
 ln -s ~/.zsh/.htoprc ~/.config/htop/htoprc
 ln -s ~/.zsh/.npmrc ~/.npmrc
+ln -s ~/.zsh/.ghci ~/.ghci
 mkdir -p ~/.config/fd
 ln -s ~/.zsh/.fdignore ~/.config/fd/ignore
 mkdir -p ~/.config/powershell

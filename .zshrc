@@ -198,7 +198,6 @@ alias dd="dd status=progress"
 alias ctop="top -F -R -o cpu"
 alias mtop="top -F -R -o rsize"
 alias youtube-dl="youtube-dl -f best --add-metadata --embed-subs --all-subs"
-alias fd="fdfind"
 alias phav="rsync -Phav"
 alias phan="rsync -Phav --no-perms --no-owner --no-group"
 alias info="info --vi-keys"
@@ -356,7 +355,7 @@ ducker() {
 }
 
 cdx() {
-    SOME_PATH="$($CODEX_ROOT/codex.js $1)" && echo $SOME_PATH && vi "$SOME_PATH"
+    SOME_PATH="$CODEX_ROOT/$($CODEX_ROOT/codex.js $1)" && echo $SOME_PATH && vi "$SOME_PATH"
 }
 
 
