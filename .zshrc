@@ -109,7 +109,7 @@ eval $(dircolors)
 # │                   SETTING INITIAL PATH                   │
 # ╰──────────────────────────────────────────────────────────╯
 
-export PATH="$HOME/.cargo/bin:$DENO_INSTALL/bin:$HOME/.zsh/bin:$HOME/bin:$HOME/.local/bin:$BUN_INSTALL/bin:/opt/nvim/bin:/usr/local/bin/:/opt/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
+export PATH="$DENO_INSTALL/bin:$BUN_INSTALL/bin:/usr/bin:/bin:/usr/sbin:/sbin"
 
 
 # ╭──────────────────────────────────────────────────────────╮
@@ -131,10 +131,8 @@ then
     export PATH="$HOME/.zsh/override-bin/android:/data/data/com.termux/files/usr/bin:/data/data/com.termux/files/bin:/data/data/com.termux/files/sbin:/system/bin:$PATH"
 elif [[ $ZOS = "Darwin" ]]
 then
-    export PATH="$HOMEBREW_PREFIX/opt/coreutils/libexec/gnubin:$PATH"
-    export PATH="$HOMEBREW_PREFIX/opt/sqlite/bin:$PATH"
+    export PATH="/Library/TeX/texbin:$HOMEBREW_PREFIX/opt/sqlite/bin:$HOMEBREW_PREFIX/opt/coreutils/libexec/gnubin:$PATH"
     eval "$(/opt/homebrew/bin/brew shellenv)"
-    export PATH="/usr/local/bin:$PATH"
     export HOMEBREW_NO_ENV_HINTS=1
 fi
 
@@ -168,6 +166,13 @@ elif [[ `hostname` = 'vertiform-city' ]]
 then
     export HISTFILE="$HOME/Dropbox/histories/zsh_history-vertiform-city"
 fi
+
+
+# ╭─────────────────────────────────────────────────────╮
+# │                   FINALIZING PATH                   │
+# ╰─────────────────────────────────────────────────────╯
+
+export PATH="$HOME/.zsh/bin:$HOME/bin:$HOME/.local/bin:/usr/local/bin:/opt/local/bin:/opt/nvim/bin:$HOME/.cabal/bin:$HOME/.ghcup/bin:$HOME/.cargo/bin:$PATH"
 
 
 # ╭──────────────────────────────────────────────────────────╮
