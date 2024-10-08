@@ -107,6 +107,7 @@ node_modules/
 .env.local
 
 dist/
+dist-newstyle/
 .well-known/
 
 .cache
@@ -142,3 +143,4 @@ _multiconfig.yml
 
 gmon.out
 callgrind.out.*
+*.hi
