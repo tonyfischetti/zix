@@ -72,10 +72,10 @@ export R_HISTFILE=~/.Rhistory
 export R_HISTSIZE=1000000
 export R_DATATABLE_NUM_PROCS_PERCENT="100"
 export R_DATATABLE_NUM_THREADS=4
-export PERL5LIB="$HOME/perl5/lib/perl5"
-export PERL_LOCAL_LIB_ROOT="$HOME/perl5"
-export PERL_MB_OPT="--install_base \"~/perl5\""
-export PERL_MM_OPT="INSTALL_BASE=$HOME/perl5"
+# export PERL5LIB="$HOME/perl5/lib/perl5"
+# export PERL_LOCAL_LIB_ROOT="$HOME/perl5"
+# export PERL_MB_OPT="--install_base \"~/perl5\""
+# export PERL_MM_OPT="INSTALL_BASE=$HOME/perl5"
 export CMUS_HOME="$HOME/cmus"
 export XDG_CONFIG_HOME="$HOME/.config"
 export XZ_OPT="-9e --threads=0"
@@ -209,6 +209,7 @@ alias info="info --vi-keys"
 alias blake="openssl dgst -blake2b512 -hex"
 alias weather='curl "wttr.in/~Washington+Heights?m&p"'
 alias weather2='curl "wttr.in/~Washington+Heights?m&p&format=v2"'
+alias np="pnpm"
 # alias youtube-dl="youtube-dl -f best --add-metadata --write-all-thumbnails --embed-thumbnail --write-info-json --embed-subs --all-subs"
 # alias base64="base64 -w 0"
 

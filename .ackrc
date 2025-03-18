@@ -145,6 +145,11 @@
 # http://www.haskell.org/cabal/users-guide/installing-packages.html
 --ignore-directory=is:.cabal-sandbox
 
+# Common ones
+--ignore-directory=is:dist
+--ignore-directory=is:build
+
+
 ### Files to ignore
 
 # Backup files
