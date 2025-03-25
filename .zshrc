@@ -471,6 +471,9 @@ export GPG_TTY=$(tty)
 # bun completions
 [ -s "$HOME/.bun/_bun" ] && source "$HOME/.bun/_bun"
 
+# cargo completions
+[ -s "$HOME/.cargo/env" ] && source "$HOME/.cargo/env"
+
 # iterm
 test -e "${HOME}/.iterm2_shell_integration.zsh" && source "${HOME}/.iterm2_shell_integration.zsh"
 
