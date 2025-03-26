@@ -1,4 +1,4 @@
-#!/usr/local/bin/zsh
+#!/bin/bash
 
 # SBCL
 cd ~/.lisp; sbcl --eval "(progn (save-lisp-and-die \"pluto-sbcl.core\" :save-runtime-options t :purify t))";
