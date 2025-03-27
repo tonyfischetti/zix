@@ -93,6 +93,7 @@ export TIMEFMT="User-mode: %U	Kernel-mode: %S	Wall: %E	Perc: %P"
 export PASSWORD_STORE_ENABLE_EXTENSIONS="true"
 export DENO_INSTALL="$HOME/.deno"
 export NODE_PATH="$HOME/.local/lib/node_modules"
+export NVIM_HOME="$HOME/.config/nvim"
 export DOCKER_BUILDKIT=1
 export CODEX_ROOT="$HOME/.config/nvim/codex"
 export BUN_INSTALL="$HOME/.bun"
@@ -172,7 +173,7 @@ fi
 # │                   FINALIZING PATH                   │
 # ╰─────────────────────────────────────────────────────╯
 
-export PATH="$HOME/.zsh/bin:$HOME/bin:$HOME/.local/bin:/usr/local/bin:/opt/local/bin:/opt/nvim/bin:$HOME/.cabal/bin:$HOME/.ghcup/bin:$HOME/.cargo/bin:$PATH"
+export PATH="$NVIM_HOME/bin:$HOME/.zsh/bin:$HOME/bin:$HOME/.local/bin:/usr/local/bin:/opt/local/bin:/opt/nvim/bin:$HOME/.cabal/bin:$HOME/.ghcup/bin:$HOME/.cargo/bin:$PATH"
 
 
 # ╭──────────────────────────────────────────────────────────╮
