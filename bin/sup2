@@ -1,4 +1,4 @@
-#!/usr/bin/node
+#!/usr/bin/env node
 // vi: ft=javascript
 
 import * as os    from 'node:os';
