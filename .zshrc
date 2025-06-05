@@ -173,7 +173,7 @@ fi
 # │                   FINALIZING PATH                   │
 # ╰─────────────────────────────────────────────────────╯
 
-export PATH="$NVIM_HOME/bin:$HOME/.zsh/bin:$HOME/bin:$HOME/.local/bin:/usr/local/bin:/opt/local/bin:/opt/nvim/bin:$HOME/.cabal/bin:$HOME/.ghcup/bin:$HOME/.cargo/bin:$PATH"
+export PATH="$NVIM_HOME/bin:$HOME/.zsh/bin:$HOME/bin:$HOME/.local/bin:/opt/nvim/bin:/usr/local/bin:/opt/local/bin:$HOME/.cabal/bin:$HOME/.ghcup/bin:$HOME/.cargo/bin:$PATH"
 
 
 # ╭──────────────────────────────────────────────────────────╮
@@ -494,3 +494,4 @@ then
     [[ "$COLORTERM" == (24bit|truecolor) || "${terminfo[colors]}" -eq '16777216' ]] || zmodload zsh/nearcolor
 fi
 
+export PATH="/opt/mssql-tools18/bin:$PATH"
