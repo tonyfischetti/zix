@@ -24,4 +24,5 @@ sudo ln -s ~/.zsh/bin/lispscript /usr/local/bin/lispscript
 sudo ln -s ~/.zsh/site-functions/_pass /usr/share/zsh/vendor-completions/_pass
 sudo ln -s ~/.zsh/site-functions/_gulp /usr/share/zsh/vendor-completions/_gulp
 sudo ln -s ~/.zsh/site-functions/_deno /usr/share/zsh/vendor-completions/_deno
+sudo ln -s ~/.zsh/site-functions/_rustup /usr/share/zsh/vendor-completions/_rustup
 
