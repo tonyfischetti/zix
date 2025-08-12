@@ -494,4 +494,3 @@ then
     [[ "$COLORTERM" == (24bit|truecolor) || "${terminfo[colors]}" -eq '16777216' ]] || zmodload zsh/nearcolor
 fi
 
-export PATH="/opt/mssql-tools18/bin:$PATH"

@@ -16,6 +16,6 @@ For asciiquarium
 
 ```
 sudo apt install libcurses-perl cpanminus
-cpanm install Term:Animation
+cpanm install Term::Animation
 ```
 

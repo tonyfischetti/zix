@@ -21,7 +21,7 @@ ln -s ~/.zsh/pwsh-profile.ps1 ~/.config/powershell/Microsoft.PowerShell_profile.
 
 sudo ln -s ~/.zsh/bin/lisp /usr/local/bin/lisp
 sudo ln -s ~/.zsh/bin/lispscript /usr/local/bin/lispscript
-sudo ln -s ~/.zsh/site-functions/_pass /usr/local/share/zsh/site-functions/_pass
-sudo ln -s ~/.zsh/site-functions/_gulp /usr/local/share/zsh/site-functions/_gulp
-sudo ln -s ~/.zsh/site-functions/_deno /usr/local/share/zsh/site-functions/_deno
+sudo ln -s ~/.zsh/site-functions/_pass /usr/share/zsh/vendor-completions/_pass
+sudo ln -s ~/.zsh/site-functions/_gulp /usr/share/zsh/site-functions/_gulp
+sudo ln -s ~/.zsh/site-functions/_deno /usr/share/zsh/site-functions/_deno
 
