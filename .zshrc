@@ -102,9 +102,6 @@ export ZOS=`uname -o`
 export ZHOSTNAME=`hostname`
 export ZME=`whoami`
 
-# pretty ls colors
-eval $(dircolors)
-
 
 # ╭──────────────────────────────────────────────────────────╮
 # │                   SETTING INITIAL PATH                   │
@@ -132,6 +129,7 @@ then
     export PATH="$HOME/.zsh/override-bin/android:/data/data/com.termux/files/usr/bin:/data/data/com.termux/files/bin:/data/data/com.termux/files/sbin:/system/bin:$PATH"
 elif [[ $ZOS = "Darwin" ]]
 then
+    HOMEBREW_PREFIX=/opt/homebrew
     export PATH="/Library/TeX/texbin:$HOMEBREW_PREFIX/opt/sqlite/bin:$HOMEBREW_PREFIX/opt/coreutils/libexec/gnubin:$PATH"
     eval "$(/opt/homebrew/bin/brew shellenv)"
     export HOMEBREW_NO_ENV_HINTS=1
@@ -175,6 +173,9 @@ fi
 
 export PATH="$NVIM_HOME/bin:$HOME/.zsh/bin:$HOME/bin:$HOME/.local/bin:/opt/nvim/bin:/usr/local/bin:/opt/local/bin:$HOME/.cabal/bin:$HOME/.ghcup/bin:$HOME/.cargo/bin:$PATH"
 
+
+# pretty ls colors (after PATH finalized)
+eval $(dircolors)
 
 # ╭──────────────────────────────────────────────────────────╮
 # │                         ALIASES                          │

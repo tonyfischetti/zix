@@ -16,8 +16,15 @@ ln -s ~/.zsh/.npmrc ~/.npmrc
 ln -s ~/.zsh/.ghci ~/.ghci
 mkdir -p ~/.config/fd
 ln -s ~/.zsh/.fdignore ~/.config/fd/ignore
+mkdir -p ~/.config/ghostty
+ln -s ~/.zsh/.ghostty ~/.config/ghostty/config
 mkdir -p ~/.config/powershell
 ln -s ~/.zsh/pwsh-profile.ps1 ~/.config/powershell/Microsoft.PowerShell_profile.ps1
+
+if [ `uname` = 'Darwin' ]; then
+    mkdir ~/.hammerspoon
+    ln -s ~/.zsh/.hammerspoon.init.lua ~/.hammerspoon/init.lua
+fi
 
 sudo ln -s ~/.zsh/bin/lisp /usr/local/bin/lisp
 sudo ln -s ~/.zsh/bin/lispscript /usr/local/bin/lispscript
