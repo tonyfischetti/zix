@@ -1,0 +1,57 @@
+background = 000000
+foreground = ffffff
+
+clipboard-read = allow
+clipboard-write = allow
+
+font-size = 14
+font-family = Monaco
+bold-is-bright = true
+
+window-padding-x = 0
+window-padding-y = 0
+window-padding-color = background
+
+adjust-underline-position = 5
+
+#: black
+palette = 0=#000000
+palette = 8=#676767
+
+#: red
+palette = 1=#e73222
+palette = 9=#cf7e77
+
+
+#: green
+palette = 2=#57bf37
+palette = 10=#81e397
+
+
+#: yellow
+palette = 3=#fefa53
+palette = 11=#eae14a
+
+
+#: blue
+# palette = 12=#2d42c0
+# palette = 4=#a7aaec
+palette = 4=#2d42c0
+palette = 12=#a7aaec
+
+#: magenta
+# palette = 5=#d382db
+# palette = 13=#bf2b94
+palette = 13=#d382db
+palette = 5=#bf2b94
+
+#: cyan
+# palette = 6=#8ef9fd
+# palette = 14=#58c2c5
+palette = 14=#8ef9fd
+palette = 6=#58c2c5
+
+#: white
+palette = 7=#c7c7c7
+palette = 15=#fefefe
+
