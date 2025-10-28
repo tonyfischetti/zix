@@ -1,0 +1,9 @@
+{
+  "dependencies": {
+    "@types/bun": "^1.3.1",
+    "@types/node": "^24.9.1",
+    "consola": "^3.4.2",
+    "taciturn": "^0.0.7",
+    "typescript": "^5.9.3"
+  }
+}
