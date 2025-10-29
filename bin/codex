@@ -17,12 +17,8 @@ import { TacitPromise } from 'taciturn';
 type Path = string;
 type Tag  = string;
 
-interface Context {
+interface BaseContext {
   DEBUG: boolean;
-  codexRoot?: string;
-  codexDBPath?: string;
-  db?: SQL;
-  subDir?: string;
 
   // only used when updating
   commentChars: Array<string>;
@@ -33,9 +29,6 @@ interface FileObj extends Dirent {
   fullPath: Path;
   relPath: Path;
   subDir: Path;
-  firstLine?: string;
-  tags?: Array<string>;
-  fileID?: number;
 }
 
 
@@ -87,12 +80,11 @@ const getCodexRoot = () => {
   return CODEX_ROOT;
 };
 
-const updateBlacklistPaths = (_: any, { codexRoot, blacklistedPaths }: Context): Array<Path> => {
-  return blacklistedPaths.map(_ => path.join(codexRoot!, _));
+const updateBlacklistPaths = (_: any, { codexRoot, blacklistedPaths }: BaseContext & { codexRoot: string }): Array<Path> => {
+  return blacklistedPaths.map(_ => path.join(codexRoot, _));
 }
 
-const pathExistsP = async (apath: Path | undefined): Promise<boolean> => {
-  if (!apath) throw new Error('path is undefined');
+const pathExistsP = (apath: Path): Promise<boolean> => {
   return fs.stat(apath)
     .then(() => true)
     .catch((err) => {
@@ -101,8 +93,7 @@ const pathExistsP = async (apath: Path | undefined): Promise<boolean> => {
     });
 };
 
-const removeOldDB = (apath: Path | undefined) => {
-  if (!apath) throw new Error('path is undefined');
+const removeOldDB = (apath: Path) => {
   fs.rm(apath);
 };
 
@@ -121,16 +112,15 @@ const turnOnForeignKeyConstraints = async (db: SQL) => {
 
 const createTables = (db: SQL) => { return db.unsafe(createTablesSQL) };
 
-const getAllFilesRecursively = (root: string | undefined) => {
-  if (!root) throw new Error("root is required");
+const getAllFilesRecursively = (root: string) => {
   return fs.readdir(root, { withFileTypes: true, recursive: true });
 };
 
 const filesOnly = (i: Dirent) => i.isFile() && !i.name.match(/^\./);
 
-const addAltPathsAsKey = (fileObj: Dirent, _: number, { codexRoot }: Context): FileObj => {
+const addAltPathsAsKey = (fileObj: Dirent, _: number, { codexRoot }: BaseContext & { codexRoot: Path }): FileObj => {
   const fullPath = path.join(fileObj.parentPath, fileObj.name);
-  const relPath  = path.relative(codexRoot!, fullPath);
+  const relPath  = path.relative(codexRoot, fullPath);
   const subDir   = relPath.split(path.sep)[0];
   return {
     ...fileObj,
@@ -140,22 +130,22 @@ const addAltPathsAsKey = (fileObj: Dirent, _: number, { codexRoot }: Context): F
   } as FileObj;
 };
 
-const notBlacklistedP = (i: FileObj, _: number, { blacklistedPaths }: Context) => {
+const notBlacklistedP = (i: FileObj, _: number, { blacklistedPaths }: BaseContext) => {
   return !blacklistedPaths.some(bl => i.fullPath.includes(bl));
 }
 
-const addFirstLineAsKey = async (fileObj: FileObj): Promise<FileObj> => {
+const addFirstLineAsKey = async (fileObj: FileObj) => {
   return fs.readFile(fileObj.fullPath, 'utf-8').
     then(contents => contents.split(/\r?\n/)[0]).
     then(firstLine => {
       return {
         ...fileObj,
         firstLine
-      } as FileObj;
+      } as FileObj & { firstLine: string };
     });
 }
 
-const addTags = (fileObj: FileObj, _: number, { commentChars }: Context) => {
+const addTags = (fileObj: FileObj & { firstLine: string }, _: number, { commentChars }: BaseContext) => {
   const removeComment = (astring: string) => {
     commentChars.forEach((cc) => {
       astring = astring.replace(new RegExp(`^\\s*${cc}\\s+`), "");
@@ -163,43 +153,31 @@ const addTags = (fileObj: FileObj, _: number, { commentChars }: Context) => {
     return astring;
   };
 
-  if (!fileObj.firstLine) throw new Error("field `firstLine` is missing");
   const tags = [fileObj.subDir, ...removeComment(fileObj.firstLine).split(/\s*,\s*/)];
-  return {
-    ...fileObj,
-    tags: [...new Set(tags)]
-  };
+  return { ...fileObj, tags: [...new Set(tags)] };
 };
 
-const addAFileID = (fileObj: FileObj, i: number) => {
-  return {
-    ...fileObj,
-    fileID: i
-  };
-};
+const addAFileID = (fileObj: FileObj, i: number) => { return { ...fileObj, fileID: i }; };
 
-const insertFiles = async (filesObj: Array<FileObj>, { db }: Context) => {
-  if (!db) throw new Error("`db` isn't defined");
+const insertFiles = async (filesObj: Array<FileObj & { tags: Array<string>, fileID: number }>, { db }: BaseContext & { db: SQL }) => {
   const pods = filesObj.map(({ fileID, relPath, subDir }) => { return { fileID, relPath, subDir }; });
   return db`INSERT INTO files ${sql(pods, 'fileID', 'relPath', 'subDir')}`.
     then((_: any) => filesObj);
 };
 
-const insertTags = async (filesObj: Array<FileObj>, { db }: Context) => {
+const insertTags = (filesObj: Array<FileObj & { tags: Array<string>, fileID: number }>, { db }: BaseContext & { db: SQL }) => {
   const tagsObj = filesObj.map(({ tags, fileID }) => {
-    if (!tags) throw new Error("tags is undefined");
     return tags.map(tag => { return { tag, fileID } });
   }).flat();
-  return db!`INSERT INTO tags ${sql(tagsObj)}`.
+  return db`INSERT INTO tags ${sql(tagsObj)}`.
     then((_: any) => filesObj);
 };
 
-const closeDB = ({ db }: Context) => { db!.close(); }
+const closeDB = ({ db }: BaseContext & { db: SQL }) => { db.close(); }
 
 const findFzf = () => $`which fzf`.text();
 
-const openDB = (dbPath: Path | undefined) => {
-  if (!dbPath) throw new Error('dbPath is missing');
+const openDB = (dbPath: Path) => {
   try {
     return new SQL({
       filename: dbPath,
@@ -212,8 +190,7 @@ const openDB = (dbPath: Path | undefined) => {
   }
 }
 
-const getAllTagsForSubdir = async (_: any, { db, subDir }: Context) => {
-  if (!db) throw new Error("db not defined");
+const getAllTagsForSubdir = async (_: any, { db, subDir }: BaseContext & { db: SQL, subDir: Path }) => {
   if (!subDir) {
     return db`SELECT DISTINCT tag FROM tags`.
       then(_ => _.map(({ tag }) => tag));
@@ -229,8 +206,7 @@ const callFzf = (listOfOptions: Array<Tag>) => {
 
 const getChosenTag = (listOfTags: Array<Tag>) => callFzf(listOfTags);
 
-const getRelevantFiles = (atag: Tag, { db, subDir }: Context) => {
-  if (!db) throw new Error("db not defined");
+const getRelevantFiles = (atag: Tag, { db, subDir }: BaseContext & { db: SQL, subDir: Path }) => {
   const subDirFilter = sql`AND subDir=${subDir}`;
   return db`SELECT DISTINCT files.relPath
               FROM files
@@ -245,7 +221,7 @@ const getChosenFile = (listOfRelevantFiles: Array<Path>) => callFzf(listOfReleva
 /***************************************************************/
 
 /* starting context */
-const context: Context = {
+const context: BaseContext = {
   DEBUG: false,
   commentChars: [ "#", "//", ";", "--" ],
   blacklistedPaths: ["node_modules", "make-db.js", "package.json",
@@ -257,7 +233,7 @@ const context: Context = {
 /***************************************************************/
 
 
-const updateHander = (_: any, ctx: Context) => {
+const updateHander = (_: any, ctx: BaseContext & { codexRoot: Path, codexDBPath: Path }) => {
 
   return TacitPromise.create(ctx).
     then(log("making codex SQLite DB", consola.box)).
@@ -282,7 +258,7 @@ const updateHander = (_: any, ctx: Context) => {
       filter(notBlacklistedP).
 
     then(log("parsing tags")).
-      map(addFirstLineAsKey, { concurrency: 10 }).
+      map(addFirstLineAsKey, { concurrency: 50 }).
       map(addTags).
       map(addAFileID).
 
@@ -300,7 +276,7 @@ const updateHander = (_: any, ctx: Context) => {
 
 const topHandler = async (subDir: string | undefined, options: { update?: boolean }) => {
 
-  return TacitPromise.begin(subDir, { ...context, subDir }).
+  return TacitPromise.begin(subDir, { ...context, subDir: subDir ?? "" }).
 
     then(getCodexRoot).
       catch(fatalCantFindCodexRoot).
