@@ -363,7 +363,7 @@ ducker() {
 }
 
 cdx() {
-    SOME_PATH="$CODEX_ROOT/$($CODEX_ROOT/codex.js $1)" && echo $SOME_PATH && vi "$SOME_PATH"
+    SOME_PATH="$CODEX_ROOT/$(codex $1)" && echo $SOME_PATH && vi "$SOME_PATH"
 }
 
 

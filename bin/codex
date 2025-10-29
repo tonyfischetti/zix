@@ -1,0 +1,345 @@
+#!/usr/bin/env bun
+// vi: ft=typescript
+
+import * as fs          from 'node:fs/promises';
+import { Dirent }       from 'node:fs';
+import * as path        from 'node:path';
+import { SQL, sql, $ }  from 'bun';
+import { program }      from 'commander';
+import { consola }      from 'consola';
+import { TacitPromise } from 'taciturn';
+
+
+/***************************************************************
+  * types
+  */
+
+type Path = string;
+type Tag  = string;
+
+interface Context {
+  DEBUG: boolean;
+  codexRoot?: string;
+  codexDBPath?: string;
+  db?: SQL;
+  subDir?: string;
+
+  // only used when updating
+  commentChars: Array<string>;
+  blacklistedPaths: Array<string>;
+}
+
+interface FileObj extends Dirent {
+  fullPath: Path;
+  relPath: Path;
+  subDir: Path;
+  firstLine?: string;
+  tags?: Array<string>;
+  fileID?: number;
+}
+
+
+/***************************************************************
+  * sqlite statements
+  */
+
+const createTablesSQL = `
+  DROP TABLE IF EXISTS files;
+  DROP TABLE IF EXISTS tags;
+  CREATE TABLE files (
+    fileID INTEGER PRIMARY KEY,
+    relPath TEXT,
+    subDir TEXT);
+  CREATE TABLE tags (
+    tag TEXT,
+    fileID INTEGER REFERENCES files);
+  CREATE INDEX IF NOT EXISTS idx_tags_tag ON tags(tag);
+  CREATE INDEX IF NOT EXISTS idx_tags_fileID ON tags(fileID);`;
+
+/***************************************************************/
+
+const log = (message: string, fn=consola.info) => {
+  return (arg: any) => {
+    fn(message);
+    return arg;
+  }
+};
+
+// a function that takes an exit code and returns a closure that takes
+// an Error, prints it, and exits with the exit code
+const printErrorAndBailOut = (exitCode: number, customMessage?: string) => {
+  return (error: Error) => {
+    customMessage ? consola.error(customMessage) : consola.error(error.message);
+    process.exit(exitCode);
+  };
+};
+
+const fatalCantFindCodexRoot  = printErrorAndBailOut(1, "Can't find environment variable $CODEX_ROOT");
+const fatalCantOpenDB         = printErrorAndBailOut(2, "Unable to open database");
+const fatalCantFindFzf        = printErrorAndBailOut(3, "Can't find FZF. is it installed?");
+const fatalDontUnderstand     = printErrorAndBailOut(3, "Can't understand fzf return value");
+
+const isDefinedP = (arg: any) => arg;
+
+const getCodexRoot = () => {
+  const CODEX_ROOT = process.env["CODEX_ROOT"] ?? "";
+  if (CODEX_ROOT === "") throw Error("Environment variable 'CODEX_ROOT' not defined");
+  return CODEX_ROOT;
+};
+
+const updateBlacklistPaths = (_: any, { codexRoot, blacklistedPaths }: Context): Array<Path> => {
+  return blacklistedPaths.map(_ => path.join(codexRoot!, _));
+}
+
+const pathExistsP = async (apath: Path | undefined): Promise<boolean> => {
+  if (!apath) throw new Error('path is undefined');
+  return fs.stat(apath)
+    .then(() => true)
+    .catch((err) => {
+      if (err.code === 'ENOENT') return false;
+      throw err;
+    });
+};
+
+const removeOldDB = (apath: Path | undefined) => {
+  if (!apath) throw new Error('path is undefined');
+  fs.rm(apath);
+};
+
+const createDB = (fn: Path) => {
+  try {
+    return new SQL({ filename: fn, strict: true, adapter: 'sqlite' });
+  } catch (error) {
+    throw Error(`unable to open database: ${error}`);
+  }
+}
+
+const turnOnForeignKeyConstraints = async (db: SQL) => {
+  return db`PRAGMA foreign_keys = ON`.
+    then(_ => db);
+};
+
+const createTables = (db: SQL) => { return db.unsafe(createTablesSQL) };
+
+const getAllFilesRecursively = (root: string | undefined) => {
+  if (!root) throw new Error("root is required");
+  return fs.readdir(root, { withFileTypes: true, recursive: true });
+};
+
+const filesOnly = (i: Dirent) => i.isFile() && !i.name.match(/^\./);
+
+const addAltPathsAsKey = (fileObj: Dirent, _: number, { codexRoot }: Context): FileObj => {
+  const fullPath = path.join(fileObj.parentPath, fileObj.name);
+  const relPath  = path.relative(codexRoot!, fullPath);
+  const subDir   = relPath.split(path.sep)[0];
+  return {
+    ...fileObj,
+    fullPath,
+    relPath,
+    subDir
+  } as FileObj;
+};
+
+const notBlacklistedP = (i: FileObj, _: number, { blacklistedPaths }: Context) => {
+  return !blacklistedPaths.some(bl => i.fullPath.includes(bl));
+}
+
+const addFirstLineAsKey = async (fileObj: FileObj): Promise<FileObj> => {
+  return fs.readFile(fileObj.fullPath, 'utf-8').
+    then(contents => contents.split(/\r?\n/)[0]).
+    then(firstLine => {
+      return {
+        ...fileObj,
+        firstLine
+      } as FileObj;
+    });
+}
+
+const addTags = (fileObj: FileObj, _: number, { commentChars }: Context) => {
+  const removeComment = (astring: string) => {
+    commentChars.forEach((cc) => {
+      astring = astring.replace(new RegExp(`^\\s*${cc}\\s+`), "");
+    });
+    return astring;
+  };
+
+  if (!fileObj.firstLine) throw new Error("field `firstLine` is missing");
+  const tags = [fileObj.subDir, ...removeComment(fileObj.firstLine).split(/\s*,\s*/)];
+  return {
+    ...fileObj,
+    tags: [...new Set(tags)]
+  };
+};
+
+const addAFileID = (fileObj: FileObj, i: number) => {
+  return {
+    ...fileObj,
+    fileID: i
+  };
+};
+
+const insertFiles = async (filesObj: Array<FileObj>, { db }: Context) => {
+  if (!db) throw new Error("`db` isn't defined");
+  const pods = filesObj.map(({ fileID, relPath, subDir }) => { return { fileID, relPath, subDir }; });
+  return db`INSERT INTO files ${sql(pods, 'fileID', 'relPath', 'subDir')}`.
+    then((_: any) => filesObj);
+};
+
+const insertTags = async (filesObj: Array<FileObj>, { db }: Context) => {
+  const tagsObj = filesObj.map(({ tags, fileID }) => {
+    if (!tags) throw new Error("tags is undefined");
+    return tags.map(tag => { return { tag, fileID } });
+  }).flat();
+  return db!`INSERT INTO tags ${sql(tagsObj)}`.
+    then((_: any) => filesObj);
+};
+
+const closeDB = ({ db }: Context) => { db!.close(); }
+
+const findFzf = () => $`which fzf`.text();
+
+const openDB = (dbPath: Path | undefined) => {
+  if (!dbPath) throw new Error('dbPath is missing');
+  try {
+    return new SQL({
+      filename: dbPath,
+      readonly: true,
+      create: false,
+      strict: true,
+      adapter: 'sqlite' });
+  } catch (error) {
+    throw Error(`unable to open database: ${error}`);
+  }
+}
+
+const getAllTagsForSubdir = async (_: any, { db, subDir }: Context) => {
+  if (!db) throw new Error("db not defined");
+  if (!subDir) {
+    return db`SELECT DISTINCT tag FROM tags`.
+      then(_ => _.map(({ tag }) => tag));
+  }
+  return db`SELECT DISTINCT tags.tag FROM files INNER JOIN tags USING (fileID) WHERE subDir=${subDir}`.
+      then(_ => _.map(({ tag }) => tag));
+};
+
+const callFzf = (listOfOptions: Array<Tag>) => {
+  const combedOptions = listOfOptions.join('\n');
+  return $`echo ${combedOptions} | fzf -1`.text();
+};
+
+const getChosenTag = (listOfTags: Array<Tag>) => callFzf(listOfTags);
+
+const getRelevantFiles = (atag: Tag, { db, subDir }: Context) => {
+  if (!db) throw new Error("db not defined");
+  const subDirFilter = sql`AND subDir=${subDir}`;
+  return db`SELECT DISTINCT files.relPath
+              FROM files
+                INNER JOIN tags USING (fileID)
+                WHERE tag=${atag.trimEnd()}
+                ${subDir ? subDirFilter : sql``}`.
+           then(_ => _.map(({ relPath }) => relPath));
+};
+
+const getChosenFile = (listOfRelevantFiles: Array<Path>) => callFzf(listOfRelevantFiles);
+
+/***************************************************************/
+
+/* starting context */
+const context: Context = {
+  DEBUG: false,
+  commentChars: [ "#", "//", ";", "--" ],
+  blacklistedPaths: ["node_modules", "make-db.js", "package.json",
+                     "make-codex-db.js", "package-lock.json", "codex.db",
+                     "cdx.js", "codex.js", "TOC.md", "another.js",
+                     "another.ts", "codex.ts", "make-codex-db.ts"]
+};
+
+/***************************************************************/
+
+
+const updateHander = (_: any, ctx: Context) => {
+
+  return TacitPromise.create(ctx).
+    then(log("making codex SQLite DB", consola.box)).
+
+    then(updateBlacklistPaths).
+      tap('blacklistedPaths').
+
+    focus('codexDBPath').
+    when(pathExistsP, removeOldDB).
+
+    then(log("creating sqlite db")).
+      then(createDB).
+      catch(fatalCantOpenDB).
+      tap('db').
+      then(turnOnForeignKeyConstraints).
+      then(createTables).
+
+    focus('codexRoot').
+      then(getAllFilesRecursively).
+      filter(filesOnly).
+      map(addAltPathsAsKey).
+      filter(notBlacklistedP).
+
+    then(log("parsing tags")).
+      map(addFirstLineAsKey, { concurrency: 10 }).
+      map(addTags).
+      map(addAFileID).
+
+    then(log("inserting tags and files")).
+      then(insertFiles).
+      then(insertTags).
+
+    finally(closeDB).
+    
+    catch(consola.error).
+    then(log("done", consola.success)).
+    then(() => process.exit(0));
+};
+
+
+const topHandler = async (subDir: string | undefined, options: { update?: boolean }) => {
+
+  return TacitPromise.begin(subDir, { ...context, subDir }).
+
+    then(getCodexRoot).
+      catch(fatalCantFindCodexRoot).
+    tap('codexRoot').
+
+    then(root => `${root}/codex.db`).
+      tap('codexDBPath').
+
+    when(() => isDefinedP(options.update), updateHander).
+
+    then(findFzf).
+      catch(fatalCantFindFzf).
+
+    focus('codexDBPath').
+    then(openDB).
+      catch(fatalCantOpenDB).
+      tap('db').
+
+    then(getAllTagsForSubdir).
+    then(getChosenTag).
+      catch(fatalDontUnderstand).
+
+    then(getRelevantFiles).
+    then(getChosenFile).
+      catch(fatalDontUnderstand).
+
+    then((final) => console.log(final.trimEnd())).
+
+    finally(closeDB).
+    catch(consola.error);
+};
+
+
+program.
+  name('codex').
+  description('search or manage the codex (code example library)').
+  version('0.0.1').
+  option('-u, --update', 'update the codex.db index').
+  argument('[subDir]', 'Optional language to search tags within (a subdir of CODEX ROOT)').
+  action(topHandler).
+  parse();
+
