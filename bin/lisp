@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 echo $@;
-/usr/local/bin/sbcl --core ~/.lisp/pluto-sbcl.core --no-sysinit --no-userinit $@;
+/usr/bin/env -S "sbcl --core $HOME/.lisp/pluto-sbcl.core --no-sysinit --no-userinit" $@;

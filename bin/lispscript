@@ -1,3 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-/usr/local/bin/sbcl --core ~/.lisp/pluto-sbcl.core --script "$@";
+# /usr/bin/sbcl --core ~/.lisp/pluto-sbcl.core --script "$@";
+/opt/homebrew/bin/sbcl --core ~/.lisp/pluto-sbcl.core --script "$@";
