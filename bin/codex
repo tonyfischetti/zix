@@ -92,11 +92,9 @@ const pathExistsP = (apath: Path): Promise<boolean> => {
     });
 };
 
-const removeOldDB = (apath: Path) => {
-  fs.rm(apath);
-};
+const removeOldDB = (apath: Path) => fs.rm(apath);
 
-const createDB = (fn: Path) => {
+const createDB = (fn: Path): SQL => {
   try {
     return new SQL({ filename: fn, strict: true, adapter: 'sqlite' });
   } catch (error) {
