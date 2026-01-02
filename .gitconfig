@@ -6,6 +6,7 @@
 [core]
     editor = vim
     abbrev = 13
+	excludesFile = /Users/tony/.config/git/ignore
 [color]
 	ui = true
 [url "ssh://git@github.com/"]
