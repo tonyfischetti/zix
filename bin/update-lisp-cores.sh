@@ -1,8 +1,5 @@
 #!/usr/bin/env bash
-
-# SBCL
-cd ~/.lisp; sbcl --eval "(progn (save-lisp-and-die \"pluto-sbcl.core\" :save-runtime-options t :purify t))";
-
-# CLISP
-# (not implemented yet)
-# cd ~/.lisp; clisp -q -x '(progn (ql:quickload :styx) (use-package :styx) (EXT:SAVEINITMEM "pluto-clisp.mem"))'
+# Thin wrapper kept for muscle memory.  The core-build recipe now lives
+# in ~/.lisp/Makefile (single source of truth): `make core` rebuilds
+# pluto-sbcl.core only when a pluto source is newer than the core.
+exec make -C ~/.lisp core
