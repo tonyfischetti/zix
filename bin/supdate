@@ -84,7 +84,7 @@
 (defun update-lisp-cores ()
   (when (y-or-n-def "update lisp cores?" :default #\y)
     (ft (yellow "~%updating lisp cores~%"))
-    (zsh "~/.zsh/bin/update-lisp-cores.sh" :echo t)
+    (zsh "make -C ~/.lisp core" :echo t)
     (ft (green "done.~%"))))
 
 
