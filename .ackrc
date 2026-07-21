@@ -30,6 +30,7 @@
 --type-add=readme:is:TAG
 --type-add=readme:is:TAGS
 --type-add=readme:is:CHANGELOG
+--type-add=epub:ext:epub
 
 # Racket
 --type-add=racket:ext:rkt
