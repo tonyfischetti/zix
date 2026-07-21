@@ -20,6 +20,10 @@ SHELL := /bin/bash
 ZIX     := $(CURDIR)
 UNAME_S := $(shell uname -s)
 
+# bin/codex's runtime; pinned (the bun.sh installer is unpinned AND
+# appends PATH exports to ~/.zshrc — which is a symlink into this repo)
+BUN_VERSION := 1.3.13
+
 ALL_ARTIFACTS := bin/dvd
 
 .PHONY: help all deps setup links node doctor clean
@@ -39,11 +43,24 @@ all: $(ALL_ARTIFACTS)
 deps:
 ifeq ($(UNAME_S),Darwin)
 	brew install fzf zoxide
+	@command -v bun >/dev/null \
+	  || echo "bun not installed — get it from https://bun.sh (bin/codex needs it)"
 else
 	sudo apt-get update -qq -o Acquire::Retries=3
 	sudo apt-get install -qq -y -o Acquire::Retries=3 \
-	  zsh procps fzf zoxide wget build-essential libcurses-perl cpanminus nala
+	  zsh procps fzf zoxide wget unzip build-essential libcurses-perl cpanminus nala
 	sudo cpanm install Term::Animation
+	@if command -v bun >/dev/null && [ "$$(bun --version)" = "$(BUN_VERSION)" ]; then \
+	  echo "bun $(BUN_VERSION) already installed"; \
+	else \
+	  arch=$$( [ "$$(uname -m)" = "aarch64" ] && echo aarch64 || echo x64 ); \
+	  echo "installing bun $(BUN_VERSION) ($$arch)"; \
+	  wget -q "https://github.com/oven-sh/bun/releases/download/bun-v$(BUN_VERSION)/bun-linux-$$arch.zip" \
+	    -O /tmp/bun.zip && \
+	  unzip -qoj /tmp/bun.zip -d /tmp/bun-extract && \
+	  sudo install -m 755 /tmp/bun-extract/bun /usr/local/bin/bun && \
+	  rm -rf /tmp/bun.zip /tmp/bun-extract; \
+	fi
 endif
 
 # ---- full install ---------------------------------------------------- #
