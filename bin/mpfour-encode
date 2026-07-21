@@ -42,7 +42,7 @@
 (process-args! (cdr (cmdargs)))
 
 
-« (setq *input-files* Ø bare-args!) or die "No input files" »
+(or-die (setq *input-files* Ø bare-args!) "No input files")
 (setq *num-of-files* (length *input-files*))
 
 (defun change-to-mp4-fn (afile)
@@ -89,8 +89,9 @@
 
 (for-each *input-files*
   (progress index! *num-of-files*)
-  « (perform-trick value!)
-      or warn (format nil "FAILURE!!!!...~%~S" ERROR!) »)
+  (or-die (perform-trick value!)
+          (format nil "FAILURE!!!!...~%~S" ERROR!)
+          :errfun #'advise))
 
 
 

@@ -22,7 +22,7 @@
 
 (process-args! (cdr (cmdargs)))
 
-« *sep* or die "no separator provided" »
+? *sep* (die "no separator provided")
 
 
 
@@ -34,8 +34,8 @@
         (for-each files
           (let* ((fullpath      (format nil "~A/~A" dir value!))
                  (newname       (format nil "~A~A~A" dir *sep* value!)))
-            « (zsh (format nil •mv "~A" "~A"• fullpath newname) :echo t)
-              or do (continue!) »
+            (or-do (zsh (format nil •mv "~A" "~A"• fullpath newname) :echo t)
+                   (continue!))
             (format t "~%"))))))
   (progn
     (for-each/list (zsh •find . -maxdepth 1 -type f | perl -pe 's/^..//' | ack -v '^\.'• :split t)

@@ -33,7 +33,7 @@
 (defvar /LENGTH/ 0)
 
 
-« (zsh (fn "ssh ~A exit" /DEVICE/)) OR DIE "cannot connect to device" »
+(or-die (zsh (fn "ssh ~A exit" /DEVICE/)) "cannot connect to device")
 
 (zsh (fn "mkdir '~A'" /TMP-DIR/) :echo t)
 
@@ -42,49 +42,49 @@
   (ft (yellow "Pulling picture folders off device~%"))
   (for-each/list /pic-folders-to-pull/
     (let ((tmppath (fn "~A~A" /PICTURES-PREFIX/ value!)))
-      « (zsh (fn •rsync -Phav '~A:~A' '~A'• /device/ tmppath /TMP-DIR/)
-             :echo t
-             :return-string nil)
-          OR DO (format *error-output* (red "failed~%")) » )))
+      (or-do (zsh (fn •rsync -Phav '~A:~A' '~A'• /device/ tmppath /TMP-DIR/)
+                  :echo t
+                  :return-string nil)
+             (format *error-output* (red "failed~%"))) )))
 
 (ft "~%")
 (when (y-or-n-p "Delete pulled picture folders?")
   (for-each/list /pic-folders-to-pull/
     (let ((tmppath (fn "~A~A" /PICTURES-PREFIX/ value!)))
       (when (y-or-n-p (fn "delete folder: ~A ?" tmppath))
-        « (zsh (fn •ssh ~A rm -rf ~A• /device/ tmppath) :echo t)
-            OR DO (format *error-output* (red "failed~%")) » ))))
+        (or-do (zsh (fn •ssh ~A rm -rf ~A• /device/ tmppath) :echo t)
+               (format *error-output* (red "failed~%"))) ))))
 
 (ft "~%")
 (when (y-or-n-p "Pull photos off device?")
   (ft (yellow "Pulling picture folders off device~%"))
-  « (zsh (fn •rsync -Phav '~A:~A' '~A'• /device/ /PHOTOS-PREFIX/ /TMP-DIR/)
-         :echo t
-         :return-string nil)
-      OR DO (format *error-output* (red "failed~%")) »
-  « (zsh (fn "jhead -autorot ~A/Camera/*.jpg" /TMP-DIR/)
-         :echo t
-         :return-string nil)
-      OR DO (format *error-output* (red "failed~%")) » )
+  (or-do (zsh (fn •rsync -Phav '~A:~A' '~A'• /device/ /PHOTOS-PREFIX/ /TMP-DIR/)
+              :echo t
+              :return-string nil)
+         (format *error-output* (red "failed~%")))
+  (or-do (zsh (fn "jhead -autorot ~A/Camera/*.jpg" /TMP-DIR/)
+              :echo t
+              :return-string nil)
+         (format *error-output* (red "failed~%"))) )
 
 (ft "~%")
 (when (y-or-n-p "Delete photo folder?")
-  « (zsh (fn •ssh ~A rm -rf ~A• /device/ /PHOTOS-PREFIX/) :echo t)
-      OR DO (format *error-output* (red "failed~%")) » )
+  (or-do (zsh (fn •ssh ~A rm -rf ~A• /device/ /PHOTOS-PREFIX/) :echo t)
+         (format *error-output* (red "failed~%"))) )
 
 (ft "~%")
 (when (y-or-n-p "Pull screenshots off device?")
   (ft (yellow "Pulling screenshots off device~%"))
-  « (zsh (fn •rsync -Phav '~A:~A' '~A'•
-             /device/ /SCREENSHOT-PREFIX/ /TMP-DIR/)
-         :echo t
-         :return-string nil)
-      OR DO (format *error-output* (red "failed~%")) » )
+  (or-do (zsh (fn •rsync -Phav '~A:~A' '~A'•
+                  /device/ /SCREENSHOT-PREFIX/ /TMP-DIR/)
+              :echo t
+              :return-string nil)
+         (format *error-output* (red "failed~%"))) )
 
 (ft "~%")
 (when (y-or-n-p "Delete screenshot folder?")
-  « (zsh (fn •ssh ~A rm -rf ~A• /device/ /SCREENSHOT-PREFIX/) :echo t)
-      OR DO (format *error-output* (red "failed~%")) » )
+  (or-do (zsh (fn •ssh ~A rm -rf ~A• /device/ /SCREENSHOT-PREFIX/) :echo t)
+         (format *error-output* (red "failed~%"))) )
 
 (when (or (string= /DEVICE/ "goodtablet")
           (string= /DEVICE/ "grandtablet"))
@@ -92,48 +92,48 @@
   (ft "~%")
   (when (y-or-n-p "Pull samsung notes exports off device?")
     (ft (yellow "Pulling samsung notes exports off device~%"))
-    « (zsh (fn •rsync -Phav '~A:~A' '~A'•
-               /device/ /GT-S-NOTES-PREFIX/ /TMP-DIR/)
-           :echo t
-           :return-string nil)
-        OR DO (format *error-output* (red "failed~%")) » ))
+    (or-do (zsh (fn •rsync -Phav '~A:~A' '~A'•
+                    /device/ /GT-S-NOTES-PREFIX/ /TMP-DIR/)
+                :echo t
+                :return-string nil)
+           (format *error-output* (red "failed~%"))) ))
 
 (ft "~%")
 (when (y-or-n-p "Push pwstore?")
-  « (zsh (fn •rsync -Phav --delete ~A/Dropbox/pwstore ~A:~A•
-             /HOME/ /device/ /ANDROID-HOME/)
-         :echo t)
-      OR DO (format *error-output* (red "failed~%")) » )
+  (or-do (zsh (fn •rsync -Phav --delete ~A/Dropbox/pwstore ~A:~A•
+                  /HOME/ /device/ /ANDROID-HOME/)
+              :echo t)
+         (format *error-output* (red "failed~%"))) )
 
 ; (ft "~%")
 ; (when (y-or-n-p "Pull WhatsApp database?")
-;   « (zsh (fn •ssh ~A "su -c 'cp ~A ~A'"•
-;              /device/ /WHATSAPP-DB-LOCATION/ /ANDROID-HOME/) :echo t)
-;       OR DO (format *error-output* (red "failed~%")) »
-;   « (zsh (fn •ssh ~A "su -c 'chown ~A ~A/msgstore.db'"•
-;              /device/ /ANDROID-USER/ /ANDROID-HOME/) :echo t)
-;       OR DO (format *error-output* (red "failed~%")) »
-;   « (zsh (fn •rsync -Phav ~A:~A/msgstore.db '~A'•
-;              /device/ /ANDROID-HOME/ /TMP-DIR/) :echo t :return-string nil)
-;       OR DO (format *error-output* (red "failed~%")) »
-;   « (zsh (fn •ssh ~A "rm ~A/msgstore.db"•
-;              /device/ /ANDROID-HOME/) :echo t)
-;       OR DO (format *error-output* (red "failed~%")) » )
+;   (or-do (zsh (fn •ssh ~A "su -c 'cp ~A ~A'"•
+;                   /device/ /WHATSAPP-DB-LOCATION/ /ANDROID-HOME/) :echo t)
+;          (format *error-output* (red "failed~%")))
+;   (or-do (zsh (fn •ssh ~A "su -c 'chown ~A ~A/msgstore.db'"•
+;                   /device/ /ANDROID-USER/ /ANDROID-HOME/) :echo t)
+;          (format *error-output* (red "failed~%")))
+;   (or-do (zsh (fn •rsync -Phav ~A:~A/msgstore.db '~A'•
+;                   /device/ /ANDROID-HOME/ /TMP-DIR/) :echo t :return-string nil)
+;          (format *error-output* (red "failed~%")))
+;   (or-do (zsh (fn •ssh ~A "rm ~A/msgstore.db"•
+;                   /device/ /ANDROID-HOME/) :echo t)
+;          (format *error-output* (red "failed~%"))) )
 ;
 ; (ft "~%")
 ; (when (y-or-n-p "Pull Messages database?")
-;   « (zsh (fn •ssh ~A "su -c 'cp ~A ~A'"•
-;              /device/ /MESSAGES-DB-LOCATION/ /ANDROID-HOME/) :echo t)
-;       OR DO (format *error-output* (red "failed~%")) »
-;   « (zsh (fn •ssh ~A "su -c 'chown ~A ~A/bugle_db'"•
-;              /device/ /ANDROID-USER/ /ANDROID-HOME/) :echo t)
-;       OR DO (format *error-output* (red "failed~%")) »
-;   « (zsh (fn •rsync -Phav ~A:~A/bugle_db '~A'•
-;              /device/ /ANDROID-HOME/ /TMP-DIR/) :echo t :return-string nil)
-;       OR DO (format *error-output* (red "failed~%")) »
-;   « (zsh (fn •ssh ~a "rm ~A/bugle_db"•
-;              /device/ /ANDROID-HOME/) :echo t)
-;       OR DO (format *error-output* (red "failed~%")) » )
+;   (or-do (zsh (fn •ssh ~A "su -c 'cp ~A ~A'"•
+;                   /device/ /MESSAGES-DB-LOCATION/ /ANDROID-HOME/) :echo t)
+;          (format *error-output* (red "failed~%")))
+;   (or-do (zsh (fn •ssh ~A "su -c 'chown ~A ~A/bugle_db'"•
+;                   /device/ /ANDROID-USER/ /ANDROID-HOME/) :echo t)
+;          (format *error-output* (red "failed~%")))
+;   (or-do (zsh (fn •rsync -Phav ~A:~A/bugle_db '~A'•
+;                   /device/ /ANDROID-HOME/ /TMP-DIR/) :echo t :return-string nil)
+;          (format *error-output* (red "failed~%")))
+;   (or-do (zsh (fn •ssh ~a "rm ~A/bugle_db"•
+;                   /device/ /ANDROID-HOME/) :echo t)
+;          (format *error-output* (red "failed~%"))) )
 
 (ft "~%")
 (when (y-or-n-p "Sync picture folders?")
@@ -141,9 +141,9 @@
   (for-each/list /pic-folders-to-push/
     (progress index! /LENGTH/)
     (ft "syncing album: ~A~%" (green value!))
-    « (zsh (fn •rsync -Phav --delete "~A/Dropbox/Carlos IV/Backups/Pictures/~A" ~A:~A•
-               /HOME/ value! /device/ /PICTURES-PREFIX/) :echo t :return-string nil)
-      OR DO (format *error-output* (red "failed~%")) » ))
+    (or-do (zsh (fn •rsync -Phav --delete "~A/Dropbox/Carlos IV/Backups/Pictures/~A" ~A:~A•
+                    /HOME/ value! /device/ /PICTURES-PREFIX/) :echo t :return-string nil)
+           (format *error-output* (red "failed~%"))) ))
 
 (ft "~%")
 (when (y-or-n-p "Sync music playlists?")

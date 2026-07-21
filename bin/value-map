@@ -33,7 +33,7 @@
 (process-args! (cdr (cmdargs)))
 
 
-« (setq *thefile* Ø (car bare-args!)) or die "No input file" »
+(or-die (setq *thefile* Ø (car bare-args!)) "No input file")
 
 (setq *num-values* ? *num-values* 6)
 (setq *num-values* (if (and *rainbow-p* (> *num-values* 6)) 6 *num-values*))

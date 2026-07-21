@@ -2,8 +2,8 @@
 ; vi: ft=lisp
 
 
-« (defparameter *input-file* Ø (cdr (cmdargs)))
-    or die "No input files selected" »
+(or-die (defparameter *input-file* Ø (cdr (cmdargs)))
+        "No input files selected")
 
 (defun clean-it (afile)
   (~ra (~ra afile "\\s+" "-") "[^A-Za-z0-9\\.\\-]" "_"))

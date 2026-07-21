@@ -104,20 +104,21 @@
 
 
 (defun bk-file (afile)
-  (or-die ((format nil "bckup fatal error: ~A" error!))
+  (or-die
     (let* ((thebase      (ppath:basename afile))
            (thebasef     (~r thebase "^\\." "DOT"))
            (newname      (add-date thebasef))
            (fullname     (check-for-presence (format nil "~A~A" (if *acap* "" +BCKHOME+) newname)
                                              :if-exists *if-exists*))
            (thecmd       (format nil "~A \"~A\" \"~A\"" *cpormv* afile fullname)))
-      (zsh thecmd :echo t :dry-run *dry-run*))))
+      (zsh thecmd :echo t :dry-run *dry-run*))
+    (format nil "bckup fatal error: ~A" error!)))
 
 
 ; --------------------------------------------------------------- ;
 
 (defun bk-dir (adir)
-  (or-die ((format nil "bckup fatal error: ~A" error!))
+  (or-die
     (let* ((mycwd        (format nil "~A/" (zsh "pwd")))
            (ddirname     (ppath:dirname adir))
            (adirb        (ppath:basename adir))
@@ -133,7 +134,8 @@
                                  (if *follow* "h" "")
                                  (if *gzipp* "z" (if *xzp* "J" ""))
                                  fullname adirb)))
-      (zsh thecmd :echo t :dry-run *dry-run*))))
+      (zsh thecmd :echo t :dry-run *dry-run*))
+    (format nil "bckup fatal error: ~A" error!)))
 
 ; --------------------------------------------------------------- ;
 

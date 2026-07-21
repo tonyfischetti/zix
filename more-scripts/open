@@ -97,8 +97,8 @@
 
 
 (defun get-windows (aprogregex)
-  « (zsh (fn •wmctrl -l | tac | grep '~A'• aprogregex) :split t :echo t)
-      or do (return-from get-windows nil) » )
+  (or-do (zsh (fn •wmctrl -l | tac | grep '~A'• aprogregex) :split t :echo t)
+         (return-from get-windows nil)) )
 
 (defun get-wid (alinefromdashl)
   (ft "~A~%" alinefromdashl)
@@ -113,8 +113,8 @@
        (zsh (fn •~A &• (openable-cmd astruct)))))
 
 
-« (defvar /givenapp/ Ø (cadr (cmdargs)))
-    or die "which application?" »
+(or-die (defvar /givenapp/ Ø (cadr (cmdargs)))
+        "which application?")
 
 (for-each/list /all-apps/
   (when (string= (openable-name value!) /givenapp/)

@@ -31,9 +31,9 @@
 (process-args! (cdr (cmdargs)))
 
 
-« (setq *input-file* Ø (pop bare-args!)) or die "No input files" »
-« (setq *the-times* Ø (group bare-args!))
-    or die "times must be specified and be a multiple of two" »
+(or-die (setq *input-file* Ø (pop bare-args!)) "No input files")
+(or-die (setq *the-times* Ø (group bare-args!))
+        "times must be specified and be a multiple of two")
 
 (setq *number-of-cuts* (length *the-times*))
 

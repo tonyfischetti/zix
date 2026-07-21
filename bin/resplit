@@ -50,11 +50,11 @@
 (process-args! (cdr (cmdargs)))
 
 
-« (setq *THEFILE* Ø (car bare-args!))
-    or die "An input source was not specified" »
+(or-die (setq *THEFILE* Ø (car bare-args!))
+        "An input source was not specified")
 
-« (setq *LOOKFOR* Ø (cadr bare-args!))
-    or die "A string to separate on was not specified" »
+(or-die (setq *LOOKFOR* Ø (cadr bare-args!))
+        "A string to separate on was not specified")
 
 
 (when *debug-p*

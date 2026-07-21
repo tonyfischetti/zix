@@ -9,13 +9,13 @@
 (defvar /collection/ (make-hash-table :test #'equal))
 
 (for-each/list /aliases/
-  «
-  (let ((ret (zsh (fn •modprobe -C=/dev/null --show-depends '~A'• value!) :split t)))
-    (when (= (length ret) 0) (continue!))
-    (for-each/list (mapcar (lambda (x) (~r (~r x /some-regex/ "") •\s+$• "")) ret)
-      (setf (gethash value! /collection/) t))
-    )
-  or do (continue!) »
+  (or-do
+    (let ((ret (zsh (fn •modprobe -C=/dev/null --show-depends '~A'• value!) :split t)))
+      (when (= (length ret) 0) (continue!))
+      (for-each/list (mapcar (lambda (x) (~r (~r x /some-regex/ "") •\s+$• "")) ret)
+        (setf (gethash value! /collection/) t))
+      )
+    (continue!))
   )
 
 (for-each/hash /collection/

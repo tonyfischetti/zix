@@ -16,8 +16,8 @@
 (process-args! (cdr (cmdargs)))
 
 
-« (setq *input-files* Ø bare-args!) or die "No input files" »
-« Ø *output-file* or die "No output file specified" »
+(or-die (setq *input-files* Ø bare-args!) "No input files")
+(or-die Ø *output-file* "No output file specified")
 
 (setq *input-files* (sort (mapcar #'realpath *input-files*) #'string<))
 

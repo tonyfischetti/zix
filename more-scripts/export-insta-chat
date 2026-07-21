@@ -3,8 +3,8 @@
 
 (setq *clix-curly-test* #'equal)
 
-« (defparameter *infile* Ø (cadr (cmdargs)))
-    or die "no input file given" »
+(or-die (defparameter *infile* Ø (cadr (cmdargs)))
+        "no input file given")
 
 (defparameter *parsed* nil)
 (defparameter *me* nil)

@@ -45,11 +45,11 @@
 
 (defun check-everything (key val)
   (with-loading
-    «
-    (list (check-for-local-changes key val)
-          (check-for-untracked-changes key val)
-          (check-for-updates key val))
-      OR DO (fn (red "ERROR PROCESSING REPO ~A~%" key)) » ))
+    (or-do
+      (list (check-for-local-changes key val)
+            (check-for-untracked-changes key val)
+            (check-for-updates key val))
+      (fn (red "ERROR PROCESSING REPO ~A~%" key)) )))
 
 (defun git-pull-update (arepo adirectory)
   (when (y-or-n-def (fn "Pull latest ~A update?" arepo) :default #\y)
@@ -70,14 +70,14 @@
 
 (for-each/alist /allplaces/
   (ft (yellow "Checking repo: ~15A" key!))
-  « (let ((results (check-everything key! value!)))
-      (aif (remove-if #'null results)
-        (progn
-          (mapcar #'princ it!)
-          (dispatch-git-actions results key! value!))
-        (ft (green "~A all good~%" key!))))
-      OR DO (ft (red "ERROR PROCESSING REPO ~A~%" key!)) »
-      ; OR DIE error! »
+  (or-do (let ((results (check-everything key! value!)))
+           (aif (remove-if #'null results)
+             (progn
+               (mapcar #'princ it!)
+               (dispatch-git-actions results key! value!))
+             (ft (green "~A all good~%" key!))))
+      (ft (red "ERROR PROCESSING REPO ~A~%" key!)))
+      ; (or-die ... error!) to die instead
     (terpri))
 ; -------------------------------------------------------------- ;
 

@@ -30,8 +30,8 @@
 (process-args! (cdr (cmdargs)))
 
 
-« (defvar *file* Ø (car bare-args!))
-    or die "no input file given" »
+(or-die (defvar *file* Ø (car bare-args!))
+        "no input file given")
 
 
 (defun is-encrypted-p (file)

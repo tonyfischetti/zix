@@ -210,7 +210,7 @@
 
 (for-each/stream *our-stream*
   (when (not (string= "" value!))
-    « (let* ((itssplit            (~s value! ";" :limit 2))
+    (or-die (let* ((itssplit            (~s value! ";" :limit 2))
            (thecar                (car itssplit))
            (theactualcmd          (cadr itssplit))
            (moresplit             (~s thecar ":"))
@@ -247,7 +247,7 @@
       (funcall *printfun* (+ 1 index!) theprog theuname thehostname
                thecwd thecontext prettytime theactualcmd thetags value!)
       )
-      or WARN (fn "FAILED TO PARSE LINE ~A" index!) » ))
+      (fn "FAILED TO PARSE LINE ~A" index!) :errfun #'advise) ))
 
 
 ; vi: ft=lisp

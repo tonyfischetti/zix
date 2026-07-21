@@ -42,21 +42,21 @@
 (process-args! (cdr (cmdargs)))
 
 
-« (progn
-     (setq /from-file/ Ø (car bare-args!))
-     (setq /to-dir/    Ø (cadr bare-args!)))
-  or die "invalid number of arguments" »
+(or-die (progn
+          (setq /from-file/ Ø (car bare-args!))
+          (setq /to-dir/    Ø (cadr bare-args!)))
+        "invalid number of arguments")
 
-« (setq /from-file/ Ø (enough-namestring (probe-file /from-file/)))
-  or die (fn "file to copy (~A) doesn't exist" /from-file/) »
+(or-die (setq /from-file/ Ø (enough-namestring (probe-file /from-file/)))
+        (fn "file to copy (~A) doesn't exist" /from-file/))
 
 ; requires `realpath` from coreutils
-« (setq /from-file/ Ø (zsh (fn "realpath '~A'" /from-file/)))
-  or die "could not make source file a real path" »
-« (setq /to-dir/ Ø (zsh (fn "realpath '~A'" /to-dir/)))
-  or die "could not make target directory a real path" »
-« (setq /root/ Ø (zsh (fn "realpath '~A'" /root/)))
-  or die "could not make base directory a real path" »
+(or-die (setq /from-file/ Ø (zsh (fn "realpath '~A'" /from-file/)))
+        "could not make source file a real path")
+(or-die (setq /to-dir/ Ø (zsh (fn "realpath '~A'" /to-dir/)))
+        "could not make target directory a real path")
+(or-die (setq /root/ Ø (zsh (fn "realpath '~A'" /root/)))
+        "could not make base directory a real path")
 
 (setq /full-to-path/  (fn "~A/~A" /to-dir/ (str-replace /from-file/ (fn "^~A" /root/) "")))
 (setq /full-to-dir/   (directory-namestring /full-to-path/))
