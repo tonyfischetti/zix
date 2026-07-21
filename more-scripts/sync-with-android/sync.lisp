@@ -1,4 +1,4 @@
-#!/usr/local/bin/lispscript
+#!/usr/bin/env lispscript
 
 (defvar /where-am-i/ "/home/tony/.zsh/more-scripts/sync-with-android/")
 

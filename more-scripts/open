@@ -1,4 +1,4 @@
-#!/usr/local/bin/lispscript
+#!/usr/bin/env lispscript
 ; vi: ft=lisp
 
 (defconstant +wid-regex+            (~c •(0[Xx][0-9A-Za-f]+)•))
