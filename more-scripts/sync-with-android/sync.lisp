@@ -153,7 +153,7 @@
     (let ((playlist value!)
           (full (fn •~A/~A• /PLAYLIST-HOME/ value!)))
       (ft "On playlist: ~A~%" (yellow "~A" playlist))
-      (zsh (fn •mkdir -p "~A/music/~A"• /TMP-DIR/ playlist)) :echo t
+      (zsh (fn •mkdir -p "~A/music/~A"• /TMP-DIR/ playlist) :echo t)
       (for-each/line full
         (let* ((xlatedpath (~r value! "^.HOME." /HOME/))
                (thebase (file-namestring xlatedpath)))
