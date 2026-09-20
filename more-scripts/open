@@ -65,6 +65,12 @@
       :searchregex "cmus-music$"
       :cmd "systemd-run --scope --user xfce4-terminal -T cmus-music --default-working-directory=/home/tony/cmus")
 
+    ; calibre
+    (make-openable
+      :name "calibre"
+      :searchregex "calibre ||$"
+      :cmd "systemd-run --scope --user calibre")
+
     ; NYPL (terminal)
     (make-openable
       :name "nypl"
