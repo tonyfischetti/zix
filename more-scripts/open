@@ -44,7 +44,7 @@
     ; Obsidian
     (make-openable
       :name "obsidian"
-      :searchregex " Obsidian v?[\\d\\.]+$"
+      :searchregex "Obsidian - Obsidian"
       :cmd "systemd-run --scope --user obsidian")
 
     ; Signal
@@ -103,7 +103,7 @@
 
 
 (defun get-windows (aprogregex)
-  (or-do (zsh (fn •wmctrl -l | tac | ack '~A'• aprogregex) :split t :echo t)
+  (or-do (zsh (fn •wmctrl -l | tac | grep '~A'• aprogregex) :split t :echo t)
          (return-from get-windows nil)) )
 
 (defun get-wid (alinefromdashl)
