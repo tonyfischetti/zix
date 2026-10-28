@@ -91,7 +91,6 @@ export SYSTEMD_COLORS=1
 export SYSTEMD_PAGER=""
 export TIMEFMT="User-mode: %U	Kernel-mode: %S	Wall: %E	Perc: %P"
 export PASSWORD_STORE_ENABLE_EXTENSIONS="true"
-export DENO_INSTALL="$HOME/.deno"
 export NODE_PATH="$HOME/.local/lib/node_modules"
 export NVIM_HOME="$HOME/.config/nvim"
 export DOCKER_BUILDKIT=1
@@ -107,7 +106,7 @@ export ZME=`whoami`
 # │                   SETTING INITIAL PATH                   │
 # ╰──────────────────────────────────────────────────────────╯
 
-export PATH="$DENO_INSTALL/bin:$BUN_INSTALL/bin:/usr/bin:/bin:/usr/sbin:/sbin"
+export PATH="$BUN_INSTALL/bin:/usr/bin:/bin:/usr/sbin:/sbin"
 
 
 # ╭──────────────────────────────────────────────────────────╮
@@ -133,8 +132,10 @@ then
     export PATH="/Library/TeX/texbin:$HOMEBREW_PREFIX/opt/sqlite/bin:$HOMEBREW_PREFIX/opt/coreutils/libexec/gnubin:$PATH"
     eval "$(/opt/homebrew/bin/brew shellenv)"
     export HOMEBREW_NO_ENV_HINTS=1
+    export PATH="/opt/homebrew/opt/node@22/bin:$PATH"
+    export LDFLAGS="-L/opt/homebrew/opt/node@22/lib"
+    export CPPFLAGS="-I/opt/homebrew/opt/node@22/include"
 fi
-
 if [[ `hostname` = 'vulcan' ]]
 then
     export FIREFOXPROFILE="~/.mozilla/firefox/q3yebf9y.default-esr"
@@ -475,9 +476,6 @@ export GPG_TTY=$(tty)
 
 # cargo completions
 [ -s "$HOME/.cargo/env" ] && source "$HOME/.cargo/env"
-
-# iterm
-test -e "${HOME}/.iterm2_shell_integration.zsh" && source "${HOME}/.iterm2_shell_integration.zsh"
 
 # FZF
 source <(fzf --zsh)

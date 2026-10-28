@@ -1,0 +1,922 @@
+#!/usr/bin/env bun
+// vi: ft=typescript
+
+/***************************************************************
+ * tasks -- add, list and search Obsidian tasks from the command line
+ *
+ *   tasks                       open tasks: overdue + due within 2 weeks
+ *   tasks ls -a                 every open task in the vault
+ *   tasks add Call Sally -t life -d fri
+ *   tasks add                   opens $EDITOR, prefilled with "- [ ] "
+ *   tasks search #nypl call     open tasks tagged #nypl whose text has "call"
+ *   tasks tags                  every tag used by a task, with a count
+ *
+ * Tasks are written the way the Tasks plugin's "dataview" format writes
+ * them (two spaces before each inline field):
+ *
+ *   - [ ] Contact Sally #life #nypl  [due:: 2026-11-02]
+ *
+ * and appended to the end of the daily note, which is created from the
+ * daily-note template when it doesn't exist yet.  The Daily Notes plugin's
+ * folder / date format / template come from .obsidian/daily-notes.json,
+ * and the vault scan honours the "path does not include" lines of the
+ * Tasks plugin's global query.
+ */
+
+import * as fs   from 'node:fs/promises';
+import * as os   from 'node:os';
+import * as path from 'node:path';
+import { Command, InvalidArgumentError, Option } from 'commander';
+import { consola } from 'consola';
+
+
+/***************************************************************
+ * types and constants
+ */
+
+type ISODate = string;                       // YYYY-MM-DD
+
+interface DailySettings {
+  folder:   string;                          // e.g. "Daily Notes"
+  format:   string;                          // moment format, e.g. YYYY-MM-DD
+  template: string;                          // vault-relative, e.g. _templates/daily
+}
+
+interface TaskOpts {
+  tags:      string[];                       // ["#life", "#nypl"]
+  priority?: string;
+  due:       Date | null;
+}
+
+interface FoundTask {
+  file:     string;                          // vault-relative, posix separators
+  line:     number;                          // 1-based
+  raw:      string;                          // the markdown line, trimmed
+  status:   string;                          // the character inside [ ]
+  text:     string;                          // description without inline fields
+  tags:     string[];                        // lower-case, without the #
+  due:      ISODate | null;
+  done:     ISODate | null;
+  priority: string | null;
+}
+
+class TasksError extends Error {}
+
+const VAULT_CANDIDATES = [
+  process.env.OBSIDIAN_VAULT ?? '',
+  '~/Dropbox/Carlos IV/Obsidian',
+  '~/Library/CloudStorage/Dropbox/Carlos IV/Obsidian',
+];
+
+const DEFAULT_DAILY_FORMAT = 'YYYY-MM-DD';   // Obsidian's default
+const PRIORITIES   = ['highest', 'high', 'medium', 'low', 'lowest'];
+const NO_DUE_WORDS = new Set(['none', 'no', 'never', '-', '']);
+const PREFILL      = '- [ ] ';
+
+// "- ", "* ", "1. " with an optional "[x]" checkbox after it
+const LIST_PREFIX_RE  = /^(\s*)(?:[-*+]|\d+[.)])\s+(?:\[(.)\]\s*)?/;
+const LIST_ITEM_RE    = /^\s*(?:[-*+]|\d+[.)])\s/;
+const TASK_RE         = /^\s*(?:[-*+]|\d+[.)])\s+\[(.)\]\s+(\S.*)$/;
+const FIELDS_RE       = /\s*\[(\w+)::\s*([^\]]*)\]/g;
+const INLINE_FIELD_RE = /\s*\[\w+::/;
+// An Obsidian tag: letters, digits, _ - /, with at least one letter or _
+const TAG_RE          = /(?<=^|\s)#([\p{L}\p{N}_\/-]*[\p{L}_][\p{L}\p{N}_\/-]*)/gu;
+
+// The Tasks plugin's emoji format, in case any old task uses it
+const EMOJI_DUE_RE         = /\s*📅\s*(\d{4}-\d{2}-\d{2})/;
+const EMOJI_DONE_RE        = /\s*✅\s*(\d{4}-\d{2}-\d{2})/;
+const EMOJI_OTHER_DATES_RE = /\s*[⏳🛫➕❌]\s*\d{4}-\d{2}-\d{2}/g;
+const EMOJI_PRIORITY: Record<string, string> = {
+  '🔺': 'highest', '⏫': 'high', '🔼': 'medium', '🔽': 'low', '⏬': 'lowest',
+};
+
+const ADD_HELP = `
+dates (for -d and -n):
+  2026-11-02  11-02  11/2    a specific day (month-day means this year, or
+                             next year if that day has already passed)
+  today  tomorrow  yesterday (also t, tom, yd)
+  fri  monday  next tue      the next such weekday (never today)
+  +3  3  3d  2w  -1          days or weeks from today
+  nw                         next week (+7 days)
+  none                       no due date (-d only; same as --no-due)
+
+examples:
+  tasks add Contact Sally -t life -t nypl -d 2026-11-02
+  tasks add "Reach out to Dante #music" -d fri
+  tasks add Reschedule Little Anthony -t life -d +7 -p high
+  tasks add Re-watch Becoming Human --no-due
+  tasks add                              opens $EDITOR
+  echo "Buy stamps" | tasks add -t life
+
+Without -d the task is due on the note's day (today), like the Miranda
+plugin's "Create task in Daily Note" command.  In the editor, every
+top-level line becomes a task and indented lines are kept as they are.
+`;
+
+const SEARCH_HELP = `
+examples:
+  tasks search #nypl                   tagged #nypl (nested tags like #nypl/sites count)
+  tasks search #life #nypl             both tags
+  tasks search --any #life #music      either tag
+  tasks search call jim                every word must appear (case-insensitive
+                                       unless a word has a capital letter)
+  tasks search #life call              tag and text together
+  tasks search -r 'contact (jim|tom)'  regular expression
+  tasks search #life -w 1              only overdue or due within a week
+  tasks search --done #nypl            completed and cancelled tasks too
+  tasks search --untagged              tasks with no tag at all
+  tasks search --in Todos #life        only notes whose path contains Todos
+  tasks search --plain #life           path:line:task, e.g. for vim's quickfix:
+                                       :cexpr system('tasks search --plain #life')
+`;
+
+
+/***************************************************************
+ * colours
+ */
+
+const colours = (): boolean => !process.env.NO_COLOR && !!process.stdout.isTTY;
+
+const colour = (code: string) => (s: string): string =>
+  colours() ? `\x1b[${code}m${s}\x1b[0m` : s;
+
+const dim      = colour('2');
+const bold     = colour('1');
+const red      = colour('31');
+const green    = colour('32');
+const yellow   = colour('33');
+const cyan     = colour('36');
+const boldCyan = colour('1;36');
+const hilite   = colour('1;33');
+
+
+/***************************************************************
+ * dates
+ */
+
+const pad = (n: number, width = 2): string => String(n).padStart(width, '0');
+
+const iso = (d: Date): ISODate =>
+  `${pad(d.getFullYear(), 4)}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+
+const fromISO = (s: ISODate): Date => {
+  const [y, m, d] = s.split('-').map(Number);
+  return new Date(y, m - 1, d);
+};
+
+const today = (): Date => {
+  const now = new Date();
+  return new Date(now.getFullYear(), now.getMonth(), now.getDate());
+};
+
+const addDays = (d: Date, n: number): Date =>
+  new Date(d.getFullYear(), d.getMonth(), d.getDate() + n,
+           d.getHours(), d.getMinutes(), d.getSeconds());
+
+const daysBetween = (from: Date, to: Date): number =>
+  Math.round((to.getTime() - from.getTime()) / 86_400_000);
+
+const makeDate = (y: number, m: number, d: number, original: string): Date => {
+  const date = new Date(y, m - 1, d);
+  if (date.getFullYear() !== y || date.getMonth() !== m - 1 || date.getDate() !== d) {
+    throw new TasksError(`'${original}' isn't a real date`);
+  }
+  return date;
+};
+
+const WEEKDAYS: Record<string, number> = {           // JS getDay(): Sunday = 0
+  sun: 0, sunday: 0,
+  mon: 1, monday: 1,
+  tue: 2, tues: 2, tuesday: 2,
+  wed: 3, weds: 3, wednesday: 3,
+  thu: 4, thur: 4, thurs: 4, thursday: 4,
+  fri: 5, friday: 5,
+  sat: 6, saturday: 6,
+};
+
+// Turn the user's idea of a day into a date (null means "no date")
+const parseDay = (input: string, base: Date): Date | null => {
+  const s = input.trim().toLowerCase().replace(/\s+/g, ' ');
+  if (NO_DUE_WORDS.has(s))                              return null;
+  if (['today', 'tod', 't', 'now'].includes(s))         return base;
+  if (['tomorrow', 'tom', 'tm', 'tmrw'].includes(s))    return addDays(base, 1);
+  if (['yesterday', 'yest', 'yd'].includes(s))          return addDays(base, -1);
+  if (['next week', 'nextweek', 'nw'].includes(s))      return addDays(base, 7);
+
+  let m = s.match(/^(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})$/) ?? s.match(/^(\d{4})(\d{2})(\d{2})$/);
+  if (m) return makeDate(+m[1], +m[2], +m[3], input);
+
+  m = s.match(/^(\d{1,2})[-/.](\d{1,2})$/);
+  if (m) {
+    let d = makeDate(base.getFullYear(), +m[1], +m[2], input);
+    if (d < base) d = makeDate(base.getFullYear() + 1, +m[1], +m[2], input);
+    return d;
+  }
+
+  m = s.match(/^([+-]?)(\d+) ?(d|days?|w|weeks?)?$/);
+  if (m) {
+    const n = Number(m[2]) * (m[1] === '-' ? -1 : 1);
+    return addDays(base, (m[3] ?? 'd').startsWith('w') ? n * 7 : n);
+  }
+
+  m = s.match(/^(?:next )?([a-z]+)$/);
+  if (m && m[1] in WEEKDAYS) {
+    const ahead = (((WEEKDAYS[m[1]] - base.getDay()) % 7) + 7) % 7 || 7;
+    return addDays(base, ahead);
+  }
+
+  throw new TasksError(
+    `can't make sense of the date '${input}' (try 2026-11-02, 11-02, today, tomorrow, fri, +3, 2w, none)`);
+};
+
+// Enough of moment.js's tokens for daily-note names and {{date}} / {{time}}.
+// [text in brackets] is literal.
+const MOMENT_TOKEN_RE =
+  /\[([^\]]*)\]|YYYY|YY|MMMM|MMM|MM|M|DDDD|DDD|DD|Do|D|dddd|ddd|d|HH|H|hh|h|mm|m|ss|s|A|a|X/g;
+
+const momentFormat = (stamp: Date, fmt: string): string => {
+  const ordinal = (n: number): string => {
+    const r = n % 100;
+    const suffix = (r >= 10 && r <= 20) ? 'th' : ({ 1: 'st', 2: 'nd', 3: 'rd' } as Record<number, string>)[n % 10] ?? 'th';
+    return `${n}${suffix}`;
+  };
+  const [y, mo, d] = [stamp.getFullYear(), stamp.getMonth(), stamp.getDate()];
+  const dayOfYear  = Math.round((Date.UTC(y, mo, d) - Date.UTC(y, 0, 1)) / 86_400_000) + 1;
+  const hour12     = stamp.getHours() % 12 || 12;
+  const en         = (opts: Intl.DateTimeFormatOptions) => stamp.toLocaleString('en-US', opts);
+
+  const tokens: Record<string, string> = {
+    YYYY: pad(y, 4),              YY: pad(y % 100),
+    MMMM: en({ month: 'long' }),  MMM: en({ month: 'short' }),
+    MM:   pad(mo + 1),            M:   String(mo + 1),
+    DDDD: pad(dayOfYear, 3),      DDD: String(dayOfYear),
+    DD:   pad(d),                 Do:  ordinal(d),                D: String(d),
+    dddd: en({ weekday: 'long' }), ddd: en({ weekday: 'short' }), d: String(stamp.getDay()),
+    HH:   pad(stamp.getHours()),  H:   String(stamp.getHours()),
+    hh:   pad(hour12),            h:   String(hour12),
+    mm:   pad(stamp.getMinutes()), m:  String(stamp.getMinutes()),
+    ss:   pad(stamp.getSeconds()), s:  String(stamp.getSeconds()),
+    A:    stamp.getHours() < 12 ? 'AM' : 'PM',
+    a:    stamp.getHours() < 12 ? 'am' : 'pm',
+    X:    String(Math.floor(stamp.getTime() / 1000)),
+  };
+  return fmt.replace(MOMENT_TOKEN_RE, (token, literal) => literal !== undefined ? literal : tokens[token]);
+};
+
+
+/***************************************************************
+ * vault
+ */
+
+const expandHome = (p: string): string => p.replace(/^~(?=$|\/)/, os.homedir());
+
+const toPosix = (p: string): string => p.split(path.sep).join('/');
+
+const isDir = async (p: string): Promise<boolean> => {
+  try { return (await fs.stat(p)).isDirectory(); } catch { return false; }
+};
+
+const readJSON = async (file: string): Promise<any> => {
+  try {
+    return JSON.parse(await fs.readFile(file, 'utf8'));
+  } catch (error: any) {
+    if (error?.code === 'ENOENT') return null;
+    throw new TasksError(`couldn't read ${file}: ${error.message}`);
+  }
+};
+
+const findVault = async (explicit?: string): Promise<string> => {
+  for (const candidate of (explicit ? [explicit] : VAULT_CANDIDATES)) {
+    if (!candidate) continue;
+    const dir = path.resolve(expandHome(candidate));
+    if (await isDir(path.join(dir, '.obsidian'))) return dir;
+  }
+  if (explicit) throw new TasksError(`${explicit} is not an Obsidian vault (no .obsidian folder in it)`);
+  throw new TasksError("couldn't find the vault; set $OBSIDIAN_VAULT or pass --vault");
+};
+
+const dailySettings = async (vault: string): Promise<DailySettings> => {
+  const settings: DailySettings = { folder: '', format: DEFAULT_DAILY_FORMAT, template: '' };
+  const data = await readJSON(path.join(vault, '.obsidian', 'daily-notes.json'));
+  for (const key of ['folder', 'format', 'template'] as const) {
+    const value = data?.[key];
+    if (typeof value === 'string' && value.trim()) settings[key] = value.trim().replace(/^\/+|\/+$/g, '');
+  }
+  return settings;
+};
+
+// "path does not include X" lines from the Tasks plugin's global query
+const excludedPaths = async (vault: string): Promise<string[]> => {
+  const data  = await readJSON(path.join(vault, '.obsidian', 'plugins', 'obsidian-tasks-plugin', 'data.json'));
+  const query = typeof data?.globalQuery === 'string' ? data.globalQuery : '';
+  return query.split('\n').
+    map((line: string) => line.match(/^\s*path does not include (.+?)\s*$/i)?.[1]).
+    filter((x: string | undefined): x is string => !!x).
+    map((x: string) => x.toLowerCase());
+};
+
+
+/***************************************************************
+ * the daily note
+ */
+
+const dailyNotePath = (vault: string, settings: DailySettings, day: Date, now: Date): string => {
+  const stamp = new Date(day.getFullYear(), day.getMonth(), day.getDate(),
+                         now.getHours(), now.getMinutes(), now.getSeconds());
+  const name = momentFormat(stamp, settings.format) + '.md';
+  return path.join(vault, settings.folder, name);
+};
+
+// {{date}}, {{time}}, {{title}}, with an optional offset and format,
+// e.g. {{date+1d:YYYY-MM-DD}} -- what the core Daily Notes plugin supports
+const TEMPLATE_VAR_RE = /\{\{\s*(date|time|title)\s*(?:([+-]\d+)\s*([dw]))?\s*(?::([^}]*))?\s*\}\}/g;
+
+const renderTemplate = (text: string, day: Date, now: Date, title: string, dateFmt: string): string =>
+  text.replace(TEMPLATE_VAR_RE, (_m, kind, offset, unit, fmt) => {
+    if (kind === 'title') return title;
+    let stamp = new Date(day.getFullYear(), day.getMonth(), day.getDate(),
+                         now.getHours(), now.getMinutes(), now.getSeconds());
+    if (offset) stamp = addDays(stamp, Number(offset) * (unit === 'w' ? 7 : 1));
+    return kind === 'date' ? momentFormat(stamp, fmt || dateFmt) : momentFormat(stamp, fmt || 'HH:mm');
+  });
+
+// What a freshly created daily note should contain (before the task)
+const newNoteText = async (vault: string, settings: DailySettings,
+                           title: string, day: Date, now: Date): Promise<string> => {
+  if (!settings.template) return '';
+  const template = path.join(vault, settings.template.endsWith('.md') ? settings.template : `${settings.template}.md`);
+  try {
+    return renderTemplate(await fs.readFile(template, 'utf8'), day, now, title, settings.format);
+  } catch (error: any) {
+    if (error?.code !== 'ENOENT') throw new TasksError(`couldn't read the template ${template}: ${error.message}`);
+    consola.warn(`template ${settings.template} not found; creating an empty note`);
+    return '';
+  }
+};
+
+// Append the lines to the note; resolves to true if the note is new
+const appendToNote = async (note: string, lines: string[],
+                            initialText: () => Promise<string>, dryRun: boolean): Promise<boolean> => {
+  let existing: string;
+  let created = false;
+  try {
+    existing = await fs.readFile(note, 'utf8');
+  } catch (error: any) {
+    if (error?.code !== 'ENOENT') throw new TasksError(`couldn't read ${note}: ${error.message}`);
+    created  = true;
+    existing = await initialText();
+  }
+
+  const body  = existing.replace(/\s+$/, '');
+  const block = lines.join('\n');
+  let content: string;
+  if (!body) {
+    content = block + '\n';
+  } else {
+    // Keep tasks together; put a blank line after prose or front matter
+    const lastLine = body.slice(body.lastIndexOf('\n') + 1);
+    content = body + (LIST_ITEM_RE.test(lastLine) ? '\n' : '\n\n') + block + '\n';
+  }
+
+  if (!dryRun) {
+    try {
+      await fs.mkdir(path.dirname(note), { recursive: true });
+      await fs.writeFile(note, content, 'utf8');
+    } catch (error: any) {
+      throw new TasksError(`couldn't write ${note}: ${error.message}`);
+    }
+  }
+  return created;
+};
+
+
+/***************************************************************
+ * building task lines
+ */
+
+// ["life", "#nypl", "a,b"] -> ["#life", "#nypl", "#a", "#b"]
+const normalizeTags = (raw: string[]): string[] => {
+  const tags: string[] = [];
+  for (const chunk of raw) {
+    for (const piece of chunk.split(/[,\s]+/)) {
+      const tag = piece.trim().replace(/^#+/, '');
+      if (tag && !tags.includes(`#${tag}`)) tags.push(`#${tag}`);
+    }
+  }
+  return tags;
+};
+
+const buildTask = (description: string, opts: TaskOpts, status = ' '): string => {
+  let text = description.trim();
+  if (!text) throw new TasksError('the task has no text');
+
+  const present = new Set((text.match(TAG_RE) ?? []).map((t) => t.toLowerCase()));
+  const extra   = opts.tags.filter((t) => !present.has(t.toLowerCase()));
+  if (extra.length) {
+    // keep any [field:: ...] already in the text at the end, where Tasks wants it
+    const at = text.match(INLINE_FIELD_RE)?.index;
+    text = (at === undefined)
+      ? `${text} ${extra.join(' ')}`
+      : `${text.slice(0, at)} ${extra.join(' ')}${text.slice(at)}`;
+  }
+
+  let line = `- [${status}] ${text}`;
+  if (opts.priority)                    line += `  [priority:: ${opts.priority}]`;
+  if (opts.due && !/\[due::/.test(text)) line += `  [due:: ${iso(opts.due)}]`;
+  return line;
+};
+
+// Tolerate a pasted "- [ ] ..." or "- ..." in front of the task text
+const buildFromLine = (line: string, opts: TaskOpts): string => {
+  const m = line.match(LIST_PREFIX_RE);
+  return m ? buildTask(line.slice(m[0].length), opts, m[2] ?? ' ')
+           : buildTask(line, opts);
+};
+
+// A buffer from the editor or stdin: top-level lines become tasks,
+// indented lines (sub-items, notes) are kept as they are
+const parseBuffer = (buffer: string, opts: TaskOpts): string[] => {
+  const out: string[] = [];
+  for (const rawLine of buffer.split('\n')) {
+    const line = rawLine.replace(/\s+$/, '');
+    if (!line.trim())    continue;
+    if (/^\s/.test(line)) { out.push(line); continue; }
+    const m    = line.match(LIST_PREFIX_RE);
+    const body = m ? line.slice(m[0].length).trim() : line.trim();
+    if (body) out.push(buildTask(body, opts, m?.[2] ?? ' '));
+  }
+  return out;
+};
+
+
+/***************************************************************
+ * getting the text: editor or stdin
+ */
+
+const editInEditor = async (): Promise<string | null> => {
+  const file = path.join(os.tmpdir(), `tasks-${Date.now()}.md`);
+  await fs.writeFile(file, PREFILL + '\n', 'utf8');
+  try {
+    const argv = (process.env.VISUAL || process.env.EDITOR || 'vi').split(/\s+/).filter(Boolean);
+    if (/(?:^|\/)(?:vi|vim|nvim|gvim)$/.test(argv[0])) argv.push('+startinsert!');  // cursor after "- [ ] "
+    argv.push(file);
+
+    let exitCode: number;
+    try {
+      exitCode = await Bun.spawn(argv, { stdio: ['inherit', 'inherit', 'inherit'] }).exited;
+    } catch (error: any) {
+      throw new TasksError(`couldn't run the editor '${argv[0]}': ${error.message}`);
+    }
+    if (exitCode !== 0) throw new TasksError(`${argv[0]} exited with status ${exitCode}; nothing added`);
+
+    const text = await fs.readFile(file, 'utf8');
+    return (!text.trim() || text.trim() === PREFILL.trim()) ? null : text;
+  } finally {
+    await fs.rm(file, { force: true });
+  }
+};
+
+const readStdin = async (): Promise<string> => Bun.stdin.text();
+
+
+/***************************************************************
+ * finding tasks in the vault
+ */
+
+const isOpen = (t: FoundTask): boolean => t.status === ' ' || t.status === '/';
+
+const validDate = (s: string | undefined): ISODate | null =>
+  (s && /^\d{4}-\d{2}-\d{2}$/.test(s)) ? s : null;
+
+const parseTask = (file: string, line: number, raw: string): FoundTask | null => {
+  const m = raw.match(TASK_RE);
+  if (!m) return null;
+  const status = m[1];
+
+  const fields: Record<string, string> = {};
+  let text = m[2].replace(FIELDS_RE, (_all, key: string, value: string) => {
+    fields[key.toLowerCase()] = value.trim();
+    return '';
+  });
+
+  const takeEmojiDate = (re: RegExp): ISODate | null => {
+    const hit = text.match(re);
+    if (!hit) return null;
+    text = text.replace(re, '');
+    return hit[1];
+  };
+  const emojiDue  = takeEmojiDate(EMOJI_DUE_RE);
+  const emojiDone = takeEmojiDate(EMOJI_DONE_RE);
+  text = text.replace(EMOJI_OTHER_DATES_RE, '');
+  const due  = validDate(fields.due)        ?? emojiDue;
+  const done = validDate(fields.completion) ?? emojiDone;
+
+  let priority = fields.priority?.toLowerCase() ?? null;
+  for (const [emoji, level] of Object.entries(EMOJI_PRIORITY)) {
+    if (text.includes(emoji)) { priority ??= level; text = text.replace(emoji, ''); }
+  }
+  if (priority && !PRIORITIES.includes(priority)) priority = null;
+
+  text = text.replace(/\s{2,}/g, ' ').trim();
+  const tags = [...text.matchAll(TAG_RE)].map((t) => t[1].toLowerCase());
+  return { file, line, raw: raw.trim(), status, text, tags, due, done, priority };
+};
+
+const collectTasks = async (vault: string): Promise<FoundTask[]> => {
+  const excludes = await excludedPaths(vault);
+  const found: FoundTask[] = [];
+  for await (const rel of new Bun.Glob('**/*.md').scan({ cwd: vault })) {   // dot: false skips .obsidian, .trash
+    const file  = toPosix(rel);
+    const lower = file.toLowerCase();
+    if (excludes.some((x) => lower.includes(x))) continue;
+
+    const text = await fs.readFile(path.join(vault, rel), 'utf8');
+    let inFence = false;
+    text.split('\n').forEach((line, i) => {
+      if (/^\s*(```|~~~)/.test(line)) { inFence = !inFence; return; }
+      if (inFence) return;
+      const task = parseTask(file, i + 1, line);
+      if (task) found.push(task);
+    });
+  }
+  return found;
+};
+
+const PRIORITY_RANK: Record<string, number> = { highest: 0, high: 1, medium: 2, low: 4, lowest: 5 };
+const rank = (p: string | null): number => (p ? PRIORITY_RANK[p] : 3);
+
+const sortTasks = (tasks: FoundTask[]): FoundTask[] =>
+  tasks.sort((a, b) =>
+    (a.due ?? '9999').localeCompare(b.due ?? '9999') ||
+    rank(a.priority) - rank(b.priority) ||
+    a.file.localeCompare(b.file) ||
+    a.line - b.line);
+
+
+/***************************************************************
+ * showing tasks
+ */
+
+interface Highlight {
+  terms?: RegExp | null;                     // global regex of the matched text
+  tags?:  Set<string>;                       // matched tag filters, lower-case
+}
+
+// Colour the tags and the search hits without nesting escape codes
+const renderTaskText = (text: string, hl: Highlight = {}): string => {
+  if (!colours()) return text;
+  type Span = { start: number; end: number; paint: (s: string) => string };
+  const spans: Span[] = [];
+
+  for (const m of text.matchAll(TAG_RE)) {
+    const tag = m[1].toLowerCase();
+    const hit = hl.tags && [...hl.tags].some((f) => tag === f || tag.startsWith(`${f}/`));
+    spans.push({ start: m.index!, end: m.index! + m[0].length, paint: hit ? boldCyan : cyan });
+  }
+  if (hl.terms) {
+    for (const m of text.matchAll(hl.terms)) {
+      if (m[0]) spans.push({ start: m.index!, end: m.index! + m[0].length, paint: hilite });
+    }
+  }
+  spans.sort((a, b) => a.start - b.start || b.end - a.end);
+
+  let out = '';
+  let pos = 0;
+  for (const span of spans) {
+    if (span.start < pos) continue;          // overlaps the previous span
+    out += text.slice(pos, span.start) + span.paint(text.slice(span.start, span.end));
+    pos  = span.end;
+  }
+  return out + text.slice(pos);
+};
+
+const groupHeader = (due: ISODate | null, base: Date): string => {
+  if (!due) return bold('no due date');
+  const date  = fromISO(due);
+  const label = `${date.toLocaleString('en-US', { weekday: 'short' })} ${due}`;
+  const days  = daysBetween(base, date);
+  if (days < 0)   return red(`${label}  overdue, ${days === -1 ? 'yesterday' : `${-days} days ago`}`);
+  if (days === 0) return green(`${label}  today`);
+  if (days === 1) return bold(`${label}  tomorrow`);
+  return bold(label) + dim(`  in ${days} days`);
+};
+
+const statusNote = (t: FoundTask): string => {
+  if (t.status === '/') return yellow('[in progress]');
+  if (t.status === '-') return dim('cancelled');
+  if (!isOpen(t))       return dim(t.done ? `done ${t.done}` : 'done');
+  return '';
+};
+
+// Tasks grouped by due date, the way `ls` shows them
+const renderGrouped = (tasks: FoundTask[], base: Date, hl: Highlight = {}): string[] => {
+  const lines: string[] = [];
+  let group: ISODate | null | undefined;
+  for (const t of tasks) {
+    if (t.due !== group) {
+      if (group !== undefined) lines.push('');
+      group = t.due;
+      lines.push(groupHeader(t.due, base));
+    }
+    const parts = [renderTaskText(t.text, hl)];
+    if (t.priority) parts.push(yellow(`[${t.priority}]`));
+    const status = statusNote(t);
+    if (status)     parts.push(status);
+    parts.push(dim(t.file.replace(/\.md$/, '')));
+    lines.push(`  • ${parts.join('  ')}`);
+  }
+  return lines;
+};
+
+const plural = (n: number, word: string): string => `${n} ${word}${n === 1 ? '' : 's'}`;
+
+const footer = (tasks: FoundTask[], base: Date, noun: string): string => {
+  const overdue = tasks.filter((t) => isOpen(t) && t.due && t.due < iso(base)).length;
+  const notes   = new Set(tasks.map((t) => t.file)).size;
+  return dim(`\n${plural(tasks.length, noun)} in ${plural(notes, 'note')}${overdue ? `, ${overdue} overdue` : ''}`);
+};
+
+// Print the lines, through $PAGER (or less -FRX) when on a terminal
+const emit = async (lines: string[], usePager: boolean): Promise<void> => {
+  const text = lines.join('\n') + '\n';
+  if (!usePager || !process.stdout.isTTY) { process.stdout.write(text); return; }
+
+  const argv = (process.env.PAGER || 'less -FRX').split(/\s+/).filter(Boolean);
+  const env  = { ...process.env };
+  if (!env.LESS && path.basename(argv[0]) === 'less') env.LESS = 'FRX';   // quit if it fits, keep colours
+
+  let pager: ReturnType<typeof Bun.spawn>;
+  try {
+    pager = Bun.spawn(argv, { stdin: 'pipe', stdout: 'inherit', stderr: 'inherit', env });
+  } catch {
+    process.stdout.write(text);              // no pager around; just print
+    return;
+  }
+  try {
+    pager.stdin.write(text);
+    pager.stdin.end();
+  } catch { /* the pager quit early */ }
+  await pager.exited;
+};
+
+
+/***************************************************************
+ * commands
+ */
+
+interface AddOpts {
+  vault?:    string;
+  tag:       string[];
+  due?:      string | false;                 // false comes from --no-due
+  priority?: string;
+  note:      string;
+  dryRun?:   boolean;
+}
+
+const addCommand = async (words: string[], opts: AddOpts): Promise<void> => {
+  const vault    = await findVault(opts.vault);
+  const settings = await dailySettings(vault);
+  const now      = new Date();
+  const base     = today();
+
+  const noteDay = parseDay(opts.note, base);
+  if (!noteDay) throw new TasksError('-n/--note needs an actual day');
+  const note = dailyNotePath(vault, settings, noteDay, now);
+  const rel  = toPosix(path.relative(vault, note));
+
+  const due = opts.due === false     ? null
+            : opts.due === undefined ? noteDay
+            : parseDay(opts.due, base);
+  const taskOpts: TaskOpts = { tags: normalizeTags(opts.tag), priority: opts.priority, due };
+
+  let lines: string[];
+  const typed = words.join(' ').trim();
+  if (typed) {
+    lines = [buildFromLine(typed, taskOpts)];
+  } else if (!process.stdin.isTTY) {
+    lines = parseBuffer(await readStdin(), taskOpts);
+  } else {
+    const buffer = await editInEditor();
+    lines = buffer === null ? [] : parseBuffer(buffer, taskOpts);
+  }
+  if (!lines.length) { consola.info('nothing added'); return; }
+
+  const created = await appendToNote(
+    note, lines,
+    () => newNoteText(vault, settings, path.basename(note, '.md'), noteDay, now),
+    !!opts.dryRun);
+
+  for (const line of lines) console.log(`${green('+')} ${line}`);
+  const where = `${rel}${created ? ' (new note)' : ''}`;
+  if (opts.dryRun) consola.info(`dry run: would go in ${where}`);
+  else             consola.success(`added to ${where}`);
+};
+
+
+interface LsOpts {
+  vault?: string;
+  all?:   boolean;
+  weeks:  number;
+  plain?: boolean;
+  pager:  boolean;
+}
+
+const lsCommand = async (opts: LsOpts): Promise<void> => {
+  const vault   = await findVault(opts.vault);
+  const base    = today();
+  const horizon = iso(addDays(base, Math.round(opts.weeks * 7)));
+
+  let tasks = (await collectTasks(vault)).filter(isOpen);
+  if (!opts.all) tasks = tasks.filter((t) => t.due !== null && t.due <= horizon);
+  sortTasks(tasks);
+
+  if (opts.plain) {
+    await emit(tasks.map((t) => `${t.file}:${t.line}:${t.raw}`), opts.pager);
+    return;
+  }
+  if (!tasks.length) {
+    consola.info(opts.all ? 'no open tasks' : `no open tasks due in the next ${opts.weeks} weeks`);
+    return;
+  }
+  await emit([...renderGrouped(tasks, base), footer(tasks, base, 'open task')], opts.pager);
+};
+
+
+interface SearchOpts {
+  vault?:    string;
+  tag:       string[];
+  any?:      boolean;
+  untagged?: boolean;
+  regex?:    boolean;
+  weeks?:    number;
+  done?:     boolean;
+  in?:       string;
+  plain?:    boolean;
+  pager:     boolean;
+}
+
+const escapeRegex = (s: string): string => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+const searchCommand = async (words: string[], opts: SearchOpts): Promise<void> => {
+  const vault = await findVault(opts.vault);
+  const base  = today();
+
+  // #words are tag filters, the rest is text
+  const tagFilters = normalizeTags([...opts.tag, ...words.filter((w) => w.startsWith('#'))]).
+    map((t) => t.slice(1).toLowerCase());
+  const terms = words.filter((w) => !w.startsWith('#') && w.trim());
+  if (!tagFilters.length && !terms.length && !opts.untagged && !opts.in && opts.weeks === undefined) {
+    throw new TasksError('nothing to search for: give some words, a #tag, --untagged, --in or -w');
+  }
+
+  // Smart case: case-sensitive only if a term has a capital letter
+  const caseSensitive = terms.some((t) => /\p{Lu}/u.test(t));
+  const flags = caseSensitive ? 'u' : 'iu';
+  let textOk: (text: string) => boolean = () => true;
+  let hits: RegExp | null = null;
+  if (terms.length && opts.regex) {
+    let re: RegExp;
+    try { re = new RegExp(terms.join(' '), flags); }
+    catch (error: any) { throw new TasksError(`bad regular expression: ${error.message}`); }
+    textOk = (text) => re.test(text);
+    hits   = new RegExp(re.source, `${flags}g`);
+  } else if (terms.length) {
+    const needles = caseSensitive ? terms : terms.map((t) => t.toLowerCase());
+    textOk = (text) => {
+      const hay = caseSensitive ? text : text.toLowerCase();
+      return needles.every((n) => hay.includes(n));
+    };
+    hits = new RegExp(terms.map(escapeRegex).join('|'), `${flags}g`);
+  }
+
+  const hasTag  = (t: FoundTask, f: string) => t.tags.some((tag) => tag === f || tag.startsWith(`${f}/`));
+  const tagsOk  = (t: FoundTask) => !tagFilters.length ||
+    (opts.any ? tagFilters.some((f) => hasTag(t, f)) : tagFilters.every((f) => hasTag(t, f)));
+  const inPath  = opts.in?.toLowerCase();
+  const horizon = opts.weeks === undefined ? null : iso(addDays(base, Math.round(opts.weeks * 7)));
+
+  const tasks = sortTasks((await collectTasks(vault)).filter((t) =>
+    (opts.done || isOpen(t)) &&
+    (!opts.untagged || t.tags.length === 0) &&
+    (!inPath || t.file.toLowerCase().includes(inPath)) &&
+    (horizon === null || (t.due !== null && t.due <= horizon)) &&
+    tagsOk(t) &&
+    textOk(t.text)));
+
+  if (opts.plain) {
+    await emit(tasks.map((t) => `${t.file}:${t.line}:${t.raw}`), opts.pager);
+    return;
+  }
+  if (!tasks.length) { consola.info('no matching tasks'); return; }
+  const hl: Highlight = { terms: hits, tags: new Set(tagFilters) };
+  await emit([...renderGrouped(tasks, base, hl), footer(tasks, base, 'task')], opts.pager);
+};
+
+
+interface TagsOpts {
+  vault?: string;
+  done?:  boolean;
+  pager:  boolean;
+}
+
+const tagsCommand = async (opts: TagsOpts): Promise<void> => {
+  const vault  = await findVault(opts.vault);
+  const counts = new Map<string, number>();
+  for (const t of await collectTasks(vault)) {
+    if (!opts.done && !isOpen(t)) continue;
+    for (const tag of new Set(t.tags)) counts.set(tag, (counts.get(tag) ?? 0) + 1);
+  }
+  const rows = [...counts].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
+  if (!rows.length) { consola.info('no tags on any task'); return; }
+
+  const width = String(rows[0][1]).length;
+  await emit(rows.map(([tag, n]) => `${String(n).padStart(width + 2)}  ${cyan(`#${tag}`)}`), opts.pager);
+};
+
+
+/***************************************************************
+ * command line
+ */
+
+const collect = (value: string, previous: string[]): string[] => [...previous, value];
+
+const parseWeeks = (value: string): number => {
+  const n = Number(value);
+  if (!(n > 0)) throw new InvalidArgumentError('must be a positive number of weeks');
+  return n;
+};
+
+const program = new Command();
+
+program.
+  name('tasks').
+  description('add, list and search Obsidian tasks from the command line').
+  version('0.2.0').
+  option('--vault <path>', 'vault folder (default: $OBSIDIAN_VAULT, then ~/Dropbox/Carlos IV/Obsidian)').
+  option('--no-pager', 'never pipe long output through $PAGER (default: less -FRX)').
+  showHelpAfterError();
+
+program.
+  command('ls', { isDefault: true }).
+  alias('list').
+  description('list open tasks across the vault: overdue, then due within the window').
+  option('-a, --all', 'every open task, including undated and far-off ones').
+  option('-w, --weeks <n>', 'how far ahead to look', parseWeeks, 2).
+  option('--plain', 'raw markdown lines as path:line:task, for grep or fzf').
+  allowExcessArguments().
+  action((opts, cmd) => {
+    if (cmd.args.length) {   // `tasks Call Sally` -- forgot the subcommand
+      const words = cmd.args.join(' ');
+      throw new TasksError(`'${words}' isn't a subcommand; to add a task, use: tasks add ${words}`);
+    }
+    const globals = cmd.optsWithGlobals();
+    return lsCommand({ ...opts, vault: globals.vault, pager: globals.pager });
+  });
+
+program.
+  command('add').
+  description('add a task to the daily note (with no text, opens $EDITOR)').
+  argument('[text...]', 'the task; quote it if your shell eats the #tags').
+  option('-t, --tag <tag>', 'add a #tag (repeatable; "life", "#life" and "life,nypl" all work)', collect, [] as string[]).
+  option('-d, --due <date>', "due date (default: the note's day)").
+  option('--no-due', "don't add a due date (same as -d none)").
+  addOption(new Option('-p, --priority <level>', 'task priority').choices(PRIORITIES)).
+  option('-n, --note <date>', "which day's daily note to add to", 'today').
+  option('--dry-run', 'show what would be written without touching the note').
+  addHelpText('after', ADD_HELP).
+  action((words, opts, cmd) => addCommand(words, { ...opts, vault: cmd.optsWithGlobals().vault }));
+
+program.
+  command('search').
+  description('search open tasks by #tag and text').
+  argument('[terms...]', 'words to look for; words starting with # are tag filters').
+  option('-t, --tag <tag>', 'tag filter (repeatable); every given tag must match', collect, [] as string[]).
+  option('--any', 'match tasks that have any of the tags instead of all of them').
+  option('--untagged', 'only tasks with no tag at all').
+  option('-r, --regex', 'treat the terms, joined with spaces, as a regular expression').
+  option('-w, --weeks <n>', 'only tasks overdue or due within n weeks', parseWeeks).
+  option('--done', 'include completed and cancelled tasks').
+  option('--in <path>', 'only notes whose path contains this').
+  option('--plain', 'raw markdown lines as path:line:task, for grep, fzf or vim').
+  addHelpText('after', SEARCH_HELP).
+  action((words, opts, cmd) => {
+    const globals = cmd.optsWithGlobals();
+    return searchCommand(words, { ...opts, vault: globals.vault, pager: globals.pager });
+  });
+
+program.
+  command('tags').
+  description('every tag used by an open task, with a count').
+  option('--done', 'count completed and cancelled tasks too').
+  action((opts, cmd) => {
+    const globals = cmd.optsWithGlobals();
+    return tagsCommand({ ...opts, vault: globals.vault, pager: globals.pager });
+  });
+
+try {
+  await program.parseAsync();
+} catch (error) {
+  if (!(error instanceof TasksError)) throw error;
+  consola.error(error.message);
+  process.exit(1);
+}
