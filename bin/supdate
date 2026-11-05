@@ -25,7 +25,7 @@
                       (tmux         .   "~/.tmux")
                       (cmus         .   "~/cmus")
                       (starlight    .   "~/starlight")
-                      (starconfig   .   "~/.starlight")
+                      (starconfig   .   "~/.config/starlight")
                       (dix          .   "~/.dix")))
 
 (defun check-for-updates (arepo adirectory)
