@@ -1,0 +1,219 @@
+#!/usr/bin/env lispscript
+; vi: ft=lisp
+
+; pluto-doc: asks the saved core what's in pluto (and charon, and
+; styx). Signatures come straight from the image, so they're always
+; what lispscript actually runs -- which also means they lag behind
+; the sources until the core is rebuilt (make -C ~/.lisp core)
+;
+;   pluto-doc NAME      signature + docstring (NAME may be pkg:name)
+;   pluto-doc TEXT      ...or, when TEXT isn't a symbol, everything
+;                       whose name or docstring mentions it
+;   pluto-doc -l        one tab-separated line per exported symbol:
+;                       name, kind, package, signature, first doc line
+;                       (for pickers and completion sources)
+
+(require :sb-introspect)
+
+(defparameter *packages* '(:pluto :charon :styx))
+
+(defparameter *sources*
+  (mapcar (lambda (x) (merge-pathnames x (user-homedir-pathname)))
+          '("pluto/pluto.lisp" "pluto/charon.lisp" "pluto/styx.lisp")))
+
+(defparams *list-p*)
+
+(def-cli-args "pluto-doc" "[-hl] [NAME]"
+  "signatures and docstrings for pluto/charon/styx, straight from the saved core
+   NAME is case-insensitive and may be package-qualified (styx:md5/file)
+   if NAME isn't an exported symbol, everything mentioning it is listed instead"
+  (option "-h" "--help" "print usage"
+          (print-usage!))
+  (option "-l" "--list" "tab-separated line per exported symbol (for tooling)"
+          (setq *list-p* t)
+          (process-args! (cdr args!))))
+
+(process-args! (cdr (cmdargs)))
+
+
+; ------------------------------------------------------- ;
+; asking the image ---------------------------------------;
+
+(defun exported-symbols ()
+  "Every external symbol of *packages*, each package sorted by name"
+  (loop for pkg in *packages*
+        append (let (syms)
+                 (do-external-symbols (s pkg) (push s syms))
+                 (sort syms #'string< :key #'symbol-name))))
+
+(defun kind (s)
+  (cond ((macro-function s)  :macro)
+        ((fboundp s)         :function)
+        ((boundp s)          :variable)
+        ; exported but defines nothing: an anaphor (index!, it!...)
+        (t                   :symbol)))
+
+(defun doc (s)
+  (or (case (kind s)
+        ((:function :macro)  (documentation s 'function))
+        (:variable           (documentation s 'variable)))
+      ""))
+
+(defun signature (s)
+  "The call form -- (name . lambda-list) -- for functions and
+   macros; just the name for everything else"
+  (case (kind s)
+    ((:function :macro)  (cons s (sb-introspect:function-lambda-list s)))
+    (t                   s)))
+
+(defun render (form pkg &key (width nil))
+  "Prints FORM the way you'd type it: lowercase, unqualified (as
+   seen from package PKG), filled to WIDTH columns if given"
+  (let ((*package*            pkg)
+        (*print-case*         :downcase)
+        ; pretty even on one line: that's what abbreviates
+        ; (quote (function die)) back to '#'die
+        (*print-pretty*       t)
+        (*print-right-margin* (or width 100000)))
+    (if (consp form)
+      ; fill-style, explicitly: left to the dispatch table, a
+      ; signature like (with-lock-file (...) &body body) gets
+      ; laid out as if it were a macro CALL with a body (and
+      ; anything with &body gets broken across lines no matter
+      ; how wide the margin)
+      (with-output-to-string (s) (pprint-fill s form))
+      (prin1-to-string form))))
+
+(defun one-line (astring)
+  "Inner forms can still carry their own line breaks; for the
+   tab-separated listing everything must sit on one line"
+  (~ra astring "\\s+" " "))
+
+(defun find-exported (name)
+  "NAME (maybe pkg:name, any case) to its exported symbol, or nil"
+  (let* ((colon    (position #\: name))
+         (pkgname  (and colon (plusp colon) (string-upcase (subseq name 0 colon))))
+         (symname  (string-upcase (string-left-trim ":" (if colon (subseq name colon) name))))
+         (pkgs     (if pkgname (list pkgname) *packages*)))
+    (loop for p in pkgs
+          for pkg = (find-package p)
+          when pkg
+            do (multiple-value-bind (s status) (find-symbol symname pkg)
+                 (when (eq status :external)
+                   (return s))))))
+
+(defun mentions (text)
+  "Exported symbols whose name or docstring contains TEXT"
+  (let ((needle (string-downcase text)))
+    (remove-if-not (lambda (s)
+                     (or (search needle (string-downcase (symbol-name s)))
+                         (search needle (string-downcase (doc s)))))
+                   (exported-symbols))))
+
+(defun stale-core-p ()
+  "Is any pluto source newer than the running core?"
+  (let ((core-date (file-write-date sb-ext:*core-pathname*)))
+    (and core-date
+         (some (lambda (src)
+                 (let ((d (and (probe-file src) (file-write-date src))))
+                   (and d (> d core-date))))
+               *sources*))))
+
+; ------------------------------------------------------- ;
+
+
+; ------------------------------------------------------- ;
+; formatting ---------------------------------------------;
+
+(defun first-line (astring)
+  (string-trim *whitespaces*
+               (subseq astring 0 (or (position #\Newline astring)
+                                     (length astring)))))
+
+(defun dedent (astring)
+  "Docstrings carry the indentation of their source (the first line
+   hugs the opening quote, the rest are indented to meet it);
+   strip the common indentation off the rest"
+  (let* ((lines   (split-string->lines astring))
+         (rest    (remove-if (lambda (l) (string= "" (string-trim *whitespaces* l)))
+                             (cdr lines)))
+         (indent  (if rest
+                    (reduce #'min (mapcar (lambda (l)
+                                            (or (position #\Space l :test #'char/=) 0))
+                                          rest))
+                    0)))
+    (if (null lines)
+      ""
+      (str-join (string #\Newline)
+                (cons (string-trim *whitespaces* (car lines))
+                      (mapcar (lambda (l)
+                                (if (>= (length l) indent) (subseq l indent) ""))
+                              (cdr lines)))))))
+
+(defun columns ()
+  (multiple-value-bind (cols real-p) (get-terminal-columns)
+    (if real-p cols 80)))
+
+; colors only when a human is looking (K in vim shows raw escapes)
+(defun hi (fun astring)
+  (if (styx:tty-p) (funcall fun astring) astring))
+
+(defun describe-symbol (s)
+  (let ((k (kind s)))
+    (ft "~A  ~A~%"
+        (hi #'cyan (fn "~(~A:~A~)" (package-name (symbol-package s)) s))
+        (hi #'grey (string-downcase k)))
+    (case k
+      ((:function :macro)
+         (ft "~A~%" (render (signature s) (symbol-package s) :width (columns))))
+      (:variable
+         (let ((*print-length* 20) (*print-level* 3))
+           (ft "value: ~S~%" (symbol-value s))))
+      (:symbol
+         (ft "exported, but not a function, macro, or variable (an anaphor, probably)~%")))
+    (let ((d (doc s)))
+      (if (string= d "")
+        (ft "~A~%" (hi #'grey "(no docstring)"))
+        (ft "~%~A~%" (dedent d))))))
+
+(defun list-mentions (symbols)
+  (for-each/list symbols
+    (ft "  ~28A ~10A ~A~%"
+        (fn "~(~A:~A~)" (package-name (symbol-package value!)) value!)
+        (string-downcase (kind value!))
+        (if (member (kind value!) '(:function :macro))
+          (one-line (render (cdr (signature value!)) (symbol-package value!)))
+          ""))))
+
+; ------------------------------------------------------- ;
+
+
+(when (stale-core-p)
+  (advise (fn "note: the saved core is older than the pluto sources -- run `make -C ~~/.lisp core`")
+          :yellow-p (styx:tty-p 2)))
+
+(cond
+  (*list-p*
+    (for-each/list (exported-symbols)
+      (ft "~(~A~)~C~(~A~)~C~(~A~)~C~A~C~A~%"
+          (symbol-name value!)                            #\Tab
+          (kind value!)                                   #\Tab
+          (package-name (symbol-package value!))          #\Tab
+          (one-line (render (signature value!) (symbol-package value!))) #\Tab
+          (first-line (doc value!)))))
+
+  (bare-args!
+    (let* ((name   (car bare-args!))
+           (found  (find-exported name)))
+      (if found
+        (describe-symbol found)
+        (let ((close (mentions name)))
+          (unless close
+            (die (fn "nothing in pluto, charon, or styx mentions ~A" name)
+                 :red-p (styx:tty-p 2)))
+          (ft "no exported symbol named ~A -- names and docstrings mentioning it:~%" name)
+          (list-mentions close)
+          (sb-ext:exit :code 1)))))
+
+  (t
+    (print-usage!)))
